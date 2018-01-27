@@ -22,7 +22,7 @@ pip install -r requirements.txt
 
 Run
 ```
-python manager.py runserver
+python manage.py runserver
 ```
 in the terminal
 
