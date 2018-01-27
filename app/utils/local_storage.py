@@ -1,3 +1,6 @@
+import json
+
+
 class LocalStorage:
     def __init__(self):
         self.__blockchain = []
@@ -18,7 +21,14 @@ class LocalStorage:
         pass
 
     def calculate_cost(self, op: str, args: dict) -> int:
-        pass
+        block = {
+            "pre_block": "",
+            "operation": op,
+            "arguments":
+                args
+        }
+        size = len(json.dumps(block)) + 64
+        return size
 
     def balance(self) -> int:
         pass
