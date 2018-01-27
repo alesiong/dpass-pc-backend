@@ -50,16 +50,25 @@ class LocalStorage:
 
     def get(self, k: str) -> str:
         """
-        Get an existing entry with key `k` in the database. If the entry with key `k` exists, return its value with `v`.
-        If the key does not exist, return `None`.
+        Get an existing entry with key k in the database. If the entry with key k exists, return its value with v.
+        if the key does not exist, return None.
         """
-        pass
+
+        dic = self.get_all()
+        return dic.get(k)
 
     def get_all(self) -> dict:
         """
-        Return all keys with their values in the database.
+        Return all keys with their values in the database. If the key does not exist, return None
         """
-        pass
+        dic = {}
+        for i in range(1, len(self.__blockchain)):
+            element = self.__blockchain[i]
+            if element["operation"] == "add":
+                dic[element["arguments"]["key"]] = element["arguments"]["value"]
+            elif element["operation"] == "del":
+                del dic[element["arguments"]["key"]]
+        return dic
 
     def store(self):
         """
