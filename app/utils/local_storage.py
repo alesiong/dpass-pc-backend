@@ -80,7 +80,7 @@ class LocalStorage:
             "operation": op,
             "arguments": args
         }
-        return len(json.dumps(block)) + 64
+        return (len(json.dumps(block)) + 64) * 8
 
     def balance(self) -> int:
         """
@@ -94,3 +94,12 @@ class LocalStorage:
         else:
             st = os.statvfs('/')
             return st.f_bavail * st.f_frsize * 8
+
+    def __setitem__(self, key, value):
+        self.add(key, value)
+
+    def __delitem__(self, key):
+        self.delete(key)
+
+    def __getitem__(self, item):
+        self.get(item)
