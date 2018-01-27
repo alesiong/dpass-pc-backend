@@ -49,17 +49,25 @@ class LocalStorage:
             raise KeyError(k)
 
     def get(self, k: str) -> str:
+        """
+        Get an existing entry with key k in the database. If the entry with key k exists, return its value with v.
+        if the key does not exist, return None.
+        """
+
         dic = self.get_all()
         return dic.get(k)
 
     def get_all(self) -> dict:
+        """
+        Return all keys with their values in the database. If the key does not exist, return None
+        """
         dic = {}
         for i in range(1, len(self.__blockchain)):
             element = self.__blockchain[i]
-            if element["arguments"]["operation"] == "add":
+            if element["operation"] == "add":
                 dic[element["arguments"]["key"]] = element["arguments"]["value"]
-            if element["arguments"]["operation"] == "del":
-                del dic["arguments"]["key"]
+            elif element["operation"] == "del":
+                del dic[element["arguments"]["key"]]
         return dic
 
     def store(self):
