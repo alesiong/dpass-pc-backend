@@ -10,7 +10,9 @@ Files under `app/` folder:
 | static      | static html/js/css files                |
 | templates   | dynamic html files (server side render) |
 | views       | code for serving dynamic pages          |
+| utils       | utilities                               |
 
+Put unit tests under `tests/` folder.
 
 ## Install the requirements
 
@@ -25,6 +27,12 @@ Run
 python manage.py runserver
 ```
 in the terminal
+
+
+## Run Unittest
+```
+python manage.py test
+```
 
 
 ## Demo pages
