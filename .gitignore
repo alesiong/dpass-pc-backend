@@ -101,6 +101,7 @@ ENV/
 .mypy_cache/
 
 .idea/
+geth/
 
 .DS_Store
 
