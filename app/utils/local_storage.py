@@ -50,18 +50,18 @@ class LocalStorage:
 
     def get(self, k: str) -> str:
         """
-        Get an existing entry with key k in the database. If the entry with key k exists, return its value with v.
-        if the key does not exist, return None.
+        Get an existing entry with key `k` in the database. If the entry with key `k` exists, return its value with `v`.
+        If the key does not exist, return None.
         """
 
-        dic = self.get_all()
-        return dic.get(k)
+        return self.get_all().get(k)
 
     def get_all(self) -> dict:
         """
-        Return all keys with their values in the database. If the key does not exist, return None
+        Return all keys with their values in the database.
         """
         dic = {}
+        # Block 0 is the Genesis
         for i in range(1, len(self.__blockchain)):
             element = self.__blockchain[i]
             if element["operation"] == "add":
@@ -73,16 +73,12 @@ class LocalStorage:
     def store(self):
         """
         Synchronize the changes with underlying database.
-        :return:
         """
         pass
 
     def calculate_cost(self, op: str, args: dict) -> int:
         """
         Calculates the cost of the storage operation with operation `op` and arguments `args`.
-        :param op:
-        :param args:
-        :return:
         """
         block = {
             "pre_block": "",
