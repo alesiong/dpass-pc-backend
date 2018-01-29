@@ -102,6 +102,7 @@ ENV/
 
 .idea/
 geth/
+ethereum_private/data/
 
 .DS_Store
 
