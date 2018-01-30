@@ -71,11 +71,24 @@ def new_storage(account, address, abi):
     storage_factory.transact({'from': account}).new_storage()
     while True:
         time.sleep(1)
-        storage_factory.call().storage_address(account)
+        print(storage_factory.call().storage_address(account))
+
+
+def add(account, address, abi_factory, abi_storage, key, value):
+    storage_factory = web3.eth.contract(address=address, abi=abi_factory)
+    storage_address = storage_factory.call().storage_address(account)
+    storage = web3.eth.contract(address=storage_address, abi=abi_storage)
+    storage_factory.transact({'from': account}).add(key, value)
+    while True:
+        time.sleep(1)
+        print(storage.call().length())
 
 
 if __name__ == '__main__':
-    account = ''
+    account = '0x8ad64a818797ee9735357d4c9f8bb66b9a775e65'
+    web3.personal.unlockAccount(account, 'password')
     address = '0x40F2b5cEC3c436F66690ed48E01a48F6Da9Bad17'
     storage_factory_abi = json.load(open('storage_factory.abi.json'))
-    new_storage(account, address, storage_factory_abi)
+    storage_abi = json.load(open('storage.abi.json'))
+    add(account, address, storage_factory_abi, storage_abi, 'a', 'b')
+    # new_storage(account, address, storage_factory_abi)

@@ -8,7 +8,7 @@
   "coinbase": "0x0000000000000000000000000000000000000000",
   "extraData": "",
   "nonce": "0x645f1a0c375b2fcd",
-  "difficulty": "5000000",
+  "difficulty": "500000",
   "gasLimit": "2000000",
   "alloc": {
     "b744a1301ed3ecb0307be224d8d6ba7985cbc183": {
