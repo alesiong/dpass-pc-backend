@@ -156,13 +156,14 @@ class LocalStorage:
         # FIXME: this is just an example, feel free to modify all those below
 
         def __init__(self, filename):
-            if filename:
+            if not os.path.exists('%s.json'(filename)):
                 self._filename = filename
-            else:
-                self._filename = ''  # TODO: generate a name for tmp file
 
-        def write(self):
-            pass
+        def write(self, data: dict):
+            with open('%s.json'(self._filename), 'w') as f:
+                json.dump(data, f)
 
-        def read(self):
-            pass
+        def read(self) -> dict:
+            with open('%s.json'(self._filename), 'r') as f:
+                data = json.load(f)
+            return data
