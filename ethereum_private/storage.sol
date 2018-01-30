@@ -2,7 +2,7 @@ pragma solidity ^0.4.19;
 
 // Make a factory contract to build each storage
 contract Storage {
-  address public owner;
+  address private owner;
   string[2][] public data;
   uint public length;
 
