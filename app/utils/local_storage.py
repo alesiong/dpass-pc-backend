@@ -1,6 +1,6 @@
 import ctypes
 import json
-import datetime
+import time
 import os
 import platform
 import sys
@@ -156,25 +156,28 @@ class LocalStorage:
     class Database:
         def __init__(self, filename):
             """
-            Initialize the database. If 'filename' is not set, use the current time as the name for file.
-            Otherwise, use 'filename' for the file.
+            Initialize the database. If `filename` is `None`, use the current time as the name for file.
+            Otherwise, use `filename` for the file.
             """
             if filename:
                 self._filename = filename
             else:
-                self._filename = str(datetime.datetime.now())
+                self._filename = str(int(time.time() * 1000))  # current millisecond
+            if not os.path.exists(self._filename):
+                with open('./db/%s.json' % self._filename, 'w') as f:
+                    json.dump([], f)
 
-        def write(self, data: dict):
+        def write(self, data: list):
             """
             Writes the data to the json file. If the file doesn't exist, produce a new file and write to it.
             """
-            with open('%s.json'(self._filename), 'w') as f:
+            with open('./db/%s.json' % (self._filename), 'w') as f:
                 json.dump(data, f)
 
-        def read(self) -> dict:
+        def read(self) -> list:
             """
             Returns the data in the json file.
             """
-            with open('%s.json'(self._filename), 'r') as f:
+            with open('./db/%s.json' % (self._filename), 'r') as f:
                 data = json.load(f)
             return data
