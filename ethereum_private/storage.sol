@@ -4,9 +4,7 @@ pragma solidity ^0.4.19;
 contract Storage {
   address public owner;
   string[2][] public data;
-
-  event Add(string key, string value);
-  event Del(string key);
+  uint public length;
 
   function Storage() public {
     owner = msg.sender;
@@ -15,14 +13,33 @@ contract Storage {
   function add(string key, string value) public {
     if (msg.sender == owner) {
         data.push([key, value]);
-        Add(key, value);
+        length++;
     }
   }
 
   function del(string key) public {
     if (msg.sender == owner) {
         data.push([key, ""]);
-        Del(key);
+        length++;
     }
   }
+}
+
+contract StorageFactory {
+    mapping(address => address) public storage_address;
+    function new_storage() public {
+        Storage s = new Storage();
+        if (storage_address[msg.sender] == address(0x0))
+            storage_address[msg.sender] = s;
+    }
+
+    function add(string key, string value) public {
+        Storage s = Storage(storage_address[msg.sender]);
+        s.add(key, value);
+    }
+
+    function del(string key) public {
+        Storage s = Storage(storage_address[msg.sender]);
+        s.del(key);
+    }
 }
