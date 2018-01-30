@@ -153,8 +153,6 @@ class LocalStorage:
 
     @staticmethod
     class Database:
-        # FIXME: this is just an example, feel free to modify all those below
-
         def __init__(self, filename):
             if not os.path.exists('%s.json'(filename)):
                 self._filename = filename
