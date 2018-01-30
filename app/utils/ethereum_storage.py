@@ -1,16 +1,15 @@
 import time
 import json
-# from solc import compile_files
+from solc import compile_files
 from web3 import Web3, IPCProvider
 
 web3 = Web3(IPCProvider('./ethereum_private/data/geth.ipc'))
 
 
-# web3 = Web3(HTTPProvider('http://127.0.0.1:8545'))
 
 # need : 9066942000000000 wei 503719 gas
-# compiled_contract = compile_files(['./ethereum_private/storage.sol'])
-# storage_factory_compiled = compiled_contract['./ethereum_private/storage.sol:StorageFactory']
+# compiled_contract = compile_files(['./ethereum_private/contracts/storage.sol'])
+# storage_factory_compiled = compiled_contract['./ethereum_private/contracts/storage.sol:StorageFactory']
 # storage_compiled = compiled_contract['./ethereum_private/storage.sol:Storage']
 #
 # json.dump(storage_compiled['abi'], open('storage.abi.json', 'w'))
@@ -84,11 +83,11 @@ def add(account, address, abi_factory, abi_storage, key, value):
         print(storage.call().length())
 
 
-if __name__ == '__main__':
-    account = '0x8ad64a818797ee9735357d4c9f8bb66b9a775e65'
-    web3.personal.unlockAccount(account, 'password')
-    address = '0x40F2b5cEC3c436F66690ed48E01a48F6Da9Bad17'
-    storage_factory_abi = json.load(open('storage_factory.abi.json'))
-    storage_abi = json.load(open('storage.abi.json'))
-    add(account, address, storage_factory_abi, storage_abi, 'a', 'b')
-    # new_storage(account, address, storage_factory_abi)
+# if __name__ == '__main__':
+#     account = '0x8ad64a818797ee9735357d4c9f8bb66b9a775e65'
+#     web3.personal.unlockAccount(account, 'password')
+#     address = '0x40F2b5cEC3c436F66690ed48E01a48F6Da9Bad17'
+#     storage_factory_abi = json.load(open('storage_factory.abi.json'))
+#     storage_abi = json.load(open('storage.abi.json'))
+#     add(account, address, storage_factory_abi, storage_abi, 'a', 'b')
+#     # new_storage(account, address, storage_factory_abi)
