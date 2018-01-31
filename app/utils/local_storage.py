@@ -19,7 +19,6 @@ class LocalStorage:
         # structure maybe like this {'a': ('b', False)}, which is {key: (value, persistence)}
         self.__cache_dict = {}
 
-
         self.__change_set = set()
         self.__delete_set = set()
 
@@ -34,7 +33,6 @@ class LocalStorage:
             else:
                 self.__cache_dict[element["arguments"]["key"]] = (element["arguments"]["value"], True)
 
-
     def add(self, k: str, v: str):
         """
         Add a new entry with key `k` and value `v` into the database. If the entry with key `k` exists,
@@ -48,13 +46,11 @@ class LocalStorage:
             self.__change_set.add(k)
         self.__cache_dict[k] = (v, False)
 
-
     def delete(self, k: str):
         """
         Delete an entry in database with key `k`. If the key does not exist, an exception `KeyError` will be thrown.
         **This will not immediately write the underlying database.**
         """
-
 
         if k in self.__cache_dict:
             if not self.__cache_dict[k][1]:
@@ -72,7 +68,6 @@ class LocalStorage:
         else:
             raise KeyError(k)
 
-
     def get(self, k: str, check_persistence: bool = False) -> Union[Optional[str], Tuple[Optional[str], bool]]:
         """
         Get an existing entry with key `k` in the database. If the entry with key `k` exists, return its value.
@@ -88,7 +83,6 @@ class LocalStorage:
         else:
             return result[0]
 
-
     def get_all(self) -> dict:
         """
         Return all keys with their values and persistence in the database. The returned value should have a structure
@@ -101,12 +95,10 @@ class LocalStorage:
         """
         return self.__cache_dict
 
-
     def store(self):
         """
         Synchronize the changes with underlying database.
         """
-
 
         # 1. filter the dirty items in the cache_dict (persistence == False), these are `add` operation
         for k, v in self.__cache_dict.items():
@@ -131,7 +123,6 @@ class LocalStorage:
 
         pass
 
-
     def estimate_cost(self, op: str, args: dict) -> int:
         """
         Estimates the cost of the storage operation with operation `op` and arguments `args`.
@@ -143,13 +134,11 @@ class LocalStorage:
         }
         return (len(json.dumps(block)) + 64) * 8
 
-
     def calculate_total_cost(self) -> int:
         """
         Calculates the cost of currently cached storage operations.
         """
         pass
-
 
     def balance(self) -> int:
         """
@@ -164,27 +153,23 @@ class LocalStorage:
             st = os.statvfs('/')
             return st.f_bavail * st.f_frsize * 8
 
-
     def get_constructor_arguments(self) -> str:
         """
         Returns the arguments list to pass to the constructor.
         """
         return self.__database._filename
 
-
-
+    def size(self) -> int:
+        return len(self.__cache_dict)
 
     def __setitem__(self, key, value):
         self.add(key, value)
 
-
     def __delitem__(self, key):
         self.delete(key)
 
-
     def __getitem__(self, item):
         self.get(item)
-
 
     @staticmethod
     class Database:
@@ -221,5 +206,3 @@ class LocalStorage:
             with open('./db/%s.json' % (self._filename), 'r') as f:
                 data = json.load(f)
             return data
-
-
