@@ -2,6 +2,8 @@
 
 import os
 
+from app.utils.local_storage import LocalStorage
+
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 
@@ -15,6 +17,8 @@ class BaseConfig(object):
     PREFERRED_URL_SCHEME = 'https'
 
     IS_ONLINE = False
+
+    STORAGE_CLASS = LocalStorage
 
 
 class DevelopmentTestConfig(BaseConfig):
