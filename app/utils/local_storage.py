@@ -72,7 +72,16 @@ class LocalStorage:
         `store`d into the underlying database. If `check_persistence` is `True` and the key does not exist, return
         `(None, None)`.
         """
-        return self.get_all().get(k)
+        if check_persistence is False:
+            if self.__cache_dict.get(k) is None:
+                return None
+            else:
+                return self.__cache_dict.get(k)[0]
+        elif check_persistence is True:
+            if self.__cache_dict.get(k) is None:
+                return (None, None)
+            else:
+                return self.__cache_dict.get(k)
 
     def get_all(self) -> dict:
         """
@@ -84,15 +93,7 @@ class LocalStorage:
         }
 
         """
-        dic = {}
-        # Block 0 is the Genesis
-        for i in range(1, len(self.__blockchain)):
-            element = self.__blockchain[i]
-            if element["operation"] == "add":
-                dic[element["arguments"]["key"]] = element["arguments"]["value"]
-            elif element["operation"] == "del":
-                del dic[element["arguments"]["key"]]
-        return dic
+        return self.__cache_dict
 
     def store(self):
         """
