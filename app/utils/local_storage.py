@@ -1,9 +1,9 @@
 import ctypes
 import json
-import time
 import os
 import platform
 import sys
+import time
 from typing import Optional, Union, Tuple
 
 from app.utils.misc import hash_dict
@@ -19,8 +19,9 @@ class LocalStorage:
         # structure maybe like this {'a': ('b', False)}, which is {key: (value, persistence)}
         self.__cache_dict = {}
 
-        # FIXME: we can use cache_dict with dirty bits to log what is added, but we must log what is deleted in other places
-        self.__delete_list = []
+
+        self.__change_set = set()
+        self.__delete_set = set()
 
         self.__database = LocalStorage.Database(filename)
         blockchain = self.__database.read()
@@ -39,14 +40,13 @@ class LocalStorage:
         Add a new entry with key `k` and value `v` into the database. If the entry with key `k` exists,
         update its value with `v`. **This will not immediately write the underlying database.**
         """
-        self.__blockchain.append({
-            "pre_block": hash_dict(self.__blockchain[-1]),
-            "operation": "add",
-            "arguments": {
-                "key": k,
-                "value": v
-            }
-        })
+
+        if k in self.__cache_dict and self.__cache_dict[k][1]:
+            self.__change_set.add(k)
+        elif k in self.__delete_set:
+            self.__delete_set.remove(k)
+            self.__change_set.add(k)
+        self.__cache_dict[k] = (v, False)
 
 
     def delete(self, k: str):
@@ -54,14 +54,21 @@ class LocalStorage:
         Delete an entry in database with key `k`. If the key does not exist, an exception `KeyError` will be thrown.
         **This will not immediately write the underlying database.**
         """
-        if self.get(k) is not None:
-            self.__blockchain.append({
-                "pre_block": hash_dict(self.__blockchain[-1]),
-                "operation": "del",
-                "arguments": {
-                    "key": k,
-                }
-            })
+
+
+        if k in self.__cache_dict:
+            if not self.__cache_dict[k][1]:
+                if k in self.__change_set:
+                    # changed in cache
+                    self.__delete_set.add(k)
+                    del self.__cache_dict[k]
+                    self.__change_set.remove(k)
+                else:
+                    # new in cache, not changed in cache
+                    del self.__cache_dict[k]
+            else:
+                self.__delete_set.add(k)
+                del self.__cache_dict[k]
         else:
             raise KeyError(k)
 
@@ -100,10 +107,28 @@ class LocalStorage:
         Synchronize the changes with underlying database.
         """
 
-        # TODO: logics maybe like this:
+
         # 1. filter the dirty items in the cache_dict (persistence == False), these are `add` operation
+        for k, v in self.__cache_dict.items():
+            if not v[1]:
+                self.__blockchain.append({
+                    "pre_block": hash_dict(self.__blockchain[-1]),
+                    "arguments": {
+                        "key": k,
+                        "value": self.__cache_dict.get(k)
+                    }
+                })
+        for k in self.__delete_set:
+            self.__blockchain.append({
+                "pre_block": hash_dict(self.__blockchain[-1]),
+                "arguments": {
+                    "key": k,
+                    "value": ""
+                }
+            })
+        self.__database.write(self.__blockchain)
         # 2. items in delete_list are `del` operation
-        # TODO: things may gets tricky is I add a new key and then delete it
+
         pass
 
 
@@ -147,7 +172,7 @@ class LocalStorage:
         return self.__database._filename
 
 
-    # TODO: add size
+
 
     def __setitem__(self, key, value):
         self.add(key, value)
@@ -196,3 +221,5 @@ class LocalStorage:
             with open('./db/%s.json' % (self._filename), 'r') as f:
                 data = json.load(f)
             return data
+
+
