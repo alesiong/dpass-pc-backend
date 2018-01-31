@@ -16,23 +16,23 @@ class LocalStorage:
         create a new database with empty storage, also create a new file for persistent storage.
         Otherwise load the contents from that file.
         """
-        self.__blockchain = []
-        self.__blockchain.append({
-            "pre_block": "",
-            "operation": "Genesis",
-            "arguments": {
-                "key": "the answer to the life, the universe and everything",
-                "value": "42"
-            }
-        })
-
-        self.__database = LocalStorage.Database(filename)
-
         # structure maybe like this {'a': ('b', False)}, which is {key: (value, persistence)}
         self.__cache_dict = {}
 
         # FIXME: we can use cache_dict with dirty bits to log what is added, but we must log what is deleted in other places
         self.__delete_list = []
+
+        self.__database = LocalStorage.Database(filename)
+        blockchain = self.__database.read()
+        dic = {}
+        # Block 0 is the Genesis
+        for i in range(1, len(blockchain)):
+            element = blockchain[i]
+            if element["arguments"]["value"] == "":
+                del self.__cache_dict[element["arguments"]["key"]]
+            else:
+                self.__cache_dict[element["arguments"]["key"]] = (element["arguments"]["value"], True)
+
 
     def add(self, k: str, v: str):
         """
@@ -47,6 +47,7 @@ class LocalStorage:
                 "value": v
             }
         })
+
 
     def delete(self, k: str):
         """
@@ -64,6 +65,7 @@ class LocalStorage:
         else:
             raise KeyError(k)
 
+
     def get(self, k: str, check_persistence: bool = False) -> Union[Optional[str], Tuple[Optional[str], bool]]:
         """
         Get an existing entry with key `k` in the database. If the entry with key `k` exists, return its value.
@@ -72,7 +74,13 @@ class LocalStorage:
         `store`d into the underlying database. If `check_persistence` is `True` and the key does not exist, return
         `(None, None)`.
         """
-        return self.get_all().get(k)
+
+        result = self.__cache_dict.get(k, (None, None))
+        if check_persistence:
+            return result
+        else:
+            return result[0]
+
 
     def get_all(self) -> dict:
         """
@@ -84,15 +92,8 @@ class LocalStorage:
         }
 
         """
-        dic = {}
-        # Block 0 is the Genesis
-        for i in range(1, len(self.__blockchain)):
-            element = self.__blockchain[i]
-            if element["operation"] == "add":
-                dic[element["arguments"]["key"]] = element["arguments"]["value"]
-            elif element["operation"] == "del":
-                del dic[element["arguments"]["key"]]
-        return dic
+        return self.__cache_dict
+
 
     def store(self):
         """
@@ -105,6 +106,7 @@ class LocalStorage:
         # TODO: things may gets tricky is I add a new key and then delete it
         pass
 
+
     def estimate_cost(self, op: str, args: dict) -> int:
         """
         Estimates the cost of the storage operation with operation `op` and arguments `args`.
@@ -116,11 +118,13 @@ class LocalStorage:
         }
         return (len(json.dumps(block)) + 64) * 8
 
+
     def calculate_total_cost(self) -> int:
         """
         Calculates the cost of currently cached storage operations.
         """
         pass
+
 
     def balance(self) -> int:
         """
@@ -135,22 +139,27 @@ class LocalStorage:
             st = os.statvfs('/')
             return st.f_bavail * st.f_frsize * 8
 
+
     def get_constructor_arguments(self) -> str:
         """
         Returns the arguments list to pass to the constructor.
         """
         return self.__database._filename
 
+
     # TODO: add size
 
     def __setitem__(self, key, value):
         self.add(key, value)
 
+
     def __delitem__(self, key):
         self.delete(key)
 
+
     def __getitem__(self, item):
         self.get(item)
+
 
     @staticmethod
     class Database:
@@ -165,7 +174,13 @@ class LocalStorage:
                 self._filename = str(int(time.time() * 1000))  # current millisecond
             if not os.path.exists(self._filename):
                 with open('./db/%s.json' % self._filename, 'w') as f:
-                    json.dump([], f)
+                    json.dump([{
+                        "pre_block": "",
+                        "arguments": {
+                            "key": "the answer to the life, the universe and everything",
+                            "value": "42"
+                        }
+                    }], f)
 
         def write(self, data: list):
             """
