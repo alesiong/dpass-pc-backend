@@ -141,7 +141,7 @@ class LocalStorage:
         """
         return self.__database._filename
 
-    def size(self, args) -> int:
+    def size(self, args:dict) -> int:
         return len(args)
 
     def __setitem__(self, key, value):
