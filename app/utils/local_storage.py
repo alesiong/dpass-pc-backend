@@ -24,7 +24,6 @@ class LocalStorage:
 
         self.__database = LocalStorage.Database(filename)
         blockchain = self.__database.read()
-        dic = {}
         # Block 0 is the Genesis
         for i in range(1, len(blockchain)):
             element = blockchain[i]
@@ -32,6 +31,7 @@ class LocalStorage:
                 del self.__cache_dict[element["arguments"]["key"]]
             else:
                 self.__cache_dict[element["arguments"]["key"]] = (element["arguments"]["value"], True)
+        self.__blockchain = blockchain
 
     def add(self, k: str, v: str):
         """
@@ -107,9 +107,12 @@ class LocalStorage:
                     "pre_block": hash_dict(self.__blockchain[-1]),
                     "arguments": {
                         "key": k,
-                        "value": self.__cache_dict.get(k)
+                        "value": v[0]
                     }
                 })
+                self.__cache_dict[k] = (v[0], True)
+
+        # 2. items in delete_list are `del` operation
         for k in self.__delete_set:
             self.__blockchain.append({
                 "pre_block": hash_dict(self.__blockchain[-1]),
@@ -119,17 +122,15 @@ class LocalStorage:
                 }
             })
         self.__database.write(self.__blockchain)
-        # 2. items in delete_list are `del` operation
+        self.__change_set = set()
+        self.__delete_set = set()
 
-        pass
-
-    def estimate_cost(self, op: str, args: dict) -> int:
+    def estimate_cost(self, args: dict) -> int:
         """
-        Estimates the cost of the storage operation with operation `op` and arguments `args`.
+        Estimates the cost of the storage operation with arguments `args`.
         """
         block = {
             "pre_block": "",
-            "operation": op,
             "arguments": args
         }
         return (len(json.dumps(block)) + 64) * 8
@@ -138,7 +139,21 @@ class LocalStorage:
         """
         Calculates the cost of currently cached storage operations.
         """
-        pass
+        fixed = len(json.dumps({
+            "pre_block": '',
+            "arguments": {
+                "key": '',
+                "value": ''
+            }
+        })) + 64
+        s = 0
+        for k, v in self.__cache_dict.items():
+            if not v[1]:
+                s += fixed + len(k) + len(v[0])
+
+        for k in self.__delete_set:
+            s += fixed + len(k)
+        return s
 
     def balance(self) -> int:
         """
@@ -182,7 +197,7 @@ class LocalStorage:
                 self._filename = filename
             else:
                 self._filename = str(int(time.time() * 1000))  # current millisecond
-            if not os.path.exists(self._filename):
+            if not os.path.exists('./db/%s.json' % self._filename):
                 with open('./db/%s.json' % self._filename, 'w') as f:
                     json.dump([{
                         "pre_block": "",
@@ -196,13 +211,13 @@ class LocalStorage:
             """
             Writes the data to the json file. If the file doesn't exist, produce a new file and write to it.
             """
-            with open('./db/%s.json' % (self._filename), 'w') as f:
+            with open('./db/%s.json' % self._filename, 'w') as f:
                 json.dump(data, f)
 
         def read(self) -> list:
             """
             Returns the data in the json file.
             """
-            with open('./db/%s.json' % (self._filename), 'r') as f:
+            with open('./db/%s.json' % self._filename, 'r') as f:
                 data = json.load(f)
             return data

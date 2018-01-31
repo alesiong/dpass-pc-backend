@@ -67,7 +67,7 @@ class TestLocalStorage(unittest.TestCase):
         self.assertTrue(storage.get('a', True)[1])
         dic = storage.get_all()  # should be {'a': ('1', True)}
         self.assertIn('a', dic)
-        self.assertEqual(dic['a'], '1')
+        self.assertEqual(dic['a'][0], '1')
         self.assertTrue(dic['a'][1])
 
         storage.delete('a')
