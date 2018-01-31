@@ -34,165 +34,165 @@ class LocalStorage:
                 self.__cache_dict[element["arguments"]["key"]] = (element["arguments"]["value"], True)
 
 
-def add(self, k: str, v: str):
-    """
-    Add a new entry with key `k` and value `v` into the database. If the entry with key `k` exists,
-    update its value with `v`. **This will not immediately write the underlying database.**
-    """
-    self.__blockchain.append({
-        "pre_block": hash_dict(self.__blockchain[-1]),
-        "operation": "add",
-        "arguments": {
-            "key": k,
-            "value": v
-        }
-    })
-
-
-def delete(self, k: str):
-    """
-    Delete an entry in database with key `k`. If the key does not exist, an exception `KeyError` will be thrown.
-    **This will not immediately write the underlying database.**
-    """
-    if self.get(k) is not None:
+    def add(self, k: str, v: str):
+        """
+        Add a new entry with key `k` and value `v` into the database. If the entry with key `k` exists,
+        update its value with `v`. **This will not immediately write the underlying database.**
+        """
         self.__blockchain.append({
             "pre_block": hash_dict(self.__blockchain[-1]),
-            "operation": "del",
+            "operation": "add",
             "arguments": {
                 "key": k,
+                "value": v
             }
         })
-    else:
-        raise KeyError(k)
 
 
-def get(self, k: str, check_persistence: bool = False) -> Union[Optional[str], Tuple[Optional[str], bool]]:
-    """
-    Get an existing entry with key `k` in the database. If the entry with key `k` exists, return its value.
-    If the key does not exist, return `None`. If `check_persistence` is `True`,
-    returns a tuple like `(value, True)`, where the second element shows whether this key-value pair has been
-    `store`d into the underlying database. If `check_persistence` is `True` and the key does not exist, return
-    `(None, None)`.
-    """
-
-    result = self.__cache_dict.get(k, (None, None))
-    if check_persistence:
-        return result
-    else:
-        return result[0]
-
-
-def get_all(self) -> dict:
-    """
-    Return all keys with their values and persistence in the database. The returned value should have a structure
-    like this:
-
-    {
-        key: (value, persistence)
-    }
-
-    """
-    return self.__cache_dict
-
-
-def store(self):
-    """
-    Synchronize the changes with underlying database.
-    """
-
-    # TODO: logics maybe like this:
-    # 1. filter the dirty items in the cache_dict (persistence == False), these are `add` operation
-    # 2. items in delete_list are `del` operation
-    # TODO: things may gets tricky is I add a new key and then delete it
-    pass
-
-
-def estimate_cost(self, op: str, args: dict) -> int:
-    """
-    Estimates the cost of the storage operation with operation `op` and arguments `args`.
-    """
-    block = {
-        "pre_block": "",
-        "operation": op,
-        "arguments": args
-    }
-    return (len(json.dumps(block)) + 64) * 8
-
-
-def calculate_total_cost(self) -> int:
-    """
-    Calculates the cost of currently cached storage operations.
-    """
-    pass
-
-
-def balance(self) -> int:
-    """
-    Returns the balance (remaining storage space) of current user.
-    """
-    if platform.system() == 'Windows':
-        free_bytes = ctypes.c_ulonglong(0)
-        ctypes.windll.kernel32.GetDiskFreeSpaceExW(ctypes.c_wchar_p(sys.path[0][:3]), None, None,
-                                                   ctypes.pointer(free_bytes))
-        return free_bytes.value * 8
-    else:
-        st = os.statvfs('/')
-        return st.f_bavail * st.f_frsize * 8
-
-
-def get_constructor_arguments(self) -> str:
-    """
-    Returns the arguments list to pass to the constructor.
-    """
-    return self.__database._filename
-
-
-# TODO: add size
-
-def __setitem__(self, key, value):
-    self.add(key, value)
-
-
-def __delitem__(self, key):
-    self.delete(key)
-
-
-def __getitem__(self, item):
-    self.get(item)
-
-
-@staticmethod
-class Database:
-    def __init__(self, filename):
+    def delete(self, k: str):
         """
-        Initialize the database. If `filename` is `None`, use the current time as the name for file.
-        Otherwise, use `filename` for the file.
+        Delete an entry in database with key `k`. If the key does not exist, an exception `KeyError` will be thrown.
+        **This will not immediately write the underlying database.**
         """
-        if filename:
-            self._filename = filename
+        if self.get(k) is not None:
+            self.__blockchain.append({
+                "pre_block": hash_dict(self.__blockchain[-1]),
+                "operation": "del",
+                "arguments": {
+                    "key": k,
+                }
+            })
         else:
-            self._filename = str(int(time.time() * 1000))  # current millisecond
-        if not os.path.exists(self._filename):
-            with open('./db/%s.json' % self._filename, 'w') as f:
-                json.dump([{
-                    "pre_block": "",
-                    "arguments": {
-                        "key": "the answer to the life, the universe and everything",
-                        "value": "42"
-                    }
-                }], f)
+            raise KeyError(k)
 
-    def write(self, data: list):
-        """
-        Writes the data to the json file. If the file doesn't exist, produce a new file and write to it.
-        """
-        with open('./db/%s.json' % (self._filename), 'w') as f:
-            json.dump(data, f)
 
-    def read(self) -> list:
+    def get(self, k: str, check_persistence: bool = False) -> Union[Optional[str], Tuple[Optional[str], bool]]:
         """
-        Returns the data in the json file.
+        Get an existing entry with key `k` in the database. If the entry with key `k` exists, return its value.
+        If the key does not exist, return `None`. If `check_persistence` is `True`,
+        returns a tuple like `(value, True)`, where the second element shows whether this key-value pair has been
+        `store`d into the underlying database. If `check_persistence` is `True` and the key does not exist, return
+        `(None, None)`.
         """
-        with open('./db/%s.json' % (self._filename), 'r') as f:
-            data = json.load(f)
-        return data
+
+        result = self.__cache_dict.get(k, (None, None))
+        if check_persistence:
+            return result
+        else:
+            return result[0]
+
+
+    def get_all(self) -> dict:
+        """
+        Return all keys with their values and persistence in the database. The returned value should have a structure
+        like this:
+
+        {
+            key: (value, persistence)
+        }
+
+        """
+        return self.__cache_dict
+
+
+    def store(self):
+        """
+        Synchronize the changes with underlying database.
+        """
+
+        # TODO: logics maybe like this:
+        # 1. filter the dirty items in the cache_dict (persistence == False), these are `add` operation
+        # 2. items in delete_list are `del` operation
+        # TODO: things may gets tricky is I add a new key and then delete it
+        pass
+
+
+    def estimate_cost(self, op: str, args: dict) -> int:
+        """
+        Estimates the cost of the storage operation with operation `op` and arguments `args`.
+        """
+        block = {
+            "pre_block": "",
+            "operation": op,
+            "arguments": args
+        }
+        return (len(json.dumps(block)) + 64) * 8
+
+
+    def calculate_total_cost(self) -> int:
+        """
+        Calculates the cost of currently cached storage operations.
+        """
+        pass
+
+
+    def balance(self) -> int:
+        """
+        Returns the balance (remaining storage space) of current user.
+        """
+        if platform.system() == 'Windows':
+            free_bytes = ctypes.c_ulonglong(0)
+            ctypes.windll.kernel32.GetDiskFreeSpaceExW(ctypes.c_wchar_p(sys.path[0][:3]), None, None,
+                                                       ctypes.pointer(free_bytes))
+            return free_bytes.value * 8
+        else:
+            st = os.statvfs('/')
+            return st.f_bavail * st.f_frsize * 8
+
+
+    def get_constructor_arguments(self) -> str:
+        """
+        Returns the arguments list to pass to the constructor.
+        """
+        return self.__database._filename
+
+
+    # TODO: add size
+
+    def __setitem__(self, key, value):
+        self.add(key, value)
+
+
+    def __delitem__(self, key):
+        self.delete(key)
+
+
+    def __getitem__(self, item):
+        self.get(item)
+
+
+    @staticmethod
+    class Database:
+        def __init__(self, filename):
+            """
+            Initialize the database. If `filename` is `None`, use the current time as the name for file.
+            Otherwise, use `filename` for the file.
+            """
+            if filename:
+                self._filename = filename
+            else:
+                self._filename = str(int(time.time() * 1000))  # current millisecond
+            if not os.path.exists(self._filename):
+                with open('./db/%s.json' % self._filename, 'w') as f:
+                    json.dump([{
+                        "pre_block": "",
+                        "arguments": {
+                            "key": "the answer to the life, the universe and everything",
+                            "value": "42"
+                        }
+                    }], f)
+
+        def write(self, data: list):
+            """
+            Writes the data to the json file. If the file doesn't exist, produce a new file and write to it.
+            """
+            with open('./db/%s.json' % (self._filename), 'w') as f:
+                json.dump(data, f)
+
+        def read(self) -> list:
+            """
+            Returns the data in the json file.
+            """
+            with open('./db/%s.json' % (self._filename), 'r') as f:
+                data = json.load(f)
+            return data
