@@ -1,5 +1,6 @@
 import hashlib
 import json
+from typing import NewType
 
 
 def sha2(s: str) -> str:
@@ -17,3 +18,8 @@ class Singleton(type):
         if cls not in cls._instances:
             cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
         return cls._instances[cls]
+
+
+# string like '0x12345...'
+HashType = NewType('Hash', str)
+Address = HashType

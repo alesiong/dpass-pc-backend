@@ -6,7 +6,6 @@ from web3 import Web3, IPCProvider
 web3 = Web3(IPCProvider('./ethereum_private/data/geth.ipc'))
 
 
-
 # need : 9066942000000000 wei 503719 gas
 # compiled_contract = compile_files(['./ethereum_private/contracts/storage.sol'])
 # storage_factory_compiled = compiled_contract['./ethereum_private/contracts/storage.sol:StorageFactory']
@@ -77,17 +76,26 @@ def add(account, address, abi_factory, abi_storage, key, value):
     storage_factory = web3.eth.contract(address=address, abi=abi_factory)
     storage_address = storage_factory.call().storage_address(account)
     storage = web3.eth.contract(address=storage_address, abi=abi_storage)
-    storage_factory.transact({'from': account}).add(key, value)
+    transaction_hash = storage_factory.transact({'from': account}).add(key, value)
     while True:
         time.sleep(1)
+        print(web3.eth.getTransactionReceipt(transaction_hash))
         print(storage.call().length())
 
 
-# if __name__ == '__main__':
-#     account = '0x8ad64a818797ee9735357d4c9f8bb66b9a775e65'
-#     web3.personal.unlockAccount(account, 'password')
-#     address = '0x40F2b5cEC3c436F66690ed48E01a48F6Da9Bad17'
-#     storage_factory_abi = json.load(open('storage_factory.abi.json'))
-#     storage_abi = json.load(open('storage.abi.json'))
-#     add(account, address, storage_factory_abi, storage_abi, 'a', 'b')
-#     # new_storage(account, address, storage_factory_abi)
+def get(account, address, abi_factory, abi_storage, x, y):
+    storage_factory = web3.eth.contract(address=address, abi=abi_factory)
+    storage_address = storage_factory.call().storage_address(account)
+    storage = web3.eth.contract(address=storage_address, abi=abi_storage)
+    return storage.call().data(x, y)
+
+
+if __name__ == '__main__':
+    account = '0x8ad64a818797ee9735357d4c9f8bb66b9a775e65'
+    # web3.personal.unlockAccount(account, 'password')
+    address = '0x40F2b5cEC3c436F66690ed48E01a48F6Da9Bad17'
+    storage_factory_abi = json.load(open('./ethereum_private/contracts/storage_factory.abi.json'))
+    storage_abi = json.load(open('./ethereum_private/contracts/storage.abi.json'))
+    # add(account, address, storage_factory_abi, storage_abi, 'a', 'b')
+    # new_storage(account, address, storage_factory_abi)
+    print(get(account, address, storage_factory_abi, storage_abi, 0, 0))

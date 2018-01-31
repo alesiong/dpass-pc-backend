@@ -16,13 +16,6 @@ contract Storage {
         length++;
     }
   }
-
-  function del(string key) public {
-    if (msg.sender == owner) {
-        data.push([key, ""]);
-        length++;
-    }
-  }
 }
 
 contract StorageFactory {
@@ -36,10 +29,5 @@ contract StorageFactory {
     function add(string key, string value) public {
         Storage s = Storage(storage_address[msg.sender]);
         s.add(key, value);
-    }
-
-    function del(string key) public {
-        Storage s = Storage(storage_address[msg.sender]);
-        s.del(key);
     }
 }
