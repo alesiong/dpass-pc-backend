@@ -14,14 +14,14 @@ from app.utils.misc import Singleton, HashType, Address
 
 
 class EthereumUtils(metaclass=Singleton):
-    def __init__(self, web3: Web3):
+    def __init__(self, web3: Web3 = None):
         self.__web3 = web3
         self.__eth: Eth = web3.eth
         self.__personal: Personal = web3.personal
         self.__miner: Miner = web3.miner
 
         self.__is_mining = False
-        self.__storage_factory = None
+        self.__storage_factory: Contract = None
         self.__storage_abi = None
 
         self._contracts_initialized = False
@@ -50,17 +50,21 @@ class EthereumUtils(metaclass=Singleton):
         self.__storage_abi = storage_abi
 
     @check_state('_contracts_initialized')
-    @check_and_unset_state('_account_unlocked')
+    @check_state('_account_unlocked')
     def new_storage(self, account: Address, timeout: int = 60):
+        """
+        Creates a new `Storage` contract for the `account`
+        :return: None if the transaction is mined within the time, or transaction hash if timeout
+        """
         transaction_hash = self.__storage_factory.transact({'from': account}).new_storage()
         return self.__wait_transaction(transaction_hash, timeout)
 
     @check_state('_contracts_initialized')
-    @check_and_unset_state('_account_unlocked')
+    @check_state('_account_unlocked')
     def add(self, account: Address, key: str, value: str = '', timeout: int = 60) -> Optional[HashType]:
         """
-        Store data to the ethereum network in a synchronized manner
-        Set `value` to '' is just delete
+        Store data to the ethereum network in a synchronous manner
+        For deletion, set `value` to ''
 
         :return: None if the transaction is mined within the time, or transaction hash if timeout
         """
@@ -68,24 +72,22 @@ class EthereumUtils(metaclass=Singleton):
         return self.__wait_transaction(transaction_hash, timeout)
 
     @check_state('_contracts_initialized')
-    @check_and_unset_state('_account_unlocked')
-    def add_async(self, account: HashType, key: str, value: str = '') -> Callable:
-        transaction_hash = self.__storage_factory.transact({'from': account}).add(key, value)
-        return partial(self.__eth.getTransactionReceipt, transaction_hash)
+    @check_state('_account_unlocked')
+    def add_async(self, account: HashType, key: str, value: str = '') -> HashType:
+        """
+        Store data to the ethereum network in a asynchronous manner
+        For deletion, set `value` to ''
 
-    def __wait_transaction(self, transaction_hash: HashType, timeout: int):
-        i = 0
-        sleep_time = 0.1
-        while True:
-            if self.__eth.getTransactionReceipt(transaction_hash):
-                return
-            time.sleep(sleep_time)
-            i += 1
-            if i > timeout * (1 / sleep_time):
-                return transaction_hash
+        :return: transaction hash
+        """
+        transaction_hash = self.__storage_factory.transact({'from': account}).add(key, value)
+        return transaction_hash
 
     @check_state('_contracts_initialized')
     def get_storage(self, account: Address) -> Contract:
+        """
+        Returns the `Storage` contract of the `account`
+        """
         storage_address = self.__storage_factory.call().storage_address(account)
         return self.__eth.contract(address=storage_address, abi=self.__storage_abi)
 
@@ -113,11 +115,42 @@ class EthereumUtils(metaclass=Singleton):
             data.append((key, value))
         return data
 
+    @check_state('_contracts_initialized')
+    def estimate_new_storage_cost(self, account: Address) -> int:
+        return self.__storage_factory.estimateGas({'from': account}).new_storage()
+
+    @check_state('_contracts_initialized')
+    def estimate_add_cost(self, account: Address, key: str, value: str = '') -> int:
+        return self.__storage_factory.estimateGas({'from': account}).add(key, value)
+
     # Account operations
 
     def new_account(self, password: str) -> Address:
         return self.__personal.newAccount(hashlib.sha256(password.encode()).hexdigest())
 
-    @set_state('_account_unlocked')
-    def unlock_account(self, account: Address, password: str, duration: int = 600):
+    # TODO: maybe better to manage the duration ourselves (i.e. set duration to 0)
+    @set_state('_account_unlocked', 'duration', 600)
+    def unlock_account(self, account: Address, password: str, guard=None, duration: int = 600):
+        # guard=None here ensures duration must be passed as keyword arguments
+        if guard is not None:
+            raise ValueError('Must use keyword argument to pass duration')
         self.__personal.unlockAccount(account, password, duration)
+
+    def lock_account(self, account: Address):
+        self.__personal.lockAccount(account)
+
+    # Utilities
+
+    def get_transaction_receipt(self, transaction_hash):
+        return self.__eth.getTransactionReceipt(transaction_hash)
+
+    def __wait_transaction(self, transaction_hash: HashType, timeout: int):
+        i = 0
+        sleep_time = 0.1
+        while True:
+            if self.__eth.getTransactionReceipt(transaction_hash):
+                return
+            time.sleep(sleep_time)
+            i += 1
+            if i > timeout * (1 / sleep_time):
+                return transaction_hash
