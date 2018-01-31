@@ -27,6 +27,8 @@ class EthereumUtils(metaclass=Singleton):
         self._contracts_initialized = False
         self._account_unlocked = False
 
+    # Mining Operations
+
     def start_mining(self, account, num_threads=1):
         self.__miner.setEtherBase(account)
         self.__miner.start(num_threads)
@@ -39,6 +41,8 @@ class EthereumUtils(metaclass=Singleton):
     @property
     def is_mining(self):
         return self.__is_mining
+
+    # Contracts Operations
 
     @set_state('_contracts_initialized')
     def init_contracts(self, storage_factory_address, storage_factory_abi, storage_abi):
@@ -77,7 +81,7 @@ class EthereumUtils(metaclass=Singleton):
                 return
             time.sleep(sleep_time)
             i += 1
-            if i * (1 / sleep_time) > timeout:
+            if i > timeout * (1 / sleep_time):
                 return transaction_hash
 
     @check_state('_contracts_initialized')
@@ -88,18 +92,29 @@ class EthereumUtils(metaclass=Singleton):
     @check_state('_contracts_initialized')
     def get_element(self, account: Address, index: int, kv: int, storage: Contract = None) -> str:
         if storage is None:
-            storage_address = self.__storage_factory.call().storage_address(account)
-            storage = self.__eth.contract(address=storage_address, abi=self.__storage_abi)
+            storage = self.get_storage(account)
         return storage.call().data(index, kv)
 
     @check_state('_contracts_initialized')
     def get_length(self, account: Address, storage: Contract = None) -> int:
         if storage is None:
-            storage_address = self.__storage_factory.call().storage_address(account)
-            storage = self.__eth.contract(address=storage_address, abi=self.__storage_abi)
+            storage = self.get_storage(account)
         return storage.call().length()
 
-    # Account related operations
+    @check_state('_contracts_initialized')
+    def get_history(self, account: Address, from_: int = 0, storage: Contract = None):
+        if storage is None:
+            storage = self.get_storage(account)
+        length = self.get_length(account, storage)
+        data = []
+        for i in range(from_, length):
+            key = self.get_element(account, i, 0, storage)
+            value = self.get_element(account, i, 1, storage)
+            data.append((key, value))
+        return data
+
+    # Account operations
+
     def new_account(self, password: str) -> Address:
         return self.__personal.newAccount(hashlib.sha256(password.encode()).hexdigest())
 
