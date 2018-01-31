@@ -72,16 +72,12 @@ class LocalStorage:
         `store`d into the underlying database. If `check_persistence` is `True` and the key does not exist, return
         `(None, None)`.
         """
-        if check_persistence is False:
-            if self.__cache_dict.get(k) is None:
-                return None
-            else:
-                return self.__cache_dict.get(k)[0]
-        elif check_persistence is True:
-            if self.__cache_dict.get(k) is None:
-                return (None, None)
-            else:
-                return self.__cache_dict.get(k)
+
+        result = self.__cache_dict.get(k, (None, None))
+        if check_persistence:
+            return result
+        else:
+            return result[0]
 
     def get_all(self) -> dict:
         """
