@@ -4,6 +4,7 @@ import os
 import platform
 import sys
 import time
+from pathlib import Path
 from typing import Optional, Union, Tuple
 
 from app.utils.misc import hash_dict
@@ -198,9 +199,13 @@ class LocalStorage:
             if filename:
                 self.__filename = filename
             else:
-                self.__filename = str(int(time.time() * 1000))  # current millisecond
-            if not os.path.exists('./db/%s.json' % self.__filename):
-                with open('./db/%s.json' % self.__filename, 'w') as f:
+                self.__filename = 'tmp/' + str(int(time.time() * 1000))  # current millisecond
+            whole_filename = './db/%s.json' % self.__filename
+            if not os.path.exists(whole_filename):
+                directory = Path(whole_filename[:whole_filename.rfind('/')])
+                if not directory.exists():
+                    directory.mkdir(parents=True, exist_ok=True)
+                with open(whole_filename, 'w') as f:
                     json.dump([{
                         "pre_block": "",
                         "arguments": {

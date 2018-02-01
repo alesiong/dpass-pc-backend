@@ -7,6 +7,7 @@ Use "python manage.py runserver" to start the development web server on localhos
 Use "python manage.py runserver --help" for additional runserver options.
 """
 import unittest
+from colour_runner.runner import ColourTextTestRunner
 
 from flask_migrate import MigrateCommand
 from flask_script import Manager, Shell, Server
@@ -22,7 +23,7 @@ manager = Manager(app)
 def test():
     """Runs the unit tests without test coverage."""
     tests = unittest.TestLoader().discover('tests', pattern='test*.py')
-    result = unittest.TextTestRunner(verbosity=2).run(tests)
+    result = ColourTextTestRunner(verbosity=2).run(tests)
     if result.wasSuccessful():
         return 0
     return 1
