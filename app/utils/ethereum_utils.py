@@ -15,6 +15,8 @@ from app.utils.misc import Singleton, HashType, Address
 
 class EthereumUtils(metaclass=Singleton):
     def __init__(self, web3: Web3 = None):
+        if web3 is None:
+            raise ValueError('`web3` should not be None when first initialized')
         self.__web3 = web3
         self.__eth: Eth = web3.eth
         self.__personal: Personal = web3.personal
@@ -134,10 +136,14 @@ class EthereumUtils(metaclass=Singleton):
         # guard=None here ensures duration must be passed as keyword arguments
         if guard is not None:
             raise ValueError('Must use keyword argument to pass duration')
+        password = hashlib.sha256(password.encode()).hexdigest()
         self.__personal.unlockAccount(account, password, duration)
 
     def lock_account(self, account: Address):
         self.__personal.lockAccount(account)
+
+    def get_balance(self, account:Address) -> int:
+        return self.__eth.getBalance(account)
 
     # Utilities
 

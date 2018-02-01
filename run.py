@@ -1,5 +1,5 @@
-#!/usr/bin/env python
 import argparse
+import subprocess
 import webbrowser
 from multiprocessing import Process, Queue
 
@@ -14,8 +14,23 @@ def main():
     parser = argparse.ArgumentParser(description='DPass - Distributed & Decentralized Password Manager')
     parser.add_argument('--develop', action='store_true', help='Run on development config.')
     args = parser.parse_args()
+
     app = create_app('development' if args.develop else 'production', queue)
     server = Process(target=app.run, kwargs={'use_reloader': False})
+
+    # TODO: change the path of `geth`
+    geth = subprocess.Popen(['geth',
+                             '--datadir',
+                             './ethereum_private/data/',
+                             '--ethash.dagdir',
+                             './ethereum_private/data/ethash',
+                             '--networkid',
+                             '1042',
+                             '--targetgaslimit',
+                             '4000000'
+                             ],
+                            stdout=subprocess.DEVNULL,
+                            stderr=subprocess.DEVNULL)
 
     init_key = SessionKey.generate_key()
     queue.put(init_key)

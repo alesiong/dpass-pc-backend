@@ -1,101 +1,169 @@
-import time
-import json
-from solc import compile_files
-from web3 import Web3, IPCProvider
+from typing import Optional, Union, Tuple, Generator, Dict, Set
 
-web3 = Web3(IPCProvider('./ethereum_private/data/geth.ipc'))
+from app.utils.ethereum_utils import EthereumUtils
+from app.utils.misc import Address
 
 
-# need : 9066942000000000 wei 503719 gas
-# compiled_contract = compile_files(['./ethereum_private/contracts/storage.sol'])
-# storage_factory_compiled = compiled_contract['./ethereum_private/contracts/storage.sol:StorageFactory']
-# storage_compiled = compiled_contract['./ethereum_private/storage.sol:Storage']
-#
-# json.dump(storage_compiled['abi'], open('storage.abi.json', 'w'))
-# json.dump(storage_factory_compiled['abi'], open('storage_factory.abi.json', 'w'))
+class EthereumStorage:
+    def __init__(self, account: Address, password: str):
+        """
+        Load the ethereum storage for `account`. `password` should also be provided.
 
-# contract = web3.eth.contract(abi=compiled_contract['abi'], bytecode=compiled_contract['bin'])
+        **Assumptions**:
 
-# account = web3.eth.accounts[1]
-# web3.eth.defaultAccount = account
-#
-# print(web3.eth.getBalance(account))
-#
-# web3.personal.unlockAccount(account, 'Alesiong')
+        1. Singleton class EthereumUtils has been initialized before
+        2. Contracts has been initialized (EthereumUtils.init_contracts)
+        3. Storage contract for `account` has been created (EthereumUtils.new_storage)
+        """
+        self.__cache_dict: Dict[str, Tuple[str, bool]] = {}
 
-# contract_hash = contract.deploy(transaction={'from': account})
+        self.__change_set: Set[str] = set()
+        self.__delete_set: Set[str] = set()
 
-# contract = web3.eth.contract(address='0x40F2b5cEC3c436F66690ed48E01a48F6Da9Bad17', abi=storage_factory_compiled['abi'])
+        self.__ethereum_utils = EthereumUtils()
+        self.__account = account
+        self.__password = password
+        self.__storage = self.__ethereum_utils.get_storage(account)
 
-# print(contract_hash)
-# contract_hash = '0x66ed6f13f1f42a52f03486bbd31447d65fdb1bdfe46175f52f71c717bd3d93dc'
-# print(web3.eth.getBalance(account))
-# print(web3.eth.getTransactionReceipt(contract_hash)['contractAddress'])
+        # TODO: load the blockchain
+        # TODO: if we cache the blockchain on the disk, don't forget to do it at `store`
+        # self.__ethereum_utils.get_history(account, 0, self.__storage)
 
-# print(contract_hash)
+        # TODO: current state model for CRUD may need to change to fit the ethereum model:
+        # TODO: i.e.: store method cannot return immediately, or the data cannot be put on the chain immediately
+        # TODO: also need to consider how/when to update(download/sync) data from blockchain
 
+    def add(self, k: str, v: str):
+        """
+        Add a new entry with key `k` and value `v` into the database. If the entry with key `k` exists,
+        update its value with `v`. **This will not immediately write the underlying database.**
+        """
 
-# print(contract.estimateGas().add('a', 'b') * web3.eth.gasPrice)
-# contract.transact().new_storage()
+        if k in self.__cache_dict and self.__cache_dict[k][1]:
+            self.__change_set.add(k)
+        elif k in self.__delete_set:
+            self.__delete_set.remove(k)
+            self.__change_set.add(k)
+        self.__cache_dict[k] = (v, False)
 
-# storage_address = contract.call().storage_address(account)
-# print(storage_address)
+    def delete(self, k: str):
+        """
+        Delete an entry in database with key `k`. If the key does not exist, an exception `KeyError` will be thrown.
+        **This will not immediately write the underlying database.**
+        """
 
-# storage = web3.eth.contract(address=storage_address, abi=storage_compiled['abi'])
+        if k in self.__cache_dict:
+            if not self.__cache_dict[k][1]:
+                if k in self.__change_set:
+                    # changed in cache
+                    self.__delete_set.add(k)
+                    del self.__cache_dict[k]
+                    self.__change_set.remove(k)
+                else:
+                    # new in cache, not changed in cache
+                    del self.__cache_dict[k]
+            else:
+                self.__delete_set.add(k)
+                del self.__cache_dict[k]
+        else:
+            raise KeyError(k)
 
-# contract.transact().add('a', 'b')
+    def get(self, k: str, check_persistence: bool = False) -> Union[Optional[str], Tuple[Optional[str], bool]]:
+        """
+        Get an existing entry with key `k` in the database. If the entry with key `k` exists, return its value.
+        If the key does not exist, return `None`. If `check_persistence` is `True`,
+        returns a tuple like `(value, True)`, where the second element shows whether this key-value pair has been
+        `store`d into the underlying database. If `check_persistence` is `True` and the key does not exist, return
+        `(None, None)`.
+        """
 
-# print(storage.call().length())
-# print(storage.call().data(0, 0))
+        result = self.__cache_dict.get(k, (None, None))
+        if check_persistence:
+            return result
+        else:
+            return result[0]
 
+    def get_all(self) -> dict:
+        """
+        Return all keys with their values and persistence in the database. The returned value should have a structure
+        like this:
 
-# print(contract.call({'from': account, 'gas': 3000000}).add('d', 'c'))
+        {
+            key: (value, persistence)
+        }
 
-# print(contract.transact().add('e', 'f'))
+        """
+        return self.__cache_dict
 
+    def __get_all_add(self) -> Generator[Tuple[str, str]]:
+        return (k, v[0] for k, v in self.__cache_dict.items() if not v[1])
 
-def init_only_once(account, abi, bytecode):
-    storage_factory = web3.eth.contract(abi=abi, bytecode=bytecode)
-    transaction_hash = storage_factory.deploy(transaction={'from': account})
-    while True:
-        time.sleep(1)
-        receipt = web3.eth.getTransactionReceipt(transaction_hash)
-        if receipt:
-            return receipt['contractAddress']
+    def __get_all_del(self) -> Generator[str]:
+        return (k for k in self.__delete_set)
 
+    def store(self):
+        """
+        Synchronize the changes with underlying database.
+        """
 
-def new_storage(account, address, abi):
-    storage_factory = web3.eth.contract(address=address, abi=abi)
-    storage_factory.transact({'from': account}).new_storage()
-    while True:
-        time.sleep(1)
-        print(storage_factory.call().storage_address(account))
+        # FIXME: unlock account first
+        # FIXME: use async add
+        # TODO: how to determine if a key is really stored? only update persistence if transaction mined?
+        for k, v in self.__get_all_add():
+            self.__ethereum_utils.add(self.__account, k, v)
+            self.__cache_dict[k] = (v, True)
 
+        for k in self.__get_all_del():
+            self.__ethereum_utils.add(self.__account, k)
+        self.__change_set = set()
+        self.__delete_set = set()
 
-def add(account, address, abi_factory, abi_storage, key, value):
-    storage_factory = web3.eth.contract(address=address, abi=abi_factory)
-    storage_address = storage_factory.call().storage_address(account)
-    storage = web3.eth.contract(address=storage_address, abi=abi_storage)
-    transaction_hash = storage_factory.transact({'from': account}).add(key, value)
-    while True:
-        time.sleep(1)
-        print(web3.eth.getTransactionReceipt(transaction_hash))
-        print(storage.call().length())
+    def estimate_cost(self, args: dict) -> int:
+        """
+        Estimates the cost of the storage operation with arguments `args`.
+        """
+        # FIXME: it returns gas count (gas count * gas price = cost in wei)
+        key = args['key']
+        value = args['value']
+        return self.__ethereum_utils.estimate_add_cost(self.__account, key, value)
 
+    def calculate_total_cost(self) -> int:
+        """
+        Calculates the cost of currently cached storage operations.
+        """
+        # FIXME: it returns gas count (gas count * gas price = cost in wei)
+        s = 0
+        for k, v in self.__get_all_add():
+            s += self.__ethereum_utils.estimate_add_cost(self.__account, k, v)
+        for k in self.__get_all_del():
+            s += self.__ethereum_utils.estimate_add_cost(self.__account, k)
+        return s
 
-def get(account, address, abi_factory, abi_storage, x, y):
-    storage_factory = web3.eth.contract(address=address, abi=abi_factory)
-    storage_address = storage_factory.call().storage_address(account)
-    storage = web3.eth.contract(address=storage_address, abi=abi_storage)
-    return storage.call().data(x, y)
+    def balance(self) -> int:
+        """
+        Returns the balance (remaining storage space) of current user.
+        """
+        # FIXME: it returns wei
+        return self.__ethereum_utils.get_balance(self.__account)
 
+    def get_constructor_arguments(self) -> Address:
+        """
+        Returns the arguments list to pass to the constructor.
+        """
+        # TODO: is it necessary to return password?
+        return self.__account
 
-if __name__ == '__main__':
-    account = '0x8ad64a818797ee9735357d4c9f8bb66b9a775e65'
-    # web3.personal.unlockAccount(account, 'password')
-    address = '0x40F2b5cEC3c436F66690ed48E01a48F6Da9Bad17'
-    storage_factory_abi = json.load(open('./ethereum_private/contracts/storage_factory.abi.json'))
-    storage_abi = json.load(open('./ethereum_private/contracts/storage.abi.json'))
-    # add(account, address, storage_factory_abi, storage_abi, 'a', 'b')
-    # new_storage(account, address, storage_factory_abi)
-    print(get(account, address, storage_factory_abi, storage_abi, 0, 0))
+    def size(self) -> int:
+        return len(self.__cache_dict)
+
+    def __setitem__(self, key, value):
+        self.add(key, value)
+
+    def __delitem__(self, key):
+        self.delete(key)
+
+    def __getitem__(self, item):
+        self.get(item)
+
+    def __len__(self):
+        return self.size()

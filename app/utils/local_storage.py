@@ -189,7 +189,6 @@ class LocalStorage:
     def __len__(self):
         return self.size()
 
-    @staticmethod
     class Database:
         def __init__(self, filename):
             """
