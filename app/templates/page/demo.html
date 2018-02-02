@@ -4,7 +4,7 @@
 <head>
     <title>Demo</title>
     <link rel="stylesheet"
-          href="{{ url_for('static', filename='css/mdui.min.css') }}">
+          href="{{ url_for('static', filename='dist/styles.css') }}">
 </head>
 
 <body class="mdui-theme-primary-green mdui-drawer-body-left mdui-appbar-with-toolbar">
@@ -19,22 +19,26 @@
     </header>
 
     <div class="mdui-drawer mdui-color-theme-800" id="left-drawer">
-        <ul class="mdui-list">
-            <li class="mdui-list-item mdui-ripple mdui-list-item-active">All
+        <ul class="mdui-list" id="menu">
+            <li class="mdui-list-item mdui-ripple"
+                id="menu-all">All
             </li>
-            <li class="mdui-list-item mdui-ripple">Passwords</li>
-            <li class="mdui-list-item mdui-ripple">Secret Notes</li>
+            <li class="mdui-list-item mdui-ripple"
+                id="menu-passwords">Passwords
+            </li>
+            <li class="mdui-list-item mdui-ripple"
+                id="menu-secret-notes">Secret Notes
+            </li>
         </ul>
     </div>
 
-    <button class="mdui-fab mdui-ripple mdui-fab-fixed mdui-color-theme">
-        <i class="mdui-icon material-icons">add</i></button>
+    <button class="mdui-fab mdui-ripple mdui-fab-fixed mdui-color-theme"
+            id="fab-add">
+        <i class="mdui-icon material-icons">add</i>
+    </button>
 </div>
 
-<script src="{{ url_for('static', filename='js/mdui.min.js') }}"></script>
+<script src="{{ url_for('static', filename='dist/bundle.js') }}"></script>
 
-<script>
-    var $$ = mdui.JQ;
-</script>
 </body>
 </html>
