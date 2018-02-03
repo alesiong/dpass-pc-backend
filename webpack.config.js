@@ -5,9 +5,12 @@ const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 const webpack = require('webpack');
 
 module.exports = {
-  entry: './app/frontend/app.js',
+  entry: {
+    app: './app/frontend/app.js',
+    vendor: ['mdui', 'js-sha512']
+  },
   output: {
-    filename: 'bundle.js',
+    filename: '[name].bundle.js',
     path: path.resolve(__dirname, 'app/static/dist')
   },
   devtool: 'inline-source-map',
@@ -19,7 +22,7 @@ module.exports = {
         use: {
           loader: 'babel-loader',
           options: {
-            presets: ['env'],
+            presets: ['env', 'flow'],
             plugins: ['transform-runtime']
           }
         }
@@ -51,6 +54,10 @@ module.exports = {
     new webpack.ProvidePlugin({
       $$: ['mdui', 'JQ']
     }),
+    new webpack.optimize.CommonsChunkPlugin({
+      name: 'vendor',
+      minChunks: Infinity
+    })
     // new UglifyJSPlugin()
   ]
 };

@@ -1,9 +1,14 @@
+// @flow
+
 import mdui from 'mdui';
 import sha512 from 'js-sha512';
-import Component from './component'
+import Component from './component';
+import type {App} from './component';
+
+declare var $$: mdui.jQueryStatic;
 
 export class IndexComponent extends Component {
-  onAdd(value) {
+  onAdd(value: string) {
     $$.ajax({
       url: '/api/demo/' + value,
       dataType: 'json',
@@ -12,21 +17,22 @@ export class IndexComponent extends Component {
         mdui.alert(data.echo + '\n' + sha512(data.echo));
       },
       statusCode: {
-        404: (xhr, status) => {
+        '404': (xhr, status) => {
           mdui.alert('Message cannot be empty');
-        }
-      }
+        },
+      },
     });
   }
 
-  constructor(app) {
+  constructor(app: App) {
     super(app);
     const that = this;
     $$('#fab-add').on('click', () => {
       mdui.prompt('Enter a string', that.onAdd,
-        () => {}, {
-          modal: true,
-        });
+          () => {
+          }, {
+            modal: true,
+          });
     });
   }
 }
