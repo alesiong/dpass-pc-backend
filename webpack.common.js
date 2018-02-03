@@ -1,7 +1,6 @@
 const path = require('path');
-const ExtractTextPlugin = require("extract-text-webpack-plugin");
+const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
-const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 const webpack = require('webpack');
 
 module.exports = {
@@ -13,7 +12,6 @@ module.exports = {
     filename: '[name].bundle.js',
     path: path.resolve(__dirname, 'app/static/dist')
   },
-  devtool: 'inline-source-map',
   module: {
     rules: [
       {
@@ -27,13 +25,7 @@ module.exports = {
           }
         }
       },
-      {
-        test: /\.css$/,
-        use: ExtractTextPlugin.extract({
-          fallback: "style-loader",
-          use: "css-loader"
-        })
-      },
+
       {
         test: /\.(woff|woff2|eot|ttf|otf)$/,
         use: [
@@ -50,7 +42,7 @@ module.exports = {
   },
   plugins: [
     new CleanWebpackPlugin(['app/static/dist']),
-    new ExtractTextPlugin("styles.css"),
+    new ExtractTextPlugin('styles.css'),
     new webpack.ProvidePlugin({
       $$: ['mdui', 'JQ']
     }),
@@ -58,6 +50,5 @@ module.exports = {
       name: 'vendor',
       minChunks: Infinity
     })
-    // new UglifyJSPlugin()
   ]
 };

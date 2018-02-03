@@ -8,8 +8,9 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "pack": "webpack --config webpack.config.js",
-    "watch": "webpack --watch",
+    "pack": "webpack --config webpack.dev.js",
+    "watch": "webpack --watch webpack.dev.js",
+    "deploy": "webpack --config webpack.prod.js",
     "flow": "flow"
   },
   "repository": {
@@ -35,7 +36,8 @@
     "flow-bin": "^0.64.0",
     "style-loader": "^0.20.1",
     "uglifyjs-webpack-plugin": "^1.1.8",
-    "webpack": "^3.10.0"
+    "webpack": "^3.10.0",
+    "webpack-merge": "^4.1.1"
   },
   "dependencies": {
     "babel-runtime": "^6.26.0",
