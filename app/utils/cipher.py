@@ -3,18 +3,19 @@ from typing import Tuple, Optional
 from Crypto import Util
 from Crypto.Cipher import AES
 from Crypto.Hash import HMAC, SHA256
+from Crypto.Util import Padding
 
 __fixed_iv = b'*\xfe\xce\xa09\xdep+\x14\xd7SvY6\xcd\xa3'
 
 
 def encrypt(message: bytes, key: bytes, iv: bytes) -> bytes:
     cipher = AES.new(key, AES.MODE_CBC, iv=iv)
-    return cipher.encrypt(Util.Padding.pad(message, 16))
+    return cipher.encrypt(Padding.pad(message, 16))
 
 
 def decrypt(ciphertext: bytes, key: bytes, iv: bytes) -> bytes:
     cipher = AES.new(key, AES.MODE_CBC, iv=iv)
-    return Util.Padding.unpad(cipher.decrypt(ciphertext), 16)
+    return Padding.unpad(cipher.decrypt(ciphertext), 16)
 
 
 def encrypt_fixed_iv(message: bytes, key: bytes) -> bytes:
