@@ -10,22 +10,23 @@ class TestLocalStorage(unittest.TestCase):
         self.storage = LocalStorage('tmp.db')
 
     def test_add_get(self):
-        # size = len(self.storage)
+        size = len(self.storage)
         self.storage.add('a', '1')
-        # TODO: implement the size
-        # assert len(self.storage) == size + 1
-        # assert self.storage.size() == size + 1
+        self.assertEqual(len(self.storage), size + 1)
         self.assertEqual(self.storage.get('a'), '1')
 
         self.storage.add('a', '2')
         self.assertEqual(self.storage.get('a'), '2')
 
     def test_delete(self):
+        size = len(self.storage)
         self.storage.add('a', '1')
         self.assertEqual(self.storage.get('a'), '1')
+        self.assertEqual(len(self.storage), size + 1)
 
         self.storage.delete('a')
         self.assertIsNone(self.storage.get('a'))
+        self.assertEqual(len(self.storage), size)
 
         with self.assertRaises(KeyError):
             self.storage.delete('a')

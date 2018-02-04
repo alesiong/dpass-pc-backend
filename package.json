@@ -1,0 +1,47 @@
+{
+  "name": "dpass-pc-backend",
+  "version": "1.0.0",
+  "description": "This is the web based app of DPass.",
+  "main": "app.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "pack": "webpack --config webpack.dev.js",
+    "watch": "webpack --watch webpack.dev.js",
+    "deploy": "webpack --config webpack.prod.js",
+    "flow": "flow"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alesiong/dpass-pc-backend.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/alesiong/dpass-pc-backend/issues"
+  },
+  "homepage": "https://github.com/alesiong/dpass-pc-backend#readme",
+  "devDependencies": {
+    "babel-core": "^6.26.0",
+    "babel-loader": "^7.1.2",
+    "babel-plugin-transform-runtime": "^6.23.0",
+    "babel-preset-env": "^1.6.1",
+    "babel-preset-flow": "^6.23.0",
+    "clean-webpack-plugin": "^0.1.18",
+    "css-loader": "^0.28.9",
+    "extract-text-webpack-plugin": "^3.0.2",
+    "file-loader": "^1.1.6",
+    "flow-bin": "^0.64.0",
+    "style-loader": "^0.20.1",
+    "uglifyjs-webpack-plugin": "^1.1.8",
+    "webpack": "^3.10.0",
+    "webpack-merge": "^4.1.1"
+  },
+  "dependencies": {
+    "babel-runtime": "^6.26.0",
+    "js-sha512": "^0.7.1",
+    "mdui": "^0.4.0"
+  }
+}

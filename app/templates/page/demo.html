@@ -1,114 +1,46 @@
 <!DOCTYPE html>
-<html lang="{{ tr['lang'] }}">
+<html lang="en">
 
 <head>
-    {% include 'page/common_header.html' %}
-    <title>{{ tr['shuttle_title'] }}</title>
+    <title>Demo</title>
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='dist/styles.css') }}">
 </head>
 
-<body>
-
-<div class="container">
-    <div id="notice">
-        {% for n in notice %}
-
-        <div class="notice panel panel-default" id="{{ n['name'] }}">
-            <div class="panel-heading">
-                <span class="notice-close">
-                    {{ n['desc'] }}
-                    <span class="glyphicon glyphicon-chevron-right"
-                          aria-hidden="true"></span>
-                </span>
-            </div>
-            <div class="notice-detail panel-body" style="display: none;">
-                {% for m in n['message'] %}
-                <p>
-                    {{loop.index}}. {{ m | safe}}
-                </p>
-                {% endfor %}
-            </div>
+<body class="mdui-theme-primary-green mdui-drawer-body-left mdui-appbar-with-toolbar">
+<div class="mdui-container-fluid">
+    <header class="mdui-appbar mdui-appbar-fixed mdui-color-theme-900">
+        <div class="mdui-toolbar">
+            <button class="mdui-btn mdui-btn-icon"
+                    mdui-drawer="{target: '#left-drawer'}">
+                <i class="mdui-icon material-icons">menu</i>
+            </button>
         </div>
-        {% endfor %}
-    </div>
-    <div id="shuttle">
-        <table class="table table-striped rwd-table">
-            <thead>
-            <tr>
-                <th>No</th>
-                <th>{{ tr['shuttle_line'] }}</th>
-                <th>{{ tr['shuttle_service_time'] }}</th>
-            </tr>
-            </thead>
-            <tbody>
-            {% for shuttle in data %}
-            <tr id="shuttle_row_{{ loop.index }}">
-                <td data-th="No.">{{ shuttle['no'] }}</td>
-                <td data-th="{{ tr['shuttle_line'] }}">
-                    {{ shuttle['from'] }} -
-                    {% for pass in shuttle['pass']%}
-                    {{ pass }} -
-                    {% endfor %}
-                    {{ shuttle['to'] }}
-                </td>
-                <td data-th="{{ tr['shuttle_service_time'] }}">
-                    {{ shuttle['week_day_description'] }}:&nbsp;
-                    {% for time in shuttle['service_time'] %}
-                    {{ time['time'][0] }} - {{ time['time'][0] }}
+    </header>
 
-                    ({{tr['shuttle_interval_before']}}
-                    {{ time['interval']//60 }}
-                    {{tr['shuttle_interval_after']}})
-                    &nbsp;
-                    {% endfor %}
-                </td>
-                <td class="visible-xs-block"
-                    style="background: #999; max-height: 1px; padding: 1px;"></td>
-            </tr>
-            {% endfor %}
-            </tbody>
-
-        </table>
-    </div>
-    <div id="bus">
-
+    <div class="mdui-drawer mdui-color-theme-800" id="left-drawer">
+        <ul class="mdui-list" id="menu">
+            <li class="mdui-list-item mdui-ripple"
+                id="menu-all">All
+            </li>
+            <li class="mdui-list-item mdui-ripple"
+                id="menu-passwords">Passwords
+            </li>
+            <li class="mdui-list-item mdui-ripple"
+                id="menu-secret-notes">Secret Notes
+            </li>
+        </ul>
     </div>
 
-    <div id="taxi">
-
-    </div>
-
-
+    <button class="mdui-fab mdui-ripple mdui-fab-fixed mdui-color-theme"
+            id="fab-add">
+        <i class="mdui-icon material-icons">add</i>
+    </button>
 </div>
-{% include 'page/change_lang_button.html' %}
 
-<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-<!--<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>-->
-<script src="https://cdn.jsdelivr.net/jquery/3.2.1/jquery.min.js"
-        integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
-        crossorigin="anonymous"></script>
-<!-- Include all compiled plugins (below), or include individual files as needed -->
-<script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
-<script>
-    shuttle = {{ data|safe }};
-    $(document).ready(function() {
-      $('.notice').click(function() {
-        var banner = $(this).find('.notice-close');
-        if (banner.length === 0) {
-          banner = $(this).find('.notice-open');
-          banner.find('.glyphicon')
-              .attr('class', 'glyphicon glyphicon-chevron-right');
-          banner.attr('class', 'notice-close');
-          $(this).find('.notice-detail').css('display', 'none');
-        } else {
-          banner.find('.glyphicon')
-              .attr('class', 'glyphicon glyphicon-chevron-down');
-          banner.attr('class', 'notice-open');
-          $(this).find('.notice-detail').css('display', 'block');
-        }
-      });
-    });
+<script src="{{ url_for('static', filename='dist/vendor.bundle.js') }}"></script>
+<script src="{{ url_for('static', filename='dist/app.bundle.js') }}"></script>
 
-</script>
 
 </body>
 </html>

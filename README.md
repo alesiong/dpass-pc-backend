@@ -11,22 +11,34 @@ Files under `app/` folder:
 | templates   | dynamic html files (server side render) |
 | views       | code for serving dynamic pages          |
 | utils       | utilities                               |
+| frontend    | frontend files (js, css)                |
 
 Put unit tests under `tests/` folder.
 
 ## Install the requirements
 
+### Python
 ```
 pip install -r requirements.txt
 ```
 
+### Javascript
+```
+npm install
+```
+
 ## Run the server
 
-Run
+First run the webpack watcher:
+```
+npm run watch
+```
+
+Then the flask server:
+
 ```
 python manage.py runserver
 ```
-in the terminal
 
 
 ## Run Unittest
@@ -43,4 +55,4 @@ The server will echo back the message using json, you can change `hello` to any 
 
 * `http://localhost:5000/pages/demo/`
 
-Demo page for school shuttle bus (build with jQuery, bootstrap and some other icon libraries).
+Demo page, build by MDUI.

@@ -48,4 +48,6 @@ def create_app(config_name='development'):
                     values['q'] = int(os.stat(file_path).st_mtime)
             return url_for(endpoint, **values)
 
+    app.config['STORAGE'] = app.config['STORAGE_CLASS']('main')
+
     return app

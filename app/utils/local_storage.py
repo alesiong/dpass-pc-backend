@@ -4,6 +4,7 @@ import os
 import platform
 import sys
 import time
+from pathlib import Path
 from typing import Optional, Union, Tuple
 
 from app.utils.misc import hash_dict
@@ -16,7 +17,6 @@ class LocalStorage:
         create a new database with empty storage, also create a new file for persistent storage.
         Otherwise load the contents from that file.
         """
-        # structure maybe like this {'a': ('b', False)}, which is {key: (value, persistence)}
         self.__cache_dict = {}
 
         self.__change_set = set()
@@ -172,7 +172,7 @@ class LocalStorage:
         """
         Returns the arguments list to pass to the constructor.
         """
-        return self.__database._filename
+        return self.__database.filename
 
     def size(self) -> int:
         return len(self.__cache_dict)
@@ -186,6 +186,9 @@ class LocalStorage:
     def __getitem__(self, item):
         self.get(item)
 
+    def __len__(self):
+        return self.size()
+
     @staticmethod
     class Database:
         def __init__(self, filename):
@@ -194,11 +197,15 @@ class LocalStorage:
             Otherwise, use `filename` for the file.
             """
             if filename:
-                self._filename = filename
+                self.__filename = filename
             else:
-                self._filename = str(int(time.time() * 1000))  # current millisecond
-            if not os.path.exists('./db/%s.json' % self._filename):
-                with open('./db/%s.json' % self._filename, 'w') as f:
+                self.__filename = 'tmp/' + str(int(time.time() * 1000))  # current millisecond
+            whole_filename = './db/%s.json' % self.__filename
+            if not os.path.exists(whole_filename):
+                directory = Path(whole_filename[:whole_filename.rfind('/')])
+                if not directory.exists():
+                    directory.mkdir(parents=True, exist_ok=True)
+                with open(whole_filename, 'w') as f:
                     json.dump([{
                         "pre_block": "",
                         "arguments": {
@@ -211,13 +218,17 @@ class LocalStorage:
             """
             Writes the data to the json file. If the file doesn't exist, produce a new file and write to it.
             """
-            with open('./db/%s.json' % self._filename, 'w') as f:
+            with open('./db/%s.json' % self.__filename, 'w') as f:
                 json.dump(data, f)
 
         def read(self) -> list:
             """
             Returns the data in the json file.
             """
-            with open('./db/%s.json' % self._filename, 'r') as f:
+            with open('./db/%s.json' % self.__filename, 'r') as f:
                 data = json.load(f)
             return data
+
+        @property
+        def filename(self):
+            return self.__filename
