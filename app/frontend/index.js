@@ -12,15 +12,15 @@ export class IndexComponent extends Component {
     $$.ajax({
       url: '/api/demo/' + value,
       dataType: 'json',
-      success: (data, status, xhr) => {
+      success: (data, status) => {
         console.log(status);
         mdui.alert(data.echo + '\n' + sha512(data.echo));
       },
       statusCode: {
-        '404': (xhr, status) => {
+        '404': () => {
           mdui.alert('Message cannot be empty');
-        },
-      },
+        }
+      }
     });
   }
 
@@ -31,7 +31,7 @@ export class IndexComponent extends Component {
       mdui.prompt('Enter a string', that.onAdd,
           () => {
           }, {
-            modal: true,
+            modal: true
           });
     });
   }

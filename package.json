@@ -9,7 +9,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "pack": "webpack --config webpack.dev.js",
-    "watch": "webpack --watch webpack.dev.js",
+    "watch": "webpack --watch --config webpack.dev.js",
     "deploy": "webpack --config webpack.prod.js",
     "flow": "flow"
   },

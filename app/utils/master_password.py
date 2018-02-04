@@ -14,12 +14,6 @@ class MasterPassword:
        b. invertible encryption (either symmetric or asymmetric encryption)
 
     """
-    @classmethod
-    def get_pass(cls) -> 'MasterPassword':
-        """
-        Pops up a native dialog (tkinter) to let user input the master password
-        """
-        pass
 
     def encrypt(self, message):
         """
