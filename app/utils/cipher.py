@@ -59,7 +59,6 @@ def salt_hash(password: str, salt: bytes = None, iteration: int = 1000):
     return password, salt
 from typing import Tuple, Optional
 
-from Crypto import Util
 from Crypto.Cipher import AES
 from Crypto.Hash import HMAC, SHA256
 

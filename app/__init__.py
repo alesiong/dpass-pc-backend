@@ -1,15 +1,19 @@
 import os
+
 from flask import Flask, url_for
 from flask_sqlalchemy import SQLAlchemy
+from multiprocessing import Queue
 
+from app.utils.session_key import SessionKey
 from config import configs
 
 # Instantiate Flask extensions
 db = SQLAlchemy()
 
 
-def create_app(config_name='development'):
-    """Create a Flask applicaction.
+def create_app(config_name='development', queue=None):
+    """
+    Create a Flask applicaction.
     """
     # Instantiate Flask
     app = Flask(__name__)
@@ -28,6 +32,9 @@ def create_app(config_name='development'):
 
     from app.views.demo import bp as demo_blueprint
     app.register_blueprint(demo_blueprint)
+
+    from app.api.session import bp as session_blueprint
+    app.register_blueprint(session_blueprint)
 
     # Jinja2 Filters
     app.jinja_env.filters['str'] = str
@@ -48,6 +55,10 @@ def create_app(config_name='development'):
                     values['q'] = int(os.stat(file_path).st_mtime)
             return url_for(endpoint, **values)
 
-    app.config['STORAGE'] = app.config['STORAGE_CLASS']('main')
+    app.config['QUEUE'] = queue
+
+    @app.before_first_request
+    def startup():
+        SessionKey(app.config['QUEUE'].get())
 
     return app
