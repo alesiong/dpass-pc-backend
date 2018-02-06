@@ -9,11 +9,19 @@ declare var $$: mdui.jQueryStatic;
 
 const fixedIV = 'Kv7OoDnecCsU11N2WTbNow==';
 
+
+/**
+ * Get the hash tag (the string after # in the url) with `key`
+ */
 export function getLocationHashValue(key: string): string | null {
   const matches = location.hash.match(new RegExp(key + '=([^&]*)'));
   return matches ? matches[1] : null;
 }
 
+/**
+ * Use AES and HMAC to encrypt the `message` and generates the authentication token. `message` should be Base64 encoded.
+ * `key` should be a Hex encoded session key.
+ */
 export function encryptAndAuthenticate(message: string, key: string): [string, string] {
   key = CryptoJS.enc.Hex.parse(key);
   const cipher = AES.encrypt(message, key, {
@@ -27,6 +35,10 @@ export function encryptAndAuthenticate(message: string, key: string): [string, s
   return [cipher.toString(CryptoJS.enc.Base64), hmac.toString(CryptoJS.enc.Base64)];
 }
 
+/**
+ * Decrypt and verify the HMAC authentication token. If verification failed, returns `null`. `ciphertext` and `hmac`
+ * should be Base64 encoded.
+ */
 export function decryptAndVerify(ciphertext: string, hmac: string, key: string): ?string {
   key = CryptoJS.enc.Hex.parse(key);
   if (hmacSHA256(CryptoJS.enc.Base64.parse(ciphertext), key).toString(CryptoJS.enc.Base64) === hmac) {
@@ -52,6 +64,9 @@ function toPromise(obj: Object) {
 
 }
 
+/**
+ * Ask the backend for a new session key. `sessionKey` is the old one.
+ */
 export async function refreshSessionKey(sessionKey: string): Promise<string> {
   const [cipher, hmac] = encryptAndAuthenticate('refresh', sessionKey);
 

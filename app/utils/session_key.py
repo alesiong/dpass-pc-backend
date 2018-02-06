@@ -4,6 +4,10 @@ import binascii
 
 
 class SessionKey(metaclass=Singleton):
+    """
+    Manage the session key between frontend and backend. The session key is of random 16 bytes and is encoded by Hex
+    (binascii.hexlify), so the str representation is of 32 characters long.
+    """
     def __init__(self, init_key=None):
         assert init_key is not None
         self.__session_key = init_key

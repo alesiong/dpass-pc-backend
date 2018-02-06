@@ -3,14 +3,18 @@ import binascii
 import time
 from functools import wraps
 
-from flask import request, jsonify
+from flask import request
 
 from app import SessionKey
 from app.utils.cipher import decrypt_and_verify
+from app.utils.error_respond import invalid_post_data, authentication_failure
 from app.utils.exceptions import StateError
 
 
 def session_verify(func):
+    """
+    Decrypt and verify the POST data with session key encrypted. Respond with 401 if verification failed.
+    """
     @wraps(func)
     def __wrapper(*args, **kwargs):
 
@@ -24,12 +28,12 @@ def session_verify(func):
             if decrypted:
                 request.decrypted_data = decrypted
             else:
-                return jsonify(error=''), 401
+                authentication_failure()
 
-        except (KeyError, AttributeError):
-            return jsonify(error=''), 400
+        except (KeyError, TypeError):
+            invalid_post_data()
         except ValueError:
-            return jsonify(error=''), 401
+            authentication_failure()
 
         return func(*args, **kwargs)
 
@@ -37,6 +41,16 @@ def session_verify(func):
 
 
 def check_state(state_name):
+    """
+    Simple decorator to ensure states inside a class before some methods are called.
+
+    This decorator should only be used on a method in class. The class should has an attribute named `state_name`.
+    The check passes if the attribute is `True`. If an attribute named `state_name` + '_util' also exists in the class,
+    the check passes if the attribute `state_name` is `True` and `state_name` + '_util' is less then current time.
+
+    :raise: `StateError` if the check failed
+    """
+
     def __decorator(func):
         @wraps(func)
         def __wrapper(self, *args, **kwargs):
@@ -53,6 +67,10 @@ def check_state(state_name):
 
 
 def check_and_unset_state(state_name):
+    """
+    Similar to the `@check_state`, but unset the state to `False` afterwards.
+    """
+
     def __decorator(func):
         @wraps(func)
         @check_state(state_name)
@@ -67,6 +85,13 @@ def check_and_unset_state(state_name):
 
 
 def set_state(state_name, duration_name=None, duration_default=None):
+    """
+    Set the state to `True` after the function exit. If `duration_name` is set, the state will become a time limited
+    state. The expire time is set in the keyword arguments called `duration_name` of the function. If the keyword
+    arguments is not set, the expire time defaults to `duration_default`
+    `duration_name` and `duration_default` should always be provided together.
+    """
+
     def __decorator(func):
         @wraps(func)
         def __wrapper(self, *args, **kwargs):
@@ -87,6 +112,10 @@ def set_state(state_name, duration_name=None, duration_default=None):
 
 
 def unset_state(state_name):
+    """
+    Unset the state to `False` after the function exit.
+    """
+
     def __decorator(func):
         @wraps(func)
         def __wrapper(self, *args, **kwargs):

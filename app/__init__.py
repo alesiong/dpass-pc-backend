@@ -59,6 +59,7 @@ def create_app(config_name='development', queue=None):
 
     @app.before_first_request
     def startup():
+        print('before')
         SessionKey(app.config['QUEUE'].get())
 
     return app

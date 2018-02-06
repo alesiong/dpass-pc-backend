@@ -9,22 +9,29 @@ from app.utils.decorators import check_and_unset_state
 
 class MasterPassword:
     """
-    Basic ideas:
+    Basic idea:
 
-    1. master password can only be stored in the memory for long time in the form which cannot be converted back to the
-       plaintext of the master password, i.e. master password can be stored in the form of:
+    master password can only be stored in the memory for long time in the form which cannot be converted back to the
+    plaintext of the master password, i.e. master password can be stored in the form of:
 
-       a. hash digest
-       b. salted hash digest
+    a. hash digest
+    b. salted hash digest
 
-       cannot be stored in the form of:
+    cannot be stored in the form of:
 
-       a. plaintext (except temporary storage, like user input)
-       b. invertible encryption (either symmetric or asymmetric encryption)
+    a. plaintext (except temporary storage, like user input)
+    b. invertible encryption (either symmetric or asymmetric encryption)
+
+    A new `MasterPassword` object means an unlock operation on the password storage. When the expiry time passes, the
+    old `MasterPassword` object cannot be used, which means that the user must enter the master password again to
+    unlock the password storage.
 
     """
 
     def __init__(self, password_hash: bytes, salt: bytes, encryption_key: bytes):
+        """
+        You should not call `MasterPassword()` directly, use `new_password` or `verify`
+        """
         self.__password_hash = password_hash
         self.__salt = salt
         self.__encryption_key = encryption_key
@@ -34,6 +41,9 @@ class MasterPassword:
 
     @classmethod
     def new_password(cls, master_password_in_memory: str) -> 'MasterPassword':
+        """
+        User creates a new password.
+        """
         password_hash, salt = salted_hash(master_password_in_memory)
         encryption_key = cls.generate_encryption_key(master_password_in_memory)
         del master_password_in_memory
@@ -43,6 +53,11 @@ class MasterPassword:
 
     @classmethod
     def verify(cls, master_password_in_memory: str) -> Optional['MasterPassword']:
+        """
+        Verify the master password and unlock the password storage.
+
+        :return: `MasterPassword` object if the password is correct. `None` otherwise.
+        """
         salt = b''  # TODO: load the salt from the settings
         password_hash = b''  # TODO: load the hash from the settings
         password_hash_new, _ = salted_hash(master_password_in_memory, salt)
@@ -55,6 +70,12 @@ class MasterPassword:
 
     @staticmethod
     def generate_encryption_key(master_password_in_memory: str, num_iter: int = 10000) -> bytes:
+        """
+        Generate the encryption key from the master password. Do not call this function directly
+        :param master_password_in_memory:
+        :param num_iter:
+        :return:
+        """
         sha512 = SHA512.new(data=master_password_in_memory.encode())
         del master_password_in_memory
         for _ in range(num_iter - 1):
@@ -64,7 +85,7 @@ class MasterPassword:
     @check_and_unset_state('_checked_expire')
     def simple_encrypt(self, message: str) -> bytes:
         """
-        Use master password (actually its hash) to encrypt a message
+        Use master password (actually its hash) to encrypt `message`
         """
         return encrypt_fixed_iv(message.encode(), self.__encryption_key)
 
@@ -74,6 +95,10 @@ class MasterPassword:
 
     @check_and_unset_state('_checked_expire')
     def encrypt(self, message: str, key: str):
+        """
+        Use master password hash and `key` to encrypt `message`. `key` here is actually used to derive new key from the
+        master password hash.
+        """
         encrypt_key = SHA256.new(data=key.encode() + self.__encryption_key).digest()
         return encrypt_fixed_iv(message.encode(), encrypt_key)
 
