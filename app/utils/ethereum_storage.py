@@ -27,7 +27,12 @@ class EthereumStorage:
 
         # TODO: load the blockchain
         # TODO: if we cache the blockchain on the disk, don't forget to do it at `store`
-        # self.__ethereum_utils.get_history(account, 0, self.__storage)
+
+        for k, v in self.__ethereum_utils.get_history(account, 0, self.__storage):
+            if v == "":
+                del self.__cache_dict[k]
+            else:
+                self.__cache_dict[k] = (v, True)
 
         # TODO: current state model for CRUD may need to change to fit the ethereum model:
         # TODO: i.e.: store method cannot return immediately, or the data cannot be put on the chain immediately
@@ -95,10 +100,10 @@ class EthereumStorage:
         """
         return self.__cache_dict
 
-    def __get_all_add(self) -> Generator[Tuple[str, str]]:
-        return (k, v[0] for k, v in self.__cache_dict.items() if not v[1])
+    def __get_all_add(self) -> Generator[Tuple[str, str], None, None]:
+        return ((k, v[0]) for k, v in self.__cache_dict.items() if not v[1])
 
-    def __get_all_del(self) -> Generator[str]:
+    def __get_all_del(self) -> Generator[str, None, None]:
         return (k for k in self.__delete_set)
 
     def store(self):
@@ -107,14 +112,16 @@ class EthereumStorage:
         """
 
         # FIXME: unlock account first
+        self.__ethereum_utils.unlock_account(self.__account, self.__password, duration=2)
+
         # FIXME: use async add
         # TODO: how to determine if a key is really stored? only update persistence if transaction mined?
         for k, v in self.__get_all_add():
-            self.__ethereum_utils.add(self.__account, k, v)
+            self.__ethereum_utils.add_async(self.__account, k, v)
             self.__cache_dict[k] = (v, True)
 
         for k in self.__get_all_del():
-            self.__ethereum_utils.add(self.__account, k)
+            self.__ethereum_utils.add_async(self.__account, k)
         self.__change_set = set()
         self.__delete_set = set()
 

@@ -59,7 +59,7 @@ class EthereumUtils(metaclass=Singleton):
         :return: None if the transaction is mined within the time, or transaction hash if timeout
         """
         transaction_hash = self.__storage_factory.transact({'from': account}).new_storage()
-        return self.__wait_transaction(transaction_hash, timeout)
+        return self.__wait_transaction(transaction_hashimeout)
 
     @check_state('_contracts_initialized')
     @check_state('_account_unlocked')
