@@ -84,10 +84,10 @@ def decrypt_and_verify(ciphertext: bytes, mac: bytes, key: bytes) -> Optional[by
 
     :return: Decrypted `ciphertext` if the HMAC token `mac` is correct. `None` if the verification fails.
     """
-    message = decrypt_fixed_iv(ciphertext, key)
-    hmac = HMAC.new(key, digestmod=SHA256)
-    hmac.update(ciphertext)
     try:
+        message = decrypt_fixed_iv(ciphertext, key)
+        hmac = HMAC.new(key, digestmod=SHA256)
+        hmac.update(ciphertext)
         hmac.verify(mac)
         return message
     except ValueError:

@@ -7,6 +7,7 @@ from app.utils.cipher import salted_hash, encrypt_fixed_iv, decrypt_fixed_iv
 from app.utils.decorators import check_and_unset_state
 
 
+# TODO: unittest
 class MasterPassword:
     """
     Basic idea:

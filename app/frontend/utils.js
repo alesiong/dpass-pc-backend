@@ -19,7 +19,7 @@ export function getLocationHashValue(key: string): string | null {
 }
 
 /**
- * Use AES and HMAC to encrypt the `message` and generates the authentication token. `message` should be Base64 encoded.
+ * Use AES and HMAC to encrypt the `message` and generates the authentication token. `message` should be in plaintext.
  * `key` should be a Hex encoded session key.
  */
 export function encryptAndAuthenticate(message: string, key: string): [string, string] {
