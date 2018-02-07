@@ -5,6 +5,7 @@ from flask_sqlalchemy import SQLAlchemy
 from multiprocessing import Queue
 
 from app.utils.session_key import SessionKey
+from app.utils.settings import Settings
 from config import configs
 
 # Instantiate Flask extensions
@@ -36,6 +37,9 @@ def create_app(config_name='development', queue=None):
     from app.api.session import bp as session_blueprint
     app.register_blueprint(session_blueprint)
 
+    from app.api.master_password import bp as master_password_blueprint
+    app.register_blueprint(master_password_blueprint)
+
     # Jinja2 Filters
     app.jinja_env.filters['str'] = str
 
@@ -59,7 +63,7 @@ def create_app(config_name='development', queue=None):
 
     @app.before_first_request
     def startup():
-        print('before')
         SessionKey(app.config['QUEUE'].get())
+        Settings('db/settings.json')
 
     return app

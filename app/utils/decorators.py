@@ -14,6 +14,7 @@ from app.utils.exceptions import StateError
 def session_verify(func):
     """
     Decrypt and verify the POST data with session key encrypted. Respond with 401 if verification failed.
+    Decrypted data is put in request.decrypted_data
     """
     @wraps(func)
     def __wrapper(*args, **kwargs):
