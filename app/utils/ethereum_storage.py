@@ -117,11 +117,11 @@ class EthereumStorage:
         # FIXME: use async add
         # TODO: how to determine if a key is really stored? only update persistence if transaction mined?
         for k, v in self.__get_all_add():
-            self.__ethereum_utils.add_async(self.__account, k, v)
+            self.__ethereum_utils.add(self.__account, k, v)
             self.__cache_dict[k] = (v, True)
 
         for k in self.__get_all_del():
-            self.__ethereum_utils.add_async(self.__account, k)
+            self.__ethereum_utils.add(self.__account, k)
         self.__change_set = set()
         self.__delete_set = set()
 
