@@ -1,7 +1,6 @@
 // @flow
 
 import mdui from 'mdui';
-import sha512 from 'js-sha512';
 import Component from './component';
 import type {App} from './component';
 
@@ -14,7 +13,7 @@ export class IndexComponent extends Component {
       dataType: 'json',
       success: (data, status) => {
         console.log(status);
-        mdui.alert(data.echo + '\n' + sha512(data.echo));
+        mdui.alert(data.echo);
       },
       statusCode: {
         '404': () => {
