@@ -6,7 +6,7 @@ const webpack = require('webpack');
 module.exports = {
   entry: {
     app: './app/frontend/app.js',
-    vendor: ['mdui', 'js-sha512']
+    vendor: ['mdui', 'crypto-js']
   },
   output: {
     filename: '[name].bundle.js',

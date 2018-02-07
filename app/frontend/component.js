@@ -1,6 +1,6 @@
 // @flow
 
-export type App = Object;
+export type App = { sessionKey: string };
 const components: Array<Class<Component>> = [];
 
 export default class Component {
