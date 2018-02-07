@@ -33,13 +33,15 @@
     </div>
     <div class="mdui-fab-wrapper" mdui-fab="{trigger: 'hover'}">
         <button class="mdui-fab mdui-ripple mdui-color-theme"
-                id="fab-add">
+                id="fab-add"
+                mdui-tooltip="{content: 'New Master Password', position: 'left'}">
             <i class="mdui-icon material-icons">add</i>
         </button>
 
         <div class="mdui-fab-dial">
             <button class="mdui-fab mdui-fab-mini mdui-ripple mdui-color-blue"
-                    id="fab-verify">
+                    id="fab-verify"
+                    mdui-tooltip="{content: 'Verify Master Password', position: 'left'}">
                 <i class="mdui-icon material-icons">verified_user</i>
             </button>
         </div>
