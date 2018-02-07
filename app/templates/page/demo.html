@@ -31,11 +31,19 @@
             </li>
         </ul>
     </div>
+    <div class="mdui-fab-wrapper" mdui-fab="{trigger: 'hover'}">
+        <button class="mdui-fab mdui-ripple mdui-color-theme"
+                id="fab-add">
+            <i class="mdui-icon material-icons">add</i>
+        </button>
 
-    <button class="mdui-fab mdui-ripple mdui-fab-fixed mdui-color-theme"
-            id="fab-add">
-        <i class="mdui-icon material-icons">add</i>
-    </button>
+        <div class="mdui-fab-dial">
+            <button class="mdui-fab mdui-fab-mini mdui-ripple mdui-color-blue"
+                    id="fab-verify">
+                <i class="mdui-icon material-icons">verified_user</i>
+            </button>
+        </div>
+    </div>
 </div>
 
 <script src="{{ url_for('static', filename='dist/vendor.bundle.js') }}"></script>

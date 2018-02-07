@@ -19,6 +19,7 @@ class BaseConfig(object):
     IS_ONLINE = False
 
     STORAGE_CLASS = LocalStorage
+    INIT_STATE = 0  # 0: not initialized, 1: initializing, 2: initialized
 
 
 class DevelopmentTestConfig(BaseConfig):

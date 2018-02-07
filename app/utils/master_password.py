@@ -1,3 +1,4 @@
+import base64
 import datetime
 from typing import Optional
 
@@ -6,8 +7,10 @@ from Crypto.Hash import SHA512, SHA256
 from app.utils.cipher import salted_hash, encrypt_fixed_iv, decrypt_fixed_iv
 from app.utils.decorators import check_and_unset_state
 
-
 # TODO: unittest
+from app.utils.settings import Settings
+
+
 class MasterPassword:
     """
     Basic idea:
@@ -48,7 +51,13 @@ class MasterPassword:
         password_hash, salt = salted_hash(master_password_in_memory)
         encryption_key = cls.generate_encryption_key(master_password_in_memory)
         del master_password_in_memory
-        # TODO: stores the 2 in the settings
+
+        # FIXME: this overwrites the old password (if exists)
+
+        settings = Settings()
+        settings.master_password_hash = base64.encodebytes(password_hash).decode().strip()
+        settings.master_password_hash_salt = base64.encodebytes(salt).decode().strip()
+        settings.write()
 
         return cls(password_hash, salt, encryption_key)
 
@@ -59,8 +68,10 @@ class MasterPassword:
 
         :return: `MasterPassword` object if the password is correct. `None` otherwise.
         """
-        salt = b''  # TODO: load the salt from the settings
-        password_hash = b''  # TODO: load the hash from the settings
+        settings = Settings()
+        # TODO: do we need to call settings.read() here?
+        password_hash = base64.decodebytes(settings.master_password_hash.encode())
+        salt = base64.decodebytes(settings.master_password_hash_salt.encode())
         password_hash_new, _ = salted_hash(master_password_in_memory, salt)
         if password_hash != password_hash_new:
             return None  # not verified
