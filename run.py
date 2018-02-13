@@ -4,6 +4,7 @@ import webbrowser
 from multiprocessing import Process, Queue
 
 from app import create_app
+from app.utils.misc import get_executable, get_os
 from app.utils.session_key import SessionKey
 
 processes = {}
@@ -16,21 +17,24 @@ def main():
     args = parser.parse_args()
 
     app = create_app('development' if args.develop else 'production', queue)
+    if get_os() == 'win32':
+        print('Windows 32-bit is not supported.')
+        exit(1)
+
     server = Process(target=app.run, kwargs={'use_reloader': False})
 
-    # TODO: change the path of `geth`
-    geth = subprocess.Popen(['geth',
-                             '--datadir',
-                             './ethereum_private/data/',
-                             '--ethash.dagdir',
-                             './ethereum_private/data/ethash',
-                             '--networkid',
-                             '1042',
-                             '--targetgaslimit',
-                             '4000000'
-                             ],
-                            stdout=subprocess.DEVNULL,
-                            stderr=subprocess.DEVNULL)
+    processes['geth'] = subprocess.Popen([get_executable('./geth', 'geth'),
+                                          '--datadir',
+                                          './ethereum_private/data/',
+                                          '--ethash.dagdir',
+                                          './ethereum_private/data/ethash',
+                                          '--networkid',
+                                          '1042',
+                                          '--targetgaslimit',
+                                          '4000000'
+                                          ],
+                                         stdout=subprocess.DEVNULL,
+                                         stderr=subprocess.DEVNULL)
 
     init_key = SessionKey.generate_key()
     queue.put(init_key)
@@ -44,6 +48,7 @@ def main():
 def terminate():
     processes['server'].terminate()
     processes['server'].join()
+    processes['geth'].terminate()
     queue.close()
 
 

@@ -11,7 +11,7 @@
   "difficulty": "500000",
   "gasLimit": "2000000",
   "alloc": {
-    "b744a1301ed3ecb0307be224d8d6ba7985cbc183": {
+    "<initial account>": {
       "balance": "100000000000000000000000"
     }
   },

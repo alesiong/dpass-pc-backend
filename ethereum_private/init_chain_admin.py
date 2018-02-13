@@ -62,8 +62,8 @@ if __name__ == '__main__':
     if os.path.exists('data'):
         print(bcolors.FAIL + 'A private chain exists, exiting...' + bcolors.ENDC)
         exit()
-    if not (os.path.exists('genesis.json') and os.path.exists('static-nodes.json') and os.path.exists('contracts')):
-        print(bcolors.FAIL + 'genesis.json, static-nodes.json, and contracts/ should be in this folder'
+    if not (os.path.exists('genesis.json.template') and os.path.exists('static-nodes.json') and os.path.exists('contracts')):
+        print(bcolors.FAIL + 'genesis.json.template, static-nodes.json, and contracts/ should be in this folder'
               + bcolors.ENDC)
         exit()
 
@@ -76,7 +76,7 @@ if __name__ == '__main__':
         os.remove(key_file_name)
         exit()
     with open('tmp.json', 'w') as f:
-        print(open('./genesis.json').read().replace('<initial account>', init_address), file=f)
+        print(open('./genesis.json.template').read().replace('<initial account>', init_address), file=f)
 
     print('Initiating the private blockchain, will assign 10K ETH to the initial account')
     os.system('geth --datadir ./data/ init ./tmp.json')

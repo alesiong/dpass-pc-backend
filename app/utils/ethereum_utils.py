@@ -59,7 +59,7 @@ class EthereumUtils(metaclass=Singleton):
         :return: None if the transaction is mined within the time, or transaction hash if timeout
         """
         transaction_hash = self.__storage_factory.transact({'from': account}).new_storage()
-        return self.__wait_transaction(transaction_hashimeout)
+        return self.__wait_transaction(transaction_hash, timeout)
 
     @check_state('_contracts_initialized')
     @check_state('_account_unlocked')
@@ -142,7 +142,7 @@ class EthereumUtils(metaclass=Singleton):
     def lock_account(self, account: Address):
         self.__personal.lockAccount(account)
 
-    def get_balance(self, account:Address) -> int:
+    def get_balance(self, account: Address) -> int:
         return self.__eth.getBalance(account)
 
     # Utilities
@@ -160,3 +160,15 @@ class EthereumUtils(metaclass=Singleton):
             i += 1
             if i > timeout * (1 / sleep_time):
                 return transaction_hash
+
+
+def initialize_ethereum_account(master_password_in_memory: str) -> Address:
+    ethereum_utils = EthereumUtils()
+    new_account = ethereum_utils.new_account(master_password_in_memory)
+    ethereum_utils.unlock_account(new_account, master_password_in_memory)
+    del master_password_in_memory
+    ethereum_utils.start_mining(new_account)
+    time.sleep(10)
+    ethereum_utils.new_storage(new_account)
+    ethereum_utils.lock_account(new_account)
+    return new_account

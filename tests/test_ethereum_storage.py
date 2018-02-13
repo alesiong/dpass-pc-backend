@@ -5,18 +5,18 @@ import unittest
 
 from web3 import Web3, IPCProvider
 
-from app.utils.ethereum_utils import EthereumUtils
-
 from app.utils.ethereum_storage import EthereumStorage
+from app.utils.ethereum_utils import EthereumUtils
+from app.utils.misc import get_executable, get_env
 
 
 class TestEthereumStorage(unittest.TestCase):
-    account = '0x873f07973039050c013bec5c08409204dde8a81d'
-    password = '123'
+    account = get_env()['ETH_ACC']
+    password = get_env()['ETH_PASS']
 
     @classmethod
     def setUpClass(cls):
-        cls.geth = subprocess.Popen(['geth',
+        cls.geth = subprocess.Popen([get_executable('./geth', 'geth'),
                                      '--datadir',
                                      './ethereum_private/data/',
                                      '--ethash.dagdir',
@@ -32,7 +32,8 @@ class TestEthereumStorage(unittest.TestCase):
         ethereum_utils = EthereumUtils(Web3(IPCProvider('./ethereum_private/data/geth.ipc')))
         storage_factory_abi = json.load(open('./ethereum_private/contracts/storage_factory.abi.json'))
         storage_abi = json.load(open('./ethereum_private/contracts/storage.abi.json'))
-        ethereum_utils.init_contracts('0x40F2b5cEC3c436F66690ed48E01a48F6Da9Bad17', storage_factory_abi, storage_abi)
+        ethereum_utils.init_contracts(get_env()['ETH_STORAGE'], storage_factory_abi, storage_abi)
+        ethereum_utils.start_mining('0x527ca330e344547411bc90f8c4966a3ac17fd642')
 
     @classmethod
     def tearDownClass(cls):
@@ -89,7 +90,6 @@ class TestEthereumStorage(unittest.TestCase):
 
     def test_persistent_storage(self):
         storage = EthereumStorage(self.account, self.password)
-        filename = storage.get_constructor_arguments()
         storage.add('a', '1')
         self.assertFalse(storage.get('a', True)[1])
         storage.store()
@@ -110,4 +110,3 @@ class TestEthereumStorage(unittest.TestCase):
 
         storage = EthereumStorage(self.account, self.password)
         self.assertIsNone(storage.get('a'))
-
