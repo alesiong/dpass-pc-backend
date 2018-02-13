@@ -84,7 +84,7 @@ if __name__ == '__main__':
     os.remove('tmp.json')
 
     print('Linking the static-nodes.json')
-    os.symlink('./static-nodes.json', './data/geth/static-nodes.json')
+    os.symlink('../../static-nodes.json', './data/geth/static-nodes.json')
     print(bcolors.OKGREEN + 'Please edit the static-nodes.json to add more static peers later.' + bcolors.ENDC)
 
     print('Start the geth process')

@@ -33,7 +33,7 @@ class TestEthereumStorage(unittest.TestCase):
         storage_factory_abi = json.load(open('./ethereum_private/contracts/storage_factory.abi.json'))
         storage_abi = json.load(open('./ethereum_private/contracts/storage.abi.json'))
         ethereum_utils.init_contracts(get_env()['ETH_STORAGE'], storage_factory_abi, storage_abi)
-        ethereum_utils.start_mining('0x527ca330e344547411bc90f8c4966a3ac17fd642')
+        ethereum_utils.start_mining(get_env()['ETH_ACC'])
 
     @classmethod
     def tearDownClass(cls):

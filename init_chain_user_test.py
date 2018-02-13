@@ -1,4 +1,5 @@
 import os
+import shutil
 import subprocess
 import time
 from pathlib import Path
@@ -32,36 +33,8 @@ if __name__ == '__main__':
     os.system(get_executable('./geth', 'geth') +
               ' --datadir ./ethereum_private/data/ init ./ethereum_private/genesis.json')
 
-    print('Linking the static-nodes.json')
-    os.symlink('./ethereum_private/static-nodes.json', './ethereum_private/data/geth/static-nodes.json')
-    print(bcolors.OKGREEN + 'Please edit the static-nodes.json to add more static peers later.' + bcolors.ENDC)
+    print('Copying the static-nodes.json')
+    shutil.copyfile('./ethereum_private/static-nodes.json', './ethereum_private/data/geth/static-nodes.json')
 
     os.system(get_executable('./geth', 'geth') +
-              'makedag --datadir ./ethereum_private/data/ init ./ethereum_private/genesis.json')
-
-    # print('Start the geth process')
-    # geth = subprocess.Popen([get_executable('./geth', 'geth'),
-    #                          '--datadir',
-    #                          './ethereum_private/data/',
-    #                          '--ethash.dagdir',
-    #                          './ethereum_private/data/ethash',
-    #                          '--networkid',
-    #                          '1042',
-    #                          '--targetgaslimit',
-    #                          '4000000'
-    #                          ],
-    #                         stdout=subprocess.DEVNULL,
-    #                         stderr=subprocess.DEVNULL
-    #                         )
-    #
-    # # wait for geth to start
-    # time.sleep(5)
-    #
-    # try:
-    #     web3 = Web3(IPCProvider('./ethereum_private/data/geth.ipc'))
-    #     web3.miner.startAutoDAG()
-    #
-    #     print('It will take a lot of time to generate DAG (~3 min)...')
-    #     input()
-    # finally:
-    #     geth.terminate()
+              ' makedag 10 ./ethereum_private/data/ethash')
