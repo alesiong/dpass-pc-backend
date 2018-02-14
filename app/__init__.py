@@ -1,9 +1,12 @@
+import json
 import os
 
 from flask import Flask, url_for
 from flask_sqlalchemy import SQLAlchemy
-from multiprocessing import Queue
+from web3 import Web3, IPCProvider
 
+from app.utils.ethereum_utils import EthereumUtils
+from app.utils.misc import get_env
 from app.utils.session_key import SessionKey
 from app.utils.settings import Settings
 from config import configs
@@ -63,7 +66,13 @@ def create_app(config_name='development', queue=None):
 
     @app.before_first_request
     def startup():
-        SessionKey(app.config['QUEUE'].get())
+        if app.config['QUEUE']:
+            SessionKey(app.config['QUEUE'].get())
+        ethereum_utils = EthereumUtils(Web3(IPCProvider('./ethereum_private/data/geth.ipc')))
+        storage_factory_abi = json.load(open('./ethereum_private/contracts/storage_factory.abi.json'))
+        storage_abi = json.load(open('./ethereum_private/contracts/storage.abi.json'))
+        ethereum_utils.init_contracts(get_env()['ETH_STORAGE'], storage_factory_abi, storage_abi)
+
         Settings('db/settings.json')
 
     return app

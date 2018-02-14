@@ -101,6 +101,8 @@ ENV/
 .mypy_cache/
 
 .idea/
+geth/
+ethereum_private/data/
 
 .DS_Store
 
