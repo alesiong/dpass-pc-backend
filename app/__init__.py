@@ -1,7 +1,6 @@
 import json
 import os
 
-from app.utils.settings import Settings
 from flask import Flask, url_for
 from flask_sqlalchemy import SQLAlchemy
 from web3 import Web3, IPCProvider
@@ -9,6 +8,7 @@ from web3 import Web3, IPCProvider
 from app.utils.ethereum_utils import EthereumUtils
 from app.utils.misc import get_env
 from app.utils.session_key import SessionKey
+from app.utils.settings import Settings
 from config import configs
 
 # Instantiate Flask extensions

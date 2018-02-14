@@ -28,36 +28,36 @@ if __name__ == '__main__':
     print('Copying the static-nodes.json')
     shutil.copyfile('./ethereum_private/static-nodes.json', './ethereum_private/data/geth/static-nodes.json')
 
-    os.system(get_executable('./geth', 'geth') +
-              ' makedag 10 ./ethereum_private/data/ethash')
+    # os.system(get_executable('./geth', 'geth') + ' makedag 10 ./ethereum_private/data/ethash')
+
+    password = getpass.getpass('Please input the password for the new account:')
 
     print('Start the geth process')
     geth = subprocess.Popen([get_executable('./geth', 'geth'),
                              '--datadir',
-                             './data/',
+                             './ethereum_private/data/',
                              '--ethash.dagdir',
-                             './data/ethash',
+                             './ethereum_private/data/ethash',
                              '--networkid',
                              '1042',
                              '--targetgaslimit',
                              '4000000'
                              ],
-                            stdout=subprocess.DEVNULL,
-                            stderr=subprocess.DEVNULL
+                            stdout=subprocess.DEVNULL
+                            # stderr=subprocess.DEVNULL
                             )
 
     # wait for geth to start
     time.sleep(5)
 
     try:
-        web3 = Web3(IPCProvider('./data/geth.ipc'))
         ethereum_utils = EthereumUtils(Web3(IPCProvider('./ethereum_private/data/geth.ipc')))
         storage_factory_abi = json.load(open('./ethereum_private/contracts/storage_factory.abi.json'))
         storage_abi = json.load(open('./ethereum_private/contracts/storage.abi.json'))
         ethereum_utils.init_contracts(get_env()['ETH_STORAGE'], storage_factory_abi, storage_abi)
-        password = getpass.getpass('Please input the password for the new account:')
         account = initialize_ethereum_account(password)
-        print('Please remember this account: ', account)
+        print('Please remember this account: ' + account)
         print('along with the password')
+        time.sleep(10)
     finally:
         geth.terminate()
