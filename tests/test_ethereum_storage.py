@@ -68,7 +68,7 @@ class TestEthereumStorage(unittest.TestCase):
         self.assertEqual(self.storage.get('a'), '2')
 
     def test_get_time_complexity(self):
-        test_times = 1000
+        test_times = 100000
         dummy_elements = 1000
 
         self.storage.add('a', '1')
