@@ -1,9 +1,8 @@
 import hashlib
 import json
+import os
 import platform
 from typing import NewType
-
-import os
 
 
 def sha2(s: str) -> str:
@@ -43,9 +42,11 @@ def get_os() -> str:
 
 def get_executable(path: str, name: str) -> str:
     os = get_os()
+    result = '/'.join((path, os, name))
     if os.startswith('win'):
-        name += '.exe'
-    return '/'.join((path, os, name))
+        result += '.exe'
+        result = result.replace('/', '\\')
+    return result
 
 
 def get_env() -> dict:
@@ -56,3 +57,9 @@ def get_env() -> dict:
             if len(var) == 2:
                 result[var[0]] = var[1]
     return result
+
+
+def get_ipc(path: str, name: str) -> str:
+    if get_os().startswith('win'):
+        return '\\\\.\\pipe\\' + name
+    return '/'.join((path, name))

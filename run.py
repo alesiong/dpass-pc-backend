@@ -2,6 +2,7 @@ import argparse
 import subprocess
 import webbrowser
 from multiprocessing import Process, Queue
+from threading import Thread
 
 from app import create_app
 from app.utils.misc import get_executable, get_os
@@ -17,11 +18,15 @@ def main():
     args = parser.parse_args()
 
     app = create_app('development' if args.develop else 'production', queue)
-    if get_os() == 'win32':
+    os = get_os()
+    if os == 'win32':
         print('Windows 32-bit is not supported.')
         exit(1)
 
-    server = Process(target=app.run, kwargs={'use_reloader': False})
+    if os.startswith('win'):
+        server = Thread(target=app.run, kwargs={'use_reloader': False}, daemon=True)
+    else:
+        server = Process(target=app.run, kwargs={'use_reloader': False})
 
     processes['geth'] = subprocess.Popen([get_executable('./geth', 'geth'),
                                           '--datadir',
@@ -46,8 +51,9 @@ def main():
 
 
 def terminate():
-    processes['server'].terminate()
-    processes['server'].join()
+    if isinstance(processes['server'], Process):
+        processes['server'].terminate()
+        processes['server'].join()
     processes['geth'].terminate()
     queue.close()
 
