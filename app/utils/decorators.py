@@ -5,10 +5,10 @@ from functools import wraps
 
 from flask import request
 
-from app import SessionKey
 from app.utils.cipher import decrypt_and_verify
 from app.utils.error_respond import invalid_post_data, authentication_failure
 from app.utils.exceptions import StateError
+from app.utils.session_key import SessionKey
 
 
 def session_verify(func):
@@ -16,6 +16,7 @@ def session_verify(func):
     Decrypt and verify the POST data with session key encrypted. Respond with 401 if verification failed.
     Decrypted data is put in request.decrypted_data
     """
+
     @wraps(func)
     def __wrapper(*args, **kwargs):
 
