@@ -5,6 +5,7 @@ import unittest
 
 from web3 import Web3, IPCProvider
 
+from app import get_ipc
 from app.utils.ethereum_utils import EthereumUtils
 from app.utils.exceptions import StateError
 
@@ -28,7 +29,7 @@ class TestEthereumUtils(unittest.TestCase):
                                     stdout=subprocess.DEVNULL,
                                     stderr=subprocess.DEVNULL)
         time.sleep(5)
-        ethereum_utils = EthereumUtils(Web3(IPCProvider('./ethereum_private/data/geth.ipc')))
+        ethereum_utils = EthereumUtils(Web3(IPCProvider(get_ipc('./ethereum_private/data', 'geth.ipc'))))
         storage_factory_abi = json.load(open('./ethereum_private/contracts/storage_factory.abi.json'))
         storage_abi = json.load(open('./ethereum_private/contracts/storage.abi.json'))
         ethereum_utils.init_contracts('0x40F2b5cEC3c436F66690ed48E01a48F6Da9Bad17', storage_factory_abi, storage_abi)

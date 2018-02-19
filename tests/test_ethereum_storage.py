@@ -7,7 +7,7 @@ from web3 import Web3, IPCProvider
 
 from app.utils.ethereum_storage import EthereumStorage
 from app.utils.ethereum_utils import EthereumUtils
-from app.utils.misc import get_executable, get_env
+from app.utils.misc import get_executable, get_env, get_ipc
 
 
 class TestEthereumStorage(unittest.TestCase):
@@ -29,7 +29,7 @@ class TestEthereumStorage(unittest.TestCase):
                                     stdout=subprocess.DEVNULL,
                                     stderr=subprocess.DEVNULL)
         time.sleep(5)
-        ethereum_utils = EthereumUtils(Web3(IPCProvider('./ethereum_private/data/geth.ipc')))
+        ethereum_utils = EthereumUtils(Web3(IPCProvider(get_ipc('./ethereum_private/data', 'geth.ipc'))))
         storage_factory_abi = json.load(open('./ethereum_private/contracts/storage_factory.abi.json'))
         storage_abi = json.load(open('./ethereum_private/contracts/storage.abi.json'))
         ethereum_utils.init_contracts(get_env()['ETH_STORAGE'], storage_factory_abi, storage_abi)
