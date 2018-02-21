@@ -108,3 +108,5 @@ ethereum_private/data/
 
 /db/
 /node_modules/
+
+*.sqlite
