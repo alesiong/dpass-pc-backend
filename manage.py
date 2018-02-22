@@ -13,7 +13,7 @@ try:
 except ImportError:
     from unittest.runner import TextTestRunner
 
-from flask_migrate import MigrateCommand
+from flask_migrate import MigrateCommand, Migrate
 from flask_script import Manager, Shell, Server
 
 from app import create_app, db
@@ -21,6 +21,7 @@ from app import create_app, db
 # Setup Flask-Script with command line commands
 app = create_app()
 manager = Manager(app)
+migrate = Migrate(app, db)
 
 
 @manager.command
