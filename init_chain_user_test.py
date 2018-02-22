@@ -10,7 +10,7 @@ from web3 import Web3, IPCProvider
 
 from app import EthereumUtils
 from app.utils.ethereum_utils import initialize_ethereum_account
-from app.utils.misc import get_executable, get_env
+from app.utils.misc import get_executable, get_env, get_ipc
 
 if __name__ == '__main__':
     cwd = Path('ethereum_private')
@@ -51,7 +51,7 @@ if __name__ == '__main__':
     time.sleep(5)
 
     try:
-        ethereum_utils = EthereumUtils(Web3(IPCProvider('./ethereum_private/data/geth.ipc')))
+        ethereum_utils = EthereumUtils(Web3(IPCProvider(get_ipc('./ethereum_private/data', 'geth.ipc'))))
         storage_factory_abi = json.load(open('./ethereum_private/contracts/storage_factory.abi.json'))
         storage_abi = json.load(open('./ethereum_private/contracts/storage.abi.json'))
         ethereum_utils.init_contracts(get_env()['ETH_STORAGE'], storage_factory_abi, storage_abi)
