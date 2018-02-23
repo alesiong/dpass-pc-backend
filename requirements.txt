@@ -17,4 +17,3 @@ six==1.11.0
 SQLAlchemy==1.2.1
 web3==3.16.4
 Werkzeug==0.14.1
-pycryptodome==3.4.8
