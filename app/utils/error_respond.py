@@ -7,3 +7,7 @@ def authentication_failure():
 
 def invalid_post_data():
     abort(make_response(jsonify(error='Invalid POST Data'), 400))
+
+
+def invalid_arguments():
+    abort(make_response(jsonify(error='Invalid Arguments'), 400))

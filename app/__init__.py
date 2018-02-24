@@ -44,6 +44,12 @@ def create_app(config_name='development', queue=None):
     from app.api.master_password import bp as master_password_blueprint
     app.register_blueprint(master_password_blueprint)
 
+    from app.api.settings import bp as settings_blueprint
+    app.register_blueprint(settings_blueprint)
+
+    from app.api.password import bp as password_blueprint
+    app.register_blueprint(password_blueprint)
+
     # Jinja2 Filters
     app.jinja_env.filters['str'] = str
 
