@@ -80,7 +80,7 @@ def create_app(config_name='development', queue=None):
         Settings('db/settings.json')
         app.config['STORAGE'] = LocalStorage('chain')
 
-        # FIXME: should the operating system be consi
+        # FIXME: should the operating system be considered ?
         sync_from_cloud_thread = Thread(target=sync_from_cloud, daemon=True)
         sync_to_cloud_thread = Thread(target=sync_to_cloud, daemon=True)
 
