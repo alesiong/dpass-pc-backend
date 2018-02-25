@@ -13,7 +13,7 @@ from app.utils.settings import Settings
 from config import configs
 
 from threading import Thread
-from app.api.storage_manage import sync_from_cloud, sync_to_cloud
+from app.utils.storage_manage_utils import sync_from_cloud, sync_to_cloud
 
 # Instantiate Flask extensions
 db = SQLAlchemy()
