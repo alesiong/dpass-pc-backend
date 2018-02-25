@@ -12,6 +12,9 @@ from app.utils.session_key import SessionKey
 from app.utils.settings import Settings
 from config import configs
 
+from threading import Thread
+from app.api.storage_manage import sync_from_cloud, sync_to_cloud
+
 # Instantiate Flask extensions
 db = SQLAlchemy()
 
@@ -85,5 +88,13 @@ def create_app(config_name='development', queue=None):
     @app.route('/<path:path>')
     def index(path):
         return render_template('page/index.html')
+
+        # FIXME: should the operating system be consi
+        sync_from_cloud_thread = Thread(target=sync_from_cloud, daemon=True)
+        sync_to_cloud_thread = Thread(target=sync_to_cloud, daemon=True)
+
+        sync_from_cloud_thread.start()
+        sync_to_cloud_thread.start()
+
 
     return app
