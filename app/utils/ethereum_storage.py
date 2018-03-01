@@ -111,17 +111,25 @@ class EthereumStorage:
         Synchronize the changes with underlying database.
         """
 
-        # FIXME: unlock account first
-        self.__ethereum_utils.unlock_account(self.__account, self.__password, duration=2)
+        self.__ethereum_utils.unlock_account(self.__account, self.__password, duration=60)
 
         # FIXME: use async add
         # TODO: how to determine if a key is really stored? only update persistence if transaction mined?
+        add_list = []
         for k, v in self.__get_all_add():
-            self.__ethereum_utils.add(self.__account, k, v)
-            self.__cache_dict[k] = (v, True)
+            add_list.append((k, v, self.__ethereum_utils.add_async(self.__account, k, v)))
 
         for k in self.__get_all_del():
-            self.__ethereum_utils.add(self.__account, k)
+            add_list.append((None, None, self.__ethereum_utils.add_async(self.__account, k)))
+
+        finished = set()
+        while len(finished) < len(add_list):
+            for k, v, h in add_list:
+                if h not in finished and self.__ethereum_utils.get_transaction_receipt(h):
+                    finished.add(h)
+                    if k:
+                        self.__cache_dict[k] = (v, True)
+
         self.__change_set = set()
         self.__delete_set = set()
 
