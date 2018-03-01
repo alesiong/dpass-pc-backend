@@ -13,7 +13,7 @@ from app.utils.settings import Settings
 from config import configs
 
 from threading import Thread
-from app.utils.storage_manage_utils import sync_from_cloud, sync_to_cloud
+from app.utils.storage_manage_utils import synchronization
 
 # Instantiate Flask extensions
 db = SQLAlchemy()
@@ -90,11 +90,9 @@ def create_app(config_name='development', queue=None):
         return render_template('page/index.html')
 
         # FIXME: should the operating system be considered ?
-        sync_from_cloud_thread = Thread(target=sync_from_cloud, daemon=True)
-        sync_to_cloud_thread = Thread(target=sync_to_cloud, daemon=True)
+        synchronization_thread = Thread(target=synchronization, daemon=True)
 
-        sync_from_cloud_thread.start()
-        sync_to_cloud_thread.start()
+        synchronization_thread.start()
 
 
     return app
