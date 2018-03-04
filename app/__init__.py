@@ -1,7 +1,7 @@
 import json
 import os
 
-from flask import Flask, url_for
+from flask import Flask, url_for, render_template
 from flask_sqlalchemy import SQLAlchemy
 from web3 import Web3, IPCProvider
 
@@ -82,5 +82,9 @@ def create_app(config_name='development', queue=None):
 
         Settings('db/settings.json')
         app.config['STORAGE'] = LocalStorage('chain')
+
+    @app.route('/')
+    def index():
+        return render_template('page/index.html')
 
     return app
