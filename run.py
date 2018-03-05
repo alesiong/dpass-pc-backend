@@ -46,7 +46,7 @@ def main():
 
     processes['server'] = server
     server.start()
-    webbrowser.open_new_tab('http://localhost:5000/pages/demo/#key=' + init_key)
+    webbrowser.open_new_tab('http://localhost:5000/#/?key=' + init_key)
     print(init_key)
 
 
