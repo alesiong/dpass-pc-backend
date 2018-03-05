@@ -12,8 +12,6 @@ from app.utils.session_key import SessionKey
 from app.utils.settings import Settings
 from config import configs
 
-from threading import Thread
-from app.utils.storage_manage_utils import synchronization
 
 # Instantiate Flask extensions
 db = SQLAlchemy()
@@ -89,10 +87,6 @@ def create_app(config_name='development', queue=None):
     def index(path):
         return render_template('page/index.html')
 
-        # FIXME: should the operating system be considered ?
-        synchronization_thread = Thread(target=synchronization, daemon=True)
-
-        synchronization_thread.start()
 
 
     return app
