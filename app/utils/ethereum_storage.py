@@ -3,6 +3,9 @@ from typing import Optional, Union, Tuple, Generator, Dict, Set
 from app.utils.ethereum_utils import EthereumUtils
 from app.utils.misc import Address
 
+from threading import Thread
+import time
+
 
 class EthereumStorage:
     def __init__(self, account: Address, password: str):
@@ -28,15 +31,16 @@ class EthereumStorage:
         # TODO: load the blockchain
         # TODO: if we cache the blockchain on the disk, don't forget to do it at `store`
 
-        for k, v in self.__ethereum_utils.get_history(account, 0, self.__storage):
-            if v == "":
-                del self.__cache_dict[k]
-            else:
-                self.__cache_dict[k] = (v, True)
+
 
         # TODO: current state model for CRUD may need to change to fit the ethereum model:
         # TODO: i.e.: store method cannot return immediately, or the data cannot be put on the chain immediately
         # TODO: also need to consider how/when to update(download/sync) data from blockchain
+
+
+        # FIXME: should the operating system be considered ?
+        self.synchronization_thread = Thread(target=self.synchronization, daemon=True)
+        self.synchronization_thread.start()
 
     def add(self, k: str, v: str):
         """
@@ -167,6 +171,25 @@ class EthereumStorage:
         """
         # TODO: is it necessary to return password?
         return self.__account
+
+    def load_blockchain(self):
+        for k, v in self.__ethereum_utils.get_history(self.account, 0, self.__storage):
+            if v == "":
+                del self.__cache_dict[k]
+            else:
+                self.__cache_dict[k] = (v, True)
+
+    def synchronization(self):
+        sync_interval = 600
+        store_interval = 3600
+        while True:
+            duration = 0
+            for i in range(store_interval // sync_interval):
+                self.load_blockchain()
+                time.sleep(sync_interval)
+                duration += sync_interval
+            time.sleep(store_interval - duration)
+            self.store()
 
     def size(self) -> int:
         return len(self.__cache_dict)
