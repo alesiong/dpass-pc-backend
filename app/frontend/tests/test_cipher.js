@@ -1,5 +1,5 @@
 import test from 'unit.js';
-import {encryptAndAuthenticate, decryptAndVerify} from '../utils';
+import {encryptAndAuthenticate, decryptAndVerify} from '../src/utils';
 
 const key = '30313233343536373839616263646566';
 const hmacEncrypted = 'os/PLmm+3T8Hb0zZAEBH7A==';
