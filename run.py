@@ -28,25 +28,25 @@ def main():
     else:
         server = Process(target=app.run, kwargs={'use_reloader': False})
 
-    processes['geth'] = subprocess.Popen([get_executable('./geth', 'geth'),
-                                          '--datadir',
-                                          './ethereum_private/data/',
-                                          '--ethash.dagdir',
-                                          './ethereum_private/data/ethash',
-                                          '--networkid',
-                                          '1042',
-                                          '--targetgaslimit',
-                                          '4000000'
-                                          ],
-                                         stdout=subprocess.DEVNULL,
-                                         stderr=subprocess.DEVNULL)
+    # processes['geth'] = subprocess.Popen([get_executable('./geth', 'geth'),
+    #                                       '--datadir',
+    #                                       './ethereum_private/data/',
+    #                                       '--ethash.dagdir',
+    #                                       './ethereum_private/data/ethash',
+    #                                       '--networkid',
+    #                                       '1042',
+    #                                       '--targetgaslimit',
+    #                                       '4000000'
+    #                                       ],
+    #                                      stdout=subprocess.DEVNULL,
+    #                                      stderr=subprocess.DEVNULL)
 
     init_key = SessionKey.generate_key()
     queue.put(init_key)
 
     processes['server'] = server
     server.start()
-    webbrowser.open_new_tab('http://localhost:5000/#/?key=' + init_key)
+    webbrowser.open_new_tab('http://localhost:5000/?key=' + init_key)
     print(init_key)
 
 
@@ -54,7 +54,7 @@ def terminate():
     if isinstance(processes['server'], Process):
         processes['server'].terminate()
         processes['server'].join()
-    processes['geth'].terminate()
+    # processes['geth'].terminate()
     queue.close()
 
 
