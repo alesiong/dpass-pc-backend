@@ -1,6 +1,6 @@
 <template>
     <div id="app">
-        <div class="mdui-container-fluid">
+        <div class="mdui-container-fluid app-container">
             <app-header/>
             <app-menu/>
 
