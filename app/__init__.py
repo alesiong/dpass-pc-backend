@@ -75,16 +75,18 @@ def create_app(config_name='development', queue=None):
     def startup():
         if app.config['QUEUE']:
             SessionKey(app.config['QUEUE'].get())
-        ethereum_utils = EthereumUtils(Web3(IPCProvider(get_ipc('./ethereum_private/data', 'geth.ipc'))))
-        storage_factory_abi = json.load(open('./ethereum_private/contracts/storage_factory.abi.json'))
-        storage_abi = json.load(open('./ethereum_private/contracts/storage.abi.json'))
-        ethereum_utils.init_contracts(get_env()['ETH_STORAGE'], storage_factory_abi, storage_abi)
+
+        # ethereum_utils = EthereumUtils(Web3(IPCProvider(get_ipc('./ethereum_private/data', 'geth.ipc'))))
+        # storage_factory_abi = json.load(open('./ethereum_private/contracts/storage_factory.abi.json'))
+        # storage_abi = json.load(open('./ethereum_private/contracts/storage.abi.json'))
+        # ethereum_utils.init_contracts(get_env()['ETH_STORAGE'], storage_factory_abi, storage_abi)
 
         Settings('db/settings.json')
         app.config['STORAGE'] = LocalStorage('chain')
 
-    @app.route('/')
-    def index():
+    @app.route('/', defaults={'path': ''})
+    @app.route('/<path:path>')
+    def index(path):
         return render_template('page/index.html')
 
     return app

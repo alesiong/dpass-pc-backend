@@ -1,14 +1,19 @@
 <template>
+    <!--TODO: here are the navigation menu-->
     <div class="mdui-drawer mdui-color-theme-800" id="left-drawer">
         <ul class="mdui-list" id="menu">
-            <li class="mdui-list-item mdui-ripple"
-                id="menu-all">All
-            </li>
-            <li class="mdui-list-item mdui-ripple"
-                id="menu-passwords">Passwords
-            </li>
-            <li class="mdui-list-item mdui-ripple"
-                id="menu-secret-notes">Secret Notes
+            <router-link class="mdui-list-item mdui-ripple"
+                         to="/"
+                         exact-active-class="mdui-list-item-active">
+                All
+            </router-link>
+            <router-link class="mdui-list-item mdui-ripple"
+                         to="/password/"
+                         exact-active-class="mdui-list-item-active">
+                Passwords
+            </router-link>
+            <li class="mdui-list-item mdui-ripple">
+                Secret Notes
             </li>
         </ul>
     </div>

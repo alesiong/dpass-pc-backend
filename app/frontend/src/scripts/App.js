@@ -10,7 +10,6 @@ export default {
   },
   name: 'App',
   created: function() {
-    console.log(this.$route);
     let sessionKey = this.$route.query.key;
     if (sessionKey) {
       this.$router.replace('/');
