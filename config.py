@@ -2,9 +2,7 @@
 
 import os
 
-from app.utils.local_storage import LocalStorage
-
-basedir = os.path.abspath(os.path.dirname(__file__))
+basedir = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'db')
 
 
 class BaseConfig(object):
@@ -18,7 +16,7 @@ class BaseConfig(object):
 
     IS_ONLINE = False
 
-    STORAGE_CLASS = LocalStorage
+    INIT_STATE = 0  # 0: not initialized, 1: initializing, 2: initialized
 
 
 class DevelopmentTestConfig(BaseConfig):

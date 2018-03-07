@@ -189,7 +189,6 @@ class LocalStorage:
     def __len__(self):
         return self.size()
 
-    @staticmethod
     class Database:
         def __init__(self, filename):
             """
@@ -203,8 +202,7 @@ class LocalStorage:
             whole_filename = './db/%s.json' % self.__filename
             if not os.path.exists(whole_filename):
                 directory = Path(whole_filename[:whole_filename.rfind('/')])
-                if not directory.exists():
-                    directory.mkdir(parents=True, exist_ok=True)
+                directory.mkdir(parents=True, exist_ok=True)
                 with open(whole_filename, 'w') as f:
                     json.dump([{
                         "pre_block": "",
