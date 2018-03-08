@@ -1,5 +1,6 @@
 import base64
 import binascii
+import random
 
 from flask import Blueprint, current_app, jsonify, request, json
 
@@ -57,3 +58,17 @@ def get():
     # FIXME: what if key does not exist
     password_entry = base64.decodebytes(current_app.config['STORAGE'].get(key))
     return SessionKey().encrypt_response(master_password.decrypt(password_entry, key))
+
+
+@bp.route('/new/', methods=['POST'])
+@session_verify
+@master_password_verify
+def new():
+    master_password: MasterPassword = current_app.config['MASTER_PASSWORD']
+    new_key = random.random()
+    while KeyLookupTable.query.filter_by(key=new_key).count() != 0:
+        new_key = random.random()
+    data = json.loads(request.decrypted_data.decode())
+    KeyLookupTable.new_entry(new_key, data)
+    current_app.config['STORAGE'].add(new_key, data)
+    return new_key
