@@ -23,12 +23,21 @@
                 <input class="mdui-textfield-input" type="text"
                        v-model="userId"/>
             </div>
-
-            <div class="mdui-textfield">
-                <i class="mdui-icon material-icons">vpn_key</i>
-                <label class="mdui-textfield-label">Password</label>
-                <input class="mdui-textfield-input" type="password"
-                       v-model="password"/>
+            <div class="mdui-row">
+                <div class="mdui-col-xs-9">
+                    <div class="mdui-textfield">
+                        <i class="mdui-icon material-icons">vpn_key</i>
+                        <label class="mdui-textfield-label">Password</label>
+                        <input class="mdui-textfield-input" type="password"
+                               v-model="password"/>
+                    </div>
+                </div>
+                <div class="mdui-col-xs-3">
+                <button class="mdui-btn mdui-ripple generate-buttom">
+                    <i class="mdui-icon mdui-icon-left material-icons">autorenew</i>
+                    generate key
+                </button>
+                </div>
             </div>
         </div>
         <div class="mdui-dialog-actions">
@@ -36,10 +45,7 @@
                       v-if="!valid">
                     Warning: All entries should be filled.
                 </span>
-            <button class="mdui-btn mdui-ripple">
-                <i class="mdui-icon mdui-icon-left material-icons">autorenew</i>
-                generate key
-            </button>
+
             <button class="mdui-btn mdui-ripple" mdui-dialog-close>
                 cancel
             </button>
@@ -57,9 +63,12 @@
 
 <style scoped>
     .dialog-warn {
-        padding-top: 16px;
+        padding-top: 10px;
         margin-left: 72px;
         color: #FF1744;
     }
-
+    .generate-buttom{
+        /*padding-top: 16px;*/
+        margin-top: 44px;
+    }
 </style>
