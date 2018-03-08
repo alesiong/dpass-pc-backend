@@ -3,11 +3,12 @@ import binascii
 import time
 from functools import wraps
 
-from flask import request
+from flask import request, current_app
 
 from app.utils.cipher import decrypt_and_verify
 from app.utils.error_respond import invalid_post_data, authentication_failure
 from app.utils.exceptions import StateError
+from app.utils.master_password import MasterPassword
 from app.utils.session_key import SessionKey
 
 
@@ -35,6 +36,19 @@ def session_verify(func):
         except (KeyError, TypeError):
             invalid_post_data()
         except ValueError:
+            authentication_failure()
+
+        return func(*args, **kwargs)
+
+    return __wrapper
+
+
+def master_password_verify(func):
+    @wraps(func)
+    def __wrapper(*args, **kwargs):
+        master_password: MasterPassword = current_app.config['MASTER_PASSWORD']
+        expired = master_password.check_expire()
+        if expired:
             authentication_failure()
 
         return func(*args, **kwargs)

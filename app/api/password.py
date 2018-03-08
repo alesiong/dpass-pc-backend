@@ -1,12 +1,12 @@
 import base64
 import binascii
+
 from flask import Blueprint, current_app, jsonify, request, json
 
-from app import SessionKey, LocalStorage
+from app import SessionKey
 from app.models import KeyLookupTable
-from app.utils import error_respond
 from app.utils.cipher import encrypt_and_authenticate
-from app.utils.decorators import session_verify
+from app.utils.decorators import session_verify, master_password_verify
 from app.utils.master_password import MasterPassword
 
 bp = Blueprint('api.password', __name__, url_prefix='/api/password')
@@ -14,12 +14,10 @@ bp = Blueprint('api.password', __name__, url_prefix='/api/password')
 
 @bp.route('/')
 @session_verify
+@master_password_verify
 def get_table():
     key = SessionKey().session_key
     master_password: MasterPassword = current_app.config['MASTER_PASSWORD']
-    expired = master_password.check_expire()
-    if expired:
-        error_respond.authentication_failure()
     hidden = request.args.get('hidden')
     if hidden:
         entries = KeyLookupTable.query.filter_by(hidden=False).all()
@@ -35,36 +33,27 @@ def get_table():
         } for entry in entries
     ]
 
-    data, hmac = encrypt_and_authenticate(json.dumps(entries).encode(),
-                                          binascii.unhexlify(key))
-    return jsonify(data=base64.encodebytes(data).decode().strip(),
-                   hmac=base64.encodebytes(hmac).decode().strip())
+    return SessionKey().encrypt_response(entries)
 
 
 @bp.route('/persistent/', methods=['POST'])
 @session_verify
+# FIXME: this may not need to verify the master password
+@master_password_verify
 def persistent():
-    master_password: MasterPassword = current_app.config['MASTER_PASSWORD']
-    expired = master_password.check_expire()
-    if expired:
-        error_respond.authentication_failure()
-    data = request.decrypted_data.decode()
-    entry = current_app.config['STORAGE'].get(json.loads(data)["key"], True)[1]
-    return jsonify(result=entry)
+    data = json.loads(request.decrypted_data.decode())
+    key = data["key"]
+    persistence = current_app.config['STORAGE'].get(key, True)[1]
+    return jsonify(result=persistence)
 
 
 @bp.route('/get/', methods=['POST'])
 @session_verify
+@master_password_verify
 def get():
-    key = SessionKey().session_key
     master_password: MasterPassword = current_app.config['MASTER_PASSWORD']
-    expired = master_password.check_expire()
-    if expired:
-        error_respond.authentication_failure()
-    data = request.decrypted_data.decode()
-    temp_key = json.loads(data)["key"]
-    password = base64.decodebytes(current_app.config['STORAGE'].get(temp_key))
-    data, hmac = encrypt_and_authenticate(json.dumps(master_password.decrypt(password, temp_key)).encode(),
-                                          binascii.unhexlify(key))
-    return jsonify(data=base64.encodebytes(data).decode().strip(),
-                   hmac=base64.encodebytes(hmac).decode().strip())
+    data = json.loads(request.decrypted_data.decode())
+    key = data["key"]
+    # FIXME: what if key does not exist
+    password_entry = base64.decodebytes(current_app.config['STORAGE'].get(key))
+    return SessionKey().encrypt_response(master_password.decrypt(password_entry, key))
