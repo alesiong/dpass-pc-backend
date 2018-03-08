@@ -44,9 +44,12 @@ def persistent():
     try:
         key = data["key"]
         persistence = current_app.config['STORAGE'].get(key, True)[1]
-        return jsonify(result=persistence)
+        if persistence:
+            return jsonify(result=persistence)
+        else:
+            return error_respond.key_not_found()
     except KeyError:
-        return error_respond.key_not_found()
+        return error_respond.invalid_post_data()
 
 
 @bp.route('/get/', methods=['POST'])
@@ -58,6 +61,9 @@ def get():
     try:
         key = data["key"]
         password_entry = base64.decodebytes(current_app.config['STORAGE'].get(key))
-        return SessionKey().encrypt_response(master_password.decrypt(password_entry, key))
+        if password_entry:
+            return SessionKey().encrypt_response(master_password.decrypt(password_entry, key))
+        else:
+            return error_respond.key_not_found()
     except KeyError:
-        return error_respond.key_not_found()
+        return error_respond.invalid_post_data()
