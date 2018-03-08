@@ -48,7 +48,7 @@ def persistent():
     expired = master_password.check_expire()
     if expired:
         error_respond.authentication_failure()
-    data = json.dumps(request.decrypted_data.decode())
+    data = json.dumps(json.loads(request.decrypted_data).decode())
     entry = current_app.config['STORAGE'].get(json.loads(data)["key"], True)[1]
     return jsonify(result=entry)
 
@@ -61,9 +61,9 @@ def get():
     expired = master_password.check_expire()
     if expired:
         error_respond.authentication_failure()
-    data = json.dumps(request.decrypted_data.decode())
+    data = json.dumps(json.loads(request.decrypted_data).decode())
     temp_key = json.loads(data)["key"]
-    password = current_app.config['STORAGE'].get(temp_key)
+    password = base64.decodebytes(current_app.config['STORAGE'].get(temp_key))
     data, hmac = encrypt_and_authenticate(json.dumps(master_password.decrypt(password, temp_key)).encode(),
                                           binascii.unhexlify(key))
     return jsonify(data=base64.encodebytes(data).decode().strip(),
