@@ -1,4 +1,3 @@
-import random
 import base64
 import binascii
 from flask import Blueprint, current_app, jsonify, request, json
@@ -9,7 +8,7 @@ from app.utils import error_respond
 from app.utils.cipher import encrypt_and_authenticate
 from app.utils.decorators import session_verify
 from app.utils.master_password import MasterPassword
-from app.utils.local_storage import LocalStorage
+
 bp = Blueprint('api.password', __name__, url_prefix='/api/password')
 
 
@@ -41,23 +40,31 @@ def get_table():
     return jsonify(data=base64.encodebytes(data).decode().strip(),
                    hmac=base64.encodebytes(hmac).decode().strip())
 
-@bp.route('/new/', methods=['POST'])
+
+@bp.route('/persistent/', methods=['POST'])
 @session_verify
-def new():
+def persistent():
+    master_password: MasterPassword = current_app.config['MASTER_PASSWORD']
+    expired = master_password.check_expire()
+    if expired:
+        error_respond.authentication_failure()
+    data = request.decrypted_data.decode()
+    entry = current_app.config['STORAGE'].get(json.loads(data)["key"], True)[1]
+    return jsonify(result=entry)
+
+
+@bp.route('/get/', methods=['POST'])
+@session_verify
+def get():
     key = SessionKey().session_key
     master_password: MasterPassword = current_app.config['MASTER_PASSWORD']
     expired = master_password.check_expire()
     if expired:
         error_respond.authentication_failure()
-    entries = KeyLookupTable.query.all()
-    new_key = random.random()
-    while KeyLookupTable.query.filter_by(key=new_key).count() != 0:
-        new_key = random.random()
-    entry = json.dumps(request.decrypted_data.decode())
-    KeyLookupTable.new_entry(new_key, entry.encode())
-    current_app.config['STORAGE'].add(new_key, entry.encode())
-
-    new_key, hmac = encrypt_and_authenticate(json.dumps(new_key).encode(),
+    data = request.decrypted_data.decode()
+    temp_key = json.loads(data)["key"]
+    password = base64.decodebytes(current_app.config['STORAGE'].get(temp_key))
+    data, hmac = encrypt_and_authenticate(json.dumps(master_password.decrypt(password, temp_key)).encode(),
                                           binascii.unhexlify(key))
-    return jsonify(key=base64.encodebytes(new_key).decode().strip(),
+    return jsonify(data=base64.encodebytes(data).decode().strip(),
                    hmac=base64.encodebytes(hmac).decode().strip())
