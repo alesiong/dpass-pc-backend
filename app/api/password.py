@@ -1,11 +1,9 @@
 import base64
-import binascii
 
 from flask import Blueprint, current_app, jsonify, request, json
 
 from app import SessionKey
 from app.models import KeyLookupTable
-from app.utils.cipher import encrypt_and_authenticate
 from app.utils.decorators import session_verify, master_password_verify
 from app.utils.master_password import MasterPassword
 
@@ -16,7 +14,6 @@ bp = Blueprint('api.password', __name__, url_prefix='/api/password')
 @session_verify
 @master_password_verify
 def get_table():
-    key = SessionKey().session_key
     master_password: MasterPassword = current_app.config['MASTER_PASSWORD']
     hidden = request.args.get('hidden')
     if hidden:

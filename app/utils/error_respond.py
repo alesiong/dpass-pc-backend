@@ -11,3 +11,7 @@ def invalid_post_data():
 
 def invalid_arguments():
     abort(make_response(jsonify(error='Invalid Arguments'), 400))
+
+
+def master_password_already_set():
+    abort(make_response(jsonify(error='Master Password Already set'), 400))

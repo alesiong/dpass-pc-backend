@@ -15,9 +15,6 @@ class Settings(metaclass=Singleton):
             directory.mkdir(parents=True, exist_ok=True)
             with open(filename, 'w') as f:
                 json.dump({}, f)
-            current_app.config['INIT_STATE'] = 1
-        else:
-            current_app.config['INIT_STATE'] = 2
 
         self.__filename = filename
         self.__master_password_hash: str = None
@@ -31,6 +28,7 @@ class Settings(metaclass=Singleton):
         if master_password:
             self.__master_password_hash = master_password.get('hash')
             self.__master_password_hash_salt = master_password.get('salt')
+            current_app.config['INIT_STATE'] = 2
 
     def write(self):
         with open(self.__filename, 'w') as f:

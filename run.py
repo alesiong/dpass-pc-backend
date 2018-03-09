@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import argparse
 import webbrowser
 from multiprocessing import Process, Queue
