@@ -1,11 +1,10 @@
 import base64
-import binascii
 
 from flask import Blueprint, current_app, jsonify, request, json
 
 from app import SessionKey
 from app.models import KeyLookupTable
-from app.utils.cipher import encrypt_and_authenticate
+from app.utils import error_respond
 from app.utils.decorators import session_verify, master_password_verify
 from app.utils.master_password import MasterPassword
 
@@ -42,9 +41,15 @@ def get_table():
 @master_password_verify
 def persistent():
     data = json.loads(request.decrypted_data.decode())
-    key = data["key"]
+    try:
+        key = data["key"]
+    except KeyError:
+        return error_respond.invalid_post_data()
     persistence = current_app.config['STORAGE'].get(key, True)[1]
-    return jsonify(result=persistence)
+    if persistence is not None:
+        return jsonify(result=persistence)
+    else:
+        return error_respond.key_not_found()
 
 
 @bp.route('/get/', methods=['POST'])
@@ -53,7 +58,13 @@ def persistent():
 def get():
     master_password: MasterPassword = current_app.config['MASTER_PASSWORD']
     data = json.loads(request.decrypted_data.decode())
-    key = data["key"]
-    # FIXME: what if key does not exist
-    password_entry = base64.decodebytes(current_app.config['STORAGE'].get(key))
-    return SessionKey().encrypt_response(master_password.decrypt(password_entry, key))
+    try:
+        key = data["key"]
+    except KeyError:
+        return error_respond.invalid_post_data()
+    get_password = current_app.config['STORAGE'].get(key)
+    if get_password is not None:
+        password_entry = base64.decodebytes(get_password)
+        return SessionKey().encrypt_response(master_password.decrypt(password_entry, key))
+    else:
+        return error_respond.key_not_found()
