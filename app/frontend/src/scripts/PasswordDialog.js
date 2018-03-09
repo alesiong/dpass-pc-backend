@@ -1,4 +1,5 @@
 import mdui from 'mdui'
+import {randPassword} from '../utils';
 
 export default {
   name: 'password-dialog',
@@ -30,6 +31,10 @@ export default {
         userId: this.userId,
         password: this.password
       });
+      this.url='';this.siteName='';this.userId='';this.password='';
+    },
+    generateRandomPassword(){
+      this.password=randPassword();
     }
   }
 };

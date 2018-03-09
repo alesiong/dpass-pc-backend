@@ -35,7 +35,14 @@ export default {
 
   methods: {
     addItem(data) {
-      console.log(data);
+      var myDate=new Date();
+      this.items.push({url:data.url,siteName:data.siteName,userId:data.userId,
+        date:myDate.getFullYear()+'/'+(myDate.getMonth()+1)+'/'+myDate.getDate(),
+        hide:false}
+        );
+
+      // this.$on('click-add',function(msg){this.items.push({url,siteName,userId,
+      //   date:'2019',hide:false})});
     },
     onAddPassword() {
       this.$refs.dialog.openDialog();

@@ -6,21 +6,21 @@
             <div class="mdui-textfield">
                 <i class="mdui-icon material-icons">note_add</i>
                 <label class="mdui-textfield-label">URL</label>
-                <input class="mdui-textfield-input"
+                <input class="mdui-textfield-input" value=''
                        v-model="url"/>
             </div>
 
             <div class="mdui-textfield">
                 <i class="mdui-icon material-icons">explore</i>
                 <label class="mdui-textfield-label">Site Name</label>
-                <input class="mdui-textfield-input"
+                <input class="mdui-textfield-input" value=''
                        v-model="siteName"/>
             </div>
 
             <div class="mdui-textfield">
                 <i class="mdui-icon material-icons">account_circle</i>
                 <label class="mdui-textfield-label">User Name</label>
-                <input class="mdui-textfield-input" type="text"
+                <input class="mdui-textfield-input" type="text" value=''
                        v-model="userId"/>
             </div>
             <div class="mdui-row">
@@ -28,13 +28,15 @@
                     <div class="mdui-textfield">
                         <i class="mdui-icon material-icons">vpn_key</i>
                         <label class="mdui-textfield-label">Password</label>
-                        <input class="mdui-textfield-input" type="password"
+                        <input class="mdui-textfield-input" type="password" value=''
                                v-model="password"/>
                     </div>
                 </div>
                 <div class="mdui-col-xs-3">
-                <button class="mdui-btn mdui-ripple generate-buttom">
-                    <i class="mdui-icon mdui-icon-left material-icons">autorenew</i>
+                <button class="mdui-btn mdui-ripple generate-buttom"
+                        mdui-tooltip="{content: 'Generate a Random Complicated Key in 8-16 Digits', position: 'top'}"
+                        v-on:click="generateRandomPassword">
+                    <i class="mdui-icon mdui-icon-left material-icons ">autorenew</i>
                     generate key
                 </button>
                 </div>
