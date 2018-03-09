@@ -1,10 +1,10 @@
+import time
+from threading import Thread, Lock
 from typing import Optional, Union, Tuple, Generator, Dict, Set
 
 from app.utils.ethereum_utils import EthereumUtils
 from app.utils.misc import Address
 
-from threading import Thread, Lock
-import time
 
 class EthereumStorage:
     def __init__(self, account: Address, password: str):
@@ -19,6 +19,7 @@ class EthereumStorage:
         """
         self.__cache_dict: Dict[str, Tuple[str, bool]] = {}
 
+        self.__change_set: Set[str] = set()
         self.__delete_set: Set[str] = set()
 
         self.__ethereum_utils = EthereumUtils()
@@ -26,17 +27,17 @@ class EthereumStorage:
         self.__password = password
         self.__storage = self.__ethereum_utils.get_storage(account)
 
-        self.lock = Lock()
-
+        self.__lock = Lock()
+        self.__terminating = False
 
         # TODO: load the blockchain
         # TODO: if we cache the blockchain on the disk, don't forget to do it at `store`
 
         # FIXME: should the operating system be considered ?
-        self.load_thread = Thread(target=self.load_blockchain, daemon=True)
-        self.store_thread = Thread(target=self.store, daemon=True)
-        self.load_thread.start()
-        self.store_thread.start()
+        self.__load_thread = Thread(target=self.load_blockchain, daemon=True)
+        self.__store_thread = Thread(target=self.store, daemon=True)
+        self.__load_thread.start()
+        self.__store_thread.start()
 
         # TODO: current state model for CRUD may need to change to fit the ethereum model:
         # TODO: i.e.: store method cannot return immediately, or the data cannot be put on the chain immediately
@@ -48,9 +49,12 @@ class EthereumStorage:
         update its value with `v`. **This will not immediately write the underlying database.**
         """
 
-        with self.lock:
-            if k in self.__delete_set:
+        with self.__lock:
+            if k in self.__cache_dict and self.__cache_dict[k][1]:
+                self.__change_set.add(k)
+            elif k in self.__delete_set:
                 self.__delete_set.remove(k)
+                self.__change_set.add(k)
             self.__cache_dict[k] = (v, False)
 
     def delete(self, k: str):
@@ -58,10 +62,17 @@ class EthereumStorage:
         Delete an entry in database with key `k`. If the key does not exist, an exception `KeyError` will be thrown.
         **This will not immediately write the underlying database.**
         """
-        with self.lock:
+        with self.__lock:
             if k in self.__cache_dict:
                 if not self.__cache_dict[k][1]:
-                    del self.__cache_dict[k]
+                    if k in self.__change_set:
+                        # changed in cache
+                        self.__delete_set.add(k)
+                        del self.__cache_dict[k]
+                        self.__change_set.remove(k)
+                    else:
+                        # new in cache, not changed in cache
+                        del self.__cache_dict[k]
                 else:
                     self.__delete_set.add(k)
                     del self.__cache_dict[k]
@@ -107,28 +118,34 @@ class EthereumStorage:
         """
         store_interval = 15
 
-
         self.__ethereum_utils.unlock_account(self.__account, self.__password, duration=60)
 
         # FIXME: use async add
         # TODO: how to determine if a key is really stored? only update persistence if transaction mined?
         add_list = []
-        for k, v in self.__get_all_add():
-            add_list.append((k, v, self.__ethereum_utils.add_async(self.__account, k, v)))
+        with self.__lock:
+            for k, v in self.__get_all_add():
+                add_list.append((k, v, self.__ethereum_utils.add_async(self.__account, k, v)))
 
-        for k in self.__get_all_del():
-            add_list.append((None, None, self.__ethereum_utils.add_async(self.__account, k)))
+            for k in self.__get_all_del():
+                add_list.append((None, None, self.__ethereum_utils.add_async(self.__account, k)))
 
-        with self.lock:
-            finished = set()
-            while len(finished) < len(add_list):
-                for k, v, h in add_list:
-                    if h not in finished and self.__ethereum_utils.get_transaction_receipt(h):
-                        finished.add(h)
-                        if k:
-                            self.__cache_dict[k] = (v, True)
-
+            self.__change_set = set()
             self.__delete_set = set()
+
+        if self.__terminating:
+            # Terminating, hopefully someone will mine our transaction :)
+            return
+
+        finished = set()
+        while len(finished) < len(add_list):
+            for k, v, h in add_list:
+                if h not in finished and self.__ethereum_utils.get_transaction_receipt(h):
+                    finished.add(h)
+                    if k:
+                        with self.__lock:
+                            self.__cache_dict[k] = (v, True)
+            time.sleep(0.01)
 
         time.sleep(store_interval)
 
@@ -170,8 +187,10 @@ class EthereumStorage:
     def load_blockchain(self):
         load_interval = 5
 
+        if self.__terminating:
+            return
 
-        with self.lock:
+        with self.__lock:
             for k, v in self.__ethereum_utils.get_history(self.__account, 0, self.__storage):
                 if v == "":
                     del self.__cache_dict[k]
@@ -180,6 +199,10 @@ class EthereumStorage:
 
         time.sleep(load_interval)
 
+    def terminate(self):
+        self.__terminating = True
+        self.__load_thread.join()
+        self.__store_thread.join()
 
     def size(self) -> int:
         return len(self.__cache_dict)
