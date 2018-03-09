@@ -106,7 +106,7 @@ class EthereumStorage:
         Synchronize the changes with underlying database.
         """
         store_interval = 15
-        time.sleep(store_interval)
+
 
         self.__ethereum_utils.unlock_account(self.__account, self.__password, duration=60)
 
@@ -129,6 +129,8 @@ class EthereumStorage:
                             self.__cache_dict[k] = (v, True)
 
             self.__delete_set = set()
+
+        time.sleep(store_interval)
 
     def estimate_cost(self, args: dict) -> int:
         """
@@ -167,7 +169,7 @@ class EthereumStorage:
 
     def load_blockchain(self):
         load_interval = 5
-        time.sleep(load_interval)
+
 
         with self.lock:
             for k, v in self.__ethereum_utils.get_history(self.__account, 0, self.__storage):
@@ -176,19 +178,7 @@ class EthereumStorage:
                 else:
                     self.__cache_dict[k] = (v, True)
 
-    def synchronization(self):
-        #set small interval to test
-        sync_interval = 5
-        store_interval = 15
-        while True:
-            duration = 0
-            for i in range(store_interval // sync_interval):
-                self.load_blockchain()
-                time.sleep(sync_interval)
-                duration += sync_interval
-            time.sleep(store_interval - duration)
-            self.store()
-
+        time.sleep(load_interval)
 
 
     def size(self) -> int:

@@ -6,6 +6,7 @@ from web3 import Web3, IPCProvider
 
 from app.utils.ethereum_utils import EthereumUtils
 from app.utils.misc import get_ipc
+import time
 
 from random import randint
 if __name__ == '__main__':
@@ -19,7 +20,10 @@ if __name__ == '__main__':
     storage = EthereumStorage(account, password)
     count = 1
     while count > 0:
-        wait = input("start?")
+        time.sleep(3)
+        print("before add")
+        print(storage.get_all())
+        wait = input("add?")
         # storage.add('a', 'hahaha' + str(count))
         # storage.add('b', 'sdjf' + str(count))
         # storage.add('c', 'sjdfsdjf' + str(count))
@@ -27,6 +31,7 @@ if __name__ == '__main__':
         storage.add('a', randint(0, 50))
         storage.add('b', randint(0, 99))
         storage.add('c', randint(0, 523))
+        print("after add")
         print(storage.get_all())
         wait = input("wait..")
         print(storage.get_all())
