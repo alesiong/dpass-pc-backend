@@ -8,7 +8,6 @@ from flask import request, current_app
 from app.utils.cipher import decrypt_and_verify
 from app.utils.error_respond import invalid_post_data, authentication_failure
 from app.utils.exceptions import StateError
-from app.utils.master_password import MasterPassword
 from app.utils.session_key import SessionKey
 
 
@@ -44,6 +43,7 @@ def session_verify(func):
 
 
 def master_password_verify(func):
+    from app.utils.master_password import MasterPassword
     @wraps(func)
     def __wrapper(*args, **kwargs):
         master_password: MasterPassword = current_app.config['MASTER_PASSWORD']

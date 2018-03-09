@@ -80,8 +80,6 @@ def create_app(config_name='development', queue=None):
             ethereum_utils.init_contracts(get_env()['ETH_STORAGE'], storage_factory_abi, storage_abi)
 
         Settings(app.config['SETTINGS_FILE'])
-        # FIXME: this should be initialized along with master password
-        app.config['STORAGE'] = LocalStorage('chain')
 
     @app.route('/', defaults={'path': ''})
     @app.route('/<path:path>')
