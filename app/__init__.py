@@ -73,12 +73,14 @@ def create_app(config_name='development', queue=None):
         if app.config['QUEUE']:
             SessionKey(app.config['QUEUE'].get())
 
-        # ethereum_utils = EthereumUtils(Web3(IPCProvider(get_ipc('./ethereum_private/data', 'geth.ipc'))))
-        # storage_factory_abi = json.load(open('./ethereum_private/contracts/storage_factory.abi.json'))
-        # storage_abi = json.load(open('./ethereum_private/contracts/storage.abi.json'))
-        # ethereum_utils.init_contracts(get_env()['ETH_STORAGE'], storage_factory_abi, storage_abi)
+        if app.config['USE_ETHEREUM']:
+            ethereum_utils = EthereumUtils(Web3(IPCProvider(get_ipc('./ethereum_private/data', 'geth.ipc'))))
+            storage_factory_abi = json.load(open('./ethereum_private/contracts/storage_factory.abi.json'))
+            storage_abi = json.load(open('./ethereum_private/contracts/storage.abi.json'))
+            ethereum_utils.init_contracts(get_env()['ETH_STORAGE'], storage_factory_abi, storage_abi)
 
-        Settings('db/settings.json')
+        Settings(app.config['SETTINGS_FILE'])
+        # FIXME: this should be initialized along with master password
         app.config['STORAGE'] = LocalStorage('chain')
 
     @app.route('/', defaults={'path': ''})

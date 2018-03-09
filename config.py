@@ -2,6 +2,8 @@
 
 import os
 
+import datetime
+
 basedir = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'db')
 
 
@@ -18,11 +20,15 @@ class BaseConfig(object):
 
     INIT_STATE = 0  # 0: not initialized, 1: initializing, 2: initialized
 
+    MASTER_PASSWORD_EXPIRY = datetime.timedelta(minutes=10)
+    SETTINGS_FILE = 'db/settings.json'
+
+    USE_ETHEREUM = False
+
 
 class DevelopmentTestConfig(BaseConfig):
     DEBUG = True
     BCRYPT_LOG_ROUNDS = 4
-    WTF_CSRF_ENABLED = False
 
 
 class DevelopmentConfig(DevelopmentTestConfig):
@@ -42,8 +48,7 @@ class TestingConfig(DevelopmentTestConfig):
 class ProductionConfig(BaseConfig):
     """Production configuration."""
     DEBUG = False
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'data-production.sqlite')
-    WTF_CSRF_ENABLED = True
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'storage.db')
     DEBUG_TB_ENABLED = False
 
 
