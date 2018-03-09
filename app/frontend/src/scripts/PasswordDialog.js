@@ -1,17 +1,19 @@
-import mdui from 'mdui'
+import mdui from 'mdui';
 
 export default {
   name: 'password-dialog',
-  props: ['initUrl', 'initSiteName', 'initUserId', 'initTitle'],
   data() {
     return {
-      url: this.initUrl || '',
-      siteName: this.initSiteName || '',
-      userId: this.initUserId || '',
+      url: '',
+      siteName: '',
+      userId: '',
       password: '',
-      title: this.initTitle || 'Enter New Password',
+      title: 'Enter New Password',
       id: `password-dialog-${this._uid}`
     };
+  },
+  updated() {
+    mdui.mutation();
   },
   computed: {
     valid() {
@@ -19,8 +21,14 @@ export default {
     }
   },
   methods: {
-    openDialog(options) {
+    openDialog(options, initValue) {
       options = Object.assign({modal: true}, options);
+      if (initValue) {
+        this.url = initValue.url || '';
+        this.siteName = initValue.siteName || '';
+        this.userId = initValue.userId || '';
+        this.password = initValue.password || '';
+      }
       new mdui.Dialog('#' + this.id, options).open();
     },
     onClickAdd() {
@@ -30,6 +38,7 @@ export default {
         userId: this.userId,
         password: this.password
       });
+      this.password = '';
     }
   }
 };

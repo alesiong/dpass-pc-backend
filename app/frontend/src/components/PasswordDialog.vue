@@ -32,7 +32,7 @@
             </div>
         </div>
         <div class="mdui-dialog-actions">
-                <span class="mdui-float-left dialog-warn"
+                <span class="mdui-float-left dialog-warn mdui-text-color-red-a400"
                       v-if="!valid">
                     Warning: All entries should be filled.
                 </span>
@@ -59,7 +59,6 @@
     .dialog-warn {
         padding-top: 16px;
         margin-left: 72px;
-        color: #FF1744;
     }
 
 </style>

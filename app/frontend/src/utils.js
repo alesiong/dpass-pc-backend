@@ -9,7 +9,6 @@ declare var $$: mdui.jQueryStatic;
 
 const fixedIV = 'Kv7OoDnecCsU11N2WTbNow==';
 
-
 /**
  * Get the hash tag (the string after # in the url) with `key`
  */
@@ -88,7 +87,23 @@ export async function refreshSessionKey(sessionKey: string): Promise<string> {
       return newSessionKey;
     }
   } catch (e) {
+    console.log(e);
   }
 
   return sessionKey;
+}
+
+export async function getInitState(): Promise<number> {
+  let state = 0;
+  try {
+    const res = await toPromise({
+      func: $$.ajax,
+      url: '/api/settings/?type=init_state',
+      dataType: 'json'
+    });
+    state = res.state;
+  } catch (e) {
+    console.log(e);
+  }
+  return state;
 }
