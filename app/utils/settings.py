@@ -4,6 +4,7 @@ from pathlib import Path
 
 from flask import current_app
 
+from app import LocalStorage
 from app.utils.misc import Singleton
 
 
@@ -20,6 +21,10 @@ class Settings(metaclass=Singleton):
         self.__master_password_hash: str = None
         self.__master_password_hash_salt: str = None
         self.read()
+        if self.__master_password_hash:
+            current_app.config['INIT_STATE'] = 1
+            current_app.config['STORAGE'] = LocalStorage('chain')
+            current_app.config['INIT_STATE'] = 2
 
     def read(self):
         with open(self.__filename) as f:
@@ -28,7 +33,6 @@ class Settings(metaclass=Singleton):
         if master_password:
             self.__master_password_hash = master_password.get('hash')
             self.__master_password_hash_salt = master_password.get('salt')
-            current_app.config['INIT_STATE'] = 2
 
     def write(self):
         with open(self.__filename, 'w') as f:

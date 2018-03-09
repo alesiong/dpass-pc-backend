@@ -63,7 +63,7 @@ def get():
         return error_respond.invalid_post_data()
     get_password = current_app.config['STORAGE'].get(key)
     if get_password is not None:
-        password_entry = base64.decodebytes(get_password)
+        password_entry = base64.decodebytes(get_password.encode())
         return SessionKey().encrypt_response(master_password.decrypt(password_entry, key))
     else:
         return error_respond.key_not_found()
