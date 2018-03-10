@@ -24,4 +24,4 @@ class KeyLookupTable(db.Model):
         """
         entry = cls(key=key, meta_data=metadata, hidden=False)
         db.session.add(entry)
-        db.sessionl.commit()
+        db.session.commit()
