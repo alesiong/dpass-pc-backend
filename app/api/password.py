@@ -1,5 +1,5 @@
 import base64
-
+import random
 from flask import Blueprint, current_app, jsonify, request, json
 
 from app import SessionKey
@@ -68,3 +68,48 @@ def get():
         return SessionKey().encrypt_response(master_password.decrypt(password_entry, key))
     else:
         return error_respond.key_not_found()
+
+
+@bp.route('/new/', methods=['POST'])
+@session_verify
+@master_password_verify
+def new():
+    master_password: MasterPassword = current_app.config['MASTER_PASSWORD']
+    new_key = random.random()
+    while KeyLookupTable.query.filter_by(key=new_key).count() != 0:
+        new_key = random.random()
+    data = base64.encodebytes(request.decrypted_data.decode())
+    KeyLookupTable.new_entry(new_key, data)
+    current_app.config['STORAGE'].add(new_key, data)
+    return SessionKey().encrypt_response(new_key)
+
+
+@bp.route('/modify/', methods=['POST'])
+@session_verify
+@master_password_verify
+def modify():
+    master_password: MasterPassword = current_app.config['MASTER_PASSWORD']
+
+
+@bp.route('/delete/', methods=['POST'])
+@session_verify
+@master_password_verify
+def delelte():
+    master_password: MasterPassword = current_app.config['MASTER_PASSWORD']
+    data = json.loads(request.decrypted_data.decode())
+    key = data['key']
+    KeyLookupTable.query.filter_by(key = key).delete()
+    KeyLookupTable.query.session.commit()
+    current_app.config['STORAGE'].delete(key)
+
+
+@bp.route('/mark/', methods=['POST'])
+@session_verify
+@master_password_verify
+def mark():
+    master_password: MasterPassword = current_app.config['MASTER_PASSWORD']
+    data = json.loads(request.decrypted_data.decode())
+    key = data['key']
+    entries = KeyLookupTable.query.filter_by(key = key)
+    entries['hidden'] = True
+
