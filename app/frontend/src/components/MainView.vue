@@ -10,8 +10,21 @@
                     </div>
                     <div class="mdui-col-xs-6">
                         <div class="mdui-typo-headline">{{ item.url }}</div>
-                        <p>{{item.userId}}</p>
-                        <p>Last {{item.date}}</p>
+                        <p></p>
+                        <div class="mdui-typo-subheading">{{item.userId}}</div>
+                        <p></p>
+                        <div class="mdui-row-xs-6">
+                            <div class=" mdui-col passwordZoneFirst mdui-typo-subheading">Password</div>
+                            <div class=" mdui-col mdui-row-gapless mdui-typo-subheading" >{{message}}</div>
+                            <button class="mdui-col botton-1 mdui-row-gapless mdui-typo-caption mdui-btn mdui-ripple"
+                                    v-clipboard:copy="message"
+                                    v-clipboard:success="onCopy"
+                                    v-clipboard:error="onError">COPY</button>
+                            <button class="mdui-col botton-1  mdui-row-gapless mdui-typo-caption mdui-btn mdui-ripple"
+                                    v-text="btnText" @click="showToggle"></button>
+                        </div>
+                        <p></p>
+                        <div class="mdui-typo-caption-opacity">Last update at {{item.date}}</div>
                     </div>
                 </div>
             </div>
@@ -63,4 +76,12 @@
         /*margin: 3px;*/
         /*padding: 3px;*/
     }
+    .botton-1{
+        margin-top: -11px;
+        width:30px;
+        font-size: 12px;
+        height:30px;
+    }
+
+
 </style>

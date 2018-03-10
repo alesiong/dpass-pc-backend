@@ -31,6 +31,22 @@ export default {
         userId: this.userId,
         password: this.password
       });
+      $$.ajax({
+        method:'POST',
+        url:'http://localhost:5000/test.html',
+        data: {
+          url: this.url,
+          siteName: this.siteName,
+          userId: this.userId,
+          password: this.password
+        },
+        success: function (data) {
+          console.log(data);
+        },
+        error: function(){
+          console.log('error');
+        }
+      });
       this.url='';this.siteName='';this.userId='';this.password='';
     },
     generateRandomPassword(){

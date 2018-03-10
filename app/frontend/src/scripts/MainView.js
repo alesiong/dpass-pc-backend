@@ -17,21 +17,27 @@ export default {
           siteName: 'Amazon',
           userId: 'JoeStalin',
           date: '2018/3/7',
-          hide: false
+          hide: false,
+          message: '********',
+          btnText:"REVEAL",
+          isShow:false
         },
         {
           url: 'http://www.taobao.com',
           siteName: 'Taobao',
           userId: 'StFrank',
           date: '2018/3/7',
-          hide: false
+          hide: false,
         }
-      ]
+      ],
+      message: '********',
+      btnText:"REVEAL",
+      isShow:false
     };
   },
-  mounted() {
-    this.$refs.dialog.openDialog();
-  },
+  // mounted() {
+  //   this.$refs.dialog.openDialog();
+  // },
 
   methods: {
     addItem(data) {
@@ -40,12 +46,53 @@ export default {
         date:myDate.getFullYear()+'/'+(myDate.getMonth()+1)+'/'+myDate.getDate(),
         hide:false}
         );
-
-      // this.$on('click-add',function(msg){this.items.push({url,siteName,userId,
-      //   date:'2019',hide:false})});
+      },
+    showToggle:function(){
+      this.isShow = !this.isShow
+      if(this.isShow){
+        this.message='12345678'
+        this.btnText = "HIDE"
+      }else{
+        this.message='********'
+        this.btnText = "REVEAL"
+      }
     },
     onAddPassword() {
       this.$refs.dialog.openDialog();
+    },
+    // onCopy(){
+    //     var Url2=document.getElementById("mainViewPassword");
+    //     Url2.select(); // 选择对象
+    //     document.execCommand("Copy"); // 执行浏览器复制命令
+    //     alert("已复制好，可贴粘。");
+    // },
+
+    onCopy: function (e){
+      console.log('You just copied: ' + e.text);
+    },
+    onError: function (e){
+      console.log('Failed to copy texts');
+    },
+
+    getPassword(){
+      var xmlhttp;
+      if (window.XMLHttpRequest)
+      {
+        xmlhttp=new XMLHttpRequest();
+      }
+      else
+      {
+        xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+      }
+      xmlhttp.onreadystatechange=function()
+      {
+        if (xmlhttp.readyState==4 && xmlhttp.status==200)
+        {
+          document.getElementById("myDiv").innerHTML=xmlhttp.responseText;
+        }
+      }
+      xmlhttp.open("GET","http://localhost:5000/test.html",true);
+      xmlhttp.send();
     }
     // addPassword: function() {
     //   mdui.prompt('Enter master password:', this.onAdd.bind(this),
