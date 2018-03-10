@@ -98,7 +98,7 @@ def delelte():
     master_password: MasterPassword = current_app.config['MASTER_PASSWORD']
     data = json.loads(request.decrypted_data.decode())
     key = data['key']
-    KeyLookupTable.query.filter_by(key = key).delete()
+    KeyLookupTable.query.filter_by(key=key).delete()
     KeyLookupTable.query.session.commit()
     current_app.config['STORAGE'].delete(key)
 
