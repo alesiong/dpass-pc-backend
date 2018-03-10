@@ -110,6 +110,6 @@ def mark():
     master_password: MasterPassword = current_app.config['MASTER_PASSWORD']
     data = json.loads(request.decrypted_data.decode())
     key = data['key']
-    entries = KeyLookupTable.query.filter_by(key=key)
+    entries = KeyLookupTable.query.filter_by(key= key)
     entries['hidden'] = True
 
