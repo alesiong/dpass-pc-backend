@@ -1,12 +1,10 @@
 import base64
-import binascii
-import random
 
 from flask import Blueprint, current_app, jsonify, request, json
 
 from app import SessionKey
 from app.models import KeyLookupTable
-from app.utils.cipher import encrypt_and_authenticate
+from app.utils import error_respond
 from app.utils.decorators import session_verify, master_password_verify
 from app.utils.master_password import MasterPassword
 
@@ -43,9 +41,15 @@ def get_table():
 @master_password_verify
 def persistent():
     data = json.loads(request.decrypted_data.decode())
-    key = data["key"]
+    try:
+        key = data["key"]
+    except KeyError:
+        return error_respond.invalid_post_data()
     persistence = current_app.config['STORAGE'].get(key, True)[1]
-    return jsonify(result=persistence)
+    if persistence is not None:
+        return jsonify(result=persistence)
+    else:
+        return error_respond.key_not_found()
 
 
 @bp.route('/get/', methods=['POST'])
@@ -54,31 +58,13 @@ def persistent():
 def get():
     master_password: MasterPassword = current_app.config['MASTER_PASSWORD']
     data = json.loads(request.decrypted_data.decode())
-    key = data["key"]
-    # FIXME: what if key does not exist
-    password_entry = base64.decodebytes(current_app.config['STORAGE'].get(key))
-    return SessionKey().encrypt_response(master_password.decrypt(password_entry, key))
-
-
-@bp.route('/new/', methods=['POST'])
-@session_verify
-@master_password_verify
-def new():
-    master_password: MasterPassword = current_app.config['MASTER_PASSWORD']
-    new_key = random.random()
-    while KeyLookupTable.query.filter_by(key=new_key).count() != 0:
-        new_key = random.random()
-    data = request.decrypted_data.decode()
-    KeyLookupTable.new_entry(new_key, data)
-    current_app.config['STORAGE'].add(new_key, data)
-    return new_key
-
-@bp.route('/modify/', methods=['POST'])
-@session_verify
-@master_password_verify
-def new():
-    master_password: MasterPassword = current_app.config['MASTER_PASSWORD']
-    data = json.dumps(request.decrypted_data.decode())
-
-    current_app.config['STORAGE'].add(new_key, data)
-    return new_key
+    try:
+        key = data["key"]
+    except KeyError:
+        return error_respond.invalid_post_data()
+    get_password = current_app.config['STORAGE'].get(key)
+    if get_password is not None:
+        password_entry = base64.decodebytes(get_password)
+        return SessionKey().encrypt_response(master_password.decrypt(password_entry, key))
+    else:
+        return error_respond.key_not_found()
