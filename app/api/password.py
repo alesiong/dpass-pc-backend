@@ -68,7 +68,17 @@ def new():
     new_key = random.random()
     while KeyLookupTable.query.filter_by(key=new_key).count() != 0:
         new_key = random.random()
-    data = json.loads(request.decrypted_data.decode())
+    data = request.decrypted_data.decode()
     KeyLookupTable.new_entry(new_key, data)
+    current_app.config['STORAGE'].add(new_key, data)
+    return new_key
+
+@bp.route('/modify/', methods=['POST'])
+@session_verify
+@master_password_verify
+def new():
+    master_password: MasterPassword = current_app.config['MASTER_PASSWORD']
+    data = json.dumps(request.decrypted_data.decode())
+
     current_app.config['STORAGE'].add(new_key, data)
     return new_key
