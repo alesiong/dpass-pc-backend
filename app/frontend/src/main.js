@@ -7,7 +7,8 @@ import router from './router';
 Vue.config.productionTip = false;
 
 Vue.prototype.globalData = {
-  sessionKey: null
+  sessionKey: null,
+  sessionKeyExpiry: null
 };
 
 new Vue({

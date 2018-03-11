@@ -1,4 +1,4 @@
-import {encryptAndAuthenticate} from '@/utils';
+import {encryptAndAuthenticate, ensureSession} from '@/utils';
 import mdui from 'mdui';
 
 export default {
@@ -21,50 +21,54 @@ export default {
   },
   methods: {
     onAddMasterPassword() {
-      const [cipher, hmac] = encryptAndAuthenticate(this.password,
-          this.globalData.sessionKey);
-      $$.ajax({
-        url: '/api/master_password/new/',
-        method: 'POST',
-        dataType: 'json',
-        data: JSON.stringify({
-          data: cipher,
-          hmac: hmac
-        }),
-        contentType: 'application/json',
-        success: () => {
-          this.$emit('added-password');
-          this.password = '';
-          this.confirmPassword = '';
-        },
-        statusCode: {
-          '401': () => {
-            // Fixme: general bad situation
-            mdui.alert('Session Key broken!');
+      ensureSession(this).then(() => {
+        const [cipher, hmac] = encryptAndAuthenticate(this.password,
+            this.globalData.sessionKey);
+        $$.ajax({
+          url: '/api/master_password/new/',
+          method: 'POST',
+          dataType: 'json',
+          data: JSON.stringify({
+            data: cipher,
+            hmac: hmac
+          }),
+          contentType: 'application/json',
+          success: () => {
+            this.$emit('added-password');
+            this.password = '';
+            this.confirmPassword = '';
+          },
+          statusCode: {
+            '401': () => {
+              // Fixme: general bad situation
+              mdui.alert('Session Key broken!');
+            }
           }
-        }
+        });
       });
     },
     onVerifyMasterPassword() {
-      const [cipher, hmac] = encryptAndAuthenticate(this.password, this.globalData.sessionKey);
-      $$.ajax({
-        url: '/api/master_password/verify/',
-        method: 'POST',
-        dataType: 'json',
-        data: JSON.stringify({
-          data: cipher,
-          hmac: hmac
-        }),
-        contentType: 'application/json',
-        success: () => {
-          this.$emit('verified-password');
-          this.password = '';
-        },
-        statusCode: {
-          '401': () => {
-            mdui.alert('Verification failed or Session Key broken!');
+      ensureSession(this).then(() => {
+        const [cipher, hmac] = encryptAndAuthenticate(this.password, this.globalData.sessionKey);
+        $$.ajax({
+          url: '/api/master_password/verify/',
+          method: 'POST',
+          dataType: 'json',
+          data: JSON.stringify({
+            data: cipher,
+            hmac: hmac
+          }),
+          contentType: 'application/json',
+          success: () => {
+            this.$emit('verified-password');
+            this.password = '';
+          },
+          statusCode: {
+            '401': () => {
+              mdui.alert('Verification failed or Session Key broken!');
+            }
           }
-        }
+        });
       });
     }
   }

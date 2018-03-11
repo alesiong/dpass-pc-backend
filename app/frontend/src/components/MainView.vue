@@ -2,7 +2,7 @@
     <div>
         <div class="item-allbar">
             <div class="mdui-shadow-8 item-bar"
-                 v-for="item in items" v-if="!item.hide">
+                 v-for="item in items" v-bind:key="item.key" v-if="!item.hide">
                 <div class="mdui-row">
                     <div class="mdui-col-xs-1 mdui-float-left site-icon">
                         <img height=90px

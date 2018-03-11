@@ -1,9 +1,8 @@
-// TODO: import and register the components here like this:
 import AppMenu from '@c/AppMenu';
 import AppHeader from '@c/AppHeader';
 import GuardView from '@c/GuardView';
 import {refreshSessionKey} from '../utils';
-import {getInitState} from '@/utils';
+import {getInitState, nextMinutes} from '@/utils';
 
 export default {
   components: {
@@ -13,7 +12,7 @@ export default {
   },
   data() {
     return {
-      initState: 0,
+      initState: null,
       passwordVerification: false
     };
   },
@@ -37,6 +36,7 @@ export default {
     const promise = refreshSessionKey(sessionKey);
     promise.then((sessionKey) => {
       this.globalData.sessionKey = sessionKey;
+      this.globalData.sessionKeyExpiry = nextMinutes(10);
     });
 
     getInitState().then((state) => {

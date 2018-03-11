@@ -46,7 +46,11 @@ def master_password_verify(func):
     from app.utils.master_password import MasterPassword
     @wraps(func)
     def __wrapper(*args, **kwargs):
-        master_password: MasterPassword = current_app.config['MASTER_PASSWORD']
+        try:
+            master_password: MasterPassword = current_app.config['MASTER_PASSWORD']
+        except KeyError:
+            authentication_failure()
+            return
         expired = master_password.check_expire()
         if expired:
             authentication_failure()

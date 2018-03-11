@@ -7,32 +7,43 @@ from app import SessionKey
 from app.models import KeyLookupTable
 from app.utils import error_respond
 from app.utils.decorators import session_verify, master_password_verify
+from app.utils.error_respond import authentication_failure
 from app.utils.master_password import MasterPassword
 
 bp = Blueprint('api.password', __name__, url_prefix='/api/password')
 
 
 @bp.route('/')
-@session_verify
 @master_password_verify
 def get_table():
     master_password: MasterPassword = current_app.config['MASTER_PASSWORD']
     hidden = request.args.get('hidden')
     if hidden:
-        entries = KeyLookupTable.query.filter_by(hidden=False).all()
-    else:
         entries = KeyLookupTable.query.all()
+    else:
+        entries = KeyLookupTable.query.filter_by(hidden=False).all()
+    result = []
+    for entry in entries:
+        if master_password.check_expire():
+            error_respond.authentication_failure()
+        result.append(
+            {
+                'key': entry.key,
+                'metadata': json.loads(
+                    master_password.simple_decrypt(
+                        base64.decodebytes(entry.meta_data.encode())).decode())
+            }
+        )
 
-    entries = [
-        {
-            'key': entry.key,
-            'metadata': json.loads(
-                master_password.simple_decrypt(
-                    base64.decodebytes(entry.meta_data.encode())).decode())
-        } for entry in entries
-    ]
-
-    return SessionKey().encrypt_response(entries)
+    # entries = [
+    #     {
+    #         'key': entry.key,
+    #         'metadata': json.loads(
+    #             master_password.simple_decrypt(
+    #                 base64.decodebytes(entry.meta_data.encode())).decode())
+    #     } for entry in entries
+    # ]
+    return SessionKey().encrypt_response(result)
 
 
 @bp.route('/persistent/', methods=['POST'])
@@ -84,7 +95,12 @@ def new():
     except KeyError:
         # ignore it if the `password` entry is not provided
         pass
-    data = master_password.simple_encrypt(json.dumps(data).encode())
+    data = master_password.simple_encrypt(json.dumps(data))
+
+    # FIXME: bad design
+    if master_password.check_expire():
+        error_respond.authentication_failure()
+
     entry = KeyLookupTable.new_entry(base64.encodebytes(data).decode())
     current_app.config['STORAGE'].add(entry.key,
                                       base64.encodebytes(
