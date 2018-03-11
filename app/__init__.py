@@ -35,9 +35,6 @@ def create_app(config_name='development', queue=None):
     from app.api import api as api_blueprint
     app.register_blueprint(api_blueprint)
 
-    from app.views.demo import bp as demo_blueprint
-    app.register_blueprint(demo_blueprint)
-
     from app.api.session import bp as session_blueprint
     app.register_blueprint(session_blueprint)
 

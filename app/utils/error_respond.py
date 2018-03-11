@@ -15,3 +15,7 @@ def invalid_arguments():
 
 def master_password_already_set():
     abort(make_response(jsonify(error='Master Password Already set'), 400))
+
+
+def key_not_found():
+    abort(make_response(jsonify(error='Key Not Found'), 400))

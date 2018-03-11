@@ -1,9 +1,11 @@
 import base64
+import random
 
 from flask import Blueprint, current_app, jsonify, request, json
 
 from app import SessionKey
 from app.models import KeyLookupTable
+from app.utils import error_respond
 from app.utils.decorators import session_verify, master_password_verify
 from app.utils.master_password import MasterPassword
 
@@ -39,9 +41,15 @@ def get_table():
 @master_password_verify
 def persistent():
     data = json.loads(request.decrypted_data.decode())
-    key = data["key"]
+    try:
+        key = data["key"]
+    except KeyError:
+        return error_respond.invalid_post_data()
     persistence = current_app.config['STORAGE'].get(key, True)[1]
-    return jsonify(result=persistence)
+    if persistence is not None:
+        return jsonify(result=persistence)
+    else:
+        return error_respond.key_not_found()
 
 
 @bp.route('/get/', methods=['POST'])
@@ -50,7 +58,77 @@ def persistent():
 def get():
     master_password: MasterPassword = current_app.config['MASTER_PASSWORD']
     data = json.loads(request.decrypted_data.decode())
-    key = data["key"]
-    # FIXME: what if key does not exist
-    password_entry = base64.decodebytes(current_app.config['STORAGE'].get(key))
-    return SessionKey().encrypt_response(master_password.decrypt(password_entry, key))
+    try:
+        key = data["key"]
+    except KeyError:
+        return error_respond.invalid_post_data()
+    get_password = current_app.config['STORAGE'].get(key)
+    if get_password is not None:
+        password_entry = base64.decodebytes(get_password.encode())
+        return SessionKey().encrypt_response(master_password.decrypt(password_entry, key))
+    else:
+        return error_respond.key_not_found()
+
+
+# FIXME: catch database error
+
+@bp.route('/new/', methods=['POST'])
+@session_verify
+@master_password_verify
+def new():
+    master_password: MasterPassword = current_app.config['MASTER_PASSWORD']
+    data = json.loads(request.decrypted_data.decode())
+
+    try:
+        del data['password']
+    except KeyError:
+        # ignore it if the `password` entry is not provided
+        pass
+    data = master_password.simple_encrypt(json.dumps(data).encode())
+    entry = KeyLookupTable.new_entry(base64.encodebytes(data).decode())
+    current_app.config['STORAGE'].add(entry.key,
+                                      base64.encodebytes(
+                                          master_password.encrypt(request.decrypted_data.decode(), entry.key)).decode())
+    return SessionKey().encrypt_response({'key': entry.key})
+
+
+@bp.route('/modify/', methods=['POST'])
+@session_verify
+@master_password_verify
+def modify():
+    master_password: MasterPassword = current_app.config['MASTER_PASSWORD']
+
+
+@bp.route('/delete/', methods=['POST'])
+@session_verify
+@master_password_verify
+def delete():
+    storage = current_app.config['STORAGE']
+    data = json.loads(request.decrypted_data.decode())
+
+    key = data.get('key')
+    if key is None:
+        error_respond.invalid_post_data()
+    if storage.get(key) is None:
+        error_respond.key_not_found()
+
+    current_app.config['STORAGE'].delete(key)
+    KeyLookupTable.query.filter_by(key=key).delete()
+    KeyLookupTable.query.session.commit()
+    return jsonify(message='Success')
+
+
+@bp.route('/mark/', methods=['POST'])
+@session_verify
+@master_password_verify
+def mark():
+    data = json.loads(request.decrypted_data.decode())
+    key = data.get('key')
+    if key is None:
+        error_respond.invalid_post_data()
+    if 'hidden' not in data:
+        error_respond.invalid_post_data()
+    entry = KeyLookupTable.query.filter_by(key=key).first()
+    entry.hidden = data['hidden']
+    KeyLookupTable.query.session.commit()
+    return jsonify(message='Success')
