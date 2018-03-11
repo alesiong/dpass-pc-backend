@@ -21,7 +21,7 @@ class BaseConfig(object):
     INIT_STATE = 0  # 0: not initialized, 1: initializing, 2: initialized
 
     MASTER_PASSWORD_EXPIRY = datetime.timedelta(minutes=10)
-    SETTINGS_FILE = 'db/settings.json'
+    SETTINGS_FILE = 'db/settings.db'
 
     USE_ETHEREUM = False
 
