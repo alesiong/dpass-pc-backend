@@ -88,7 +88,7 @@ def new():
     entry = KeyLookupTable.new_entry(base64.encodebytes(data).decode())
     current_app.config['STORAGE'].add(entry.key,
                                       base64.encodebytes(
-                                          master_password.encrypt(request.decrypted_data.decode(), entry.key)))
+                                          master_password.encrypt(request.decrypted_data.decode(), entry.key)).decode())
     return SessionKey().encrypt_response({'key': entry.key})
 
 
