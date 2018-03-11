@@ -3,6 +3,7 @@ import datetime
 from typing import Optional
 
 from Crypto.Hash import SHA512, SHA256
+from flask import current_app
 
 from app.utils.cipher import salted_hash, encrypt_fixed_iv, decrypt_fixed_iv
 from app.utils.decorators import check_and_unset_state
@@ -39,7 +40,7 @@ class MasterPassword:
         self.__password_hash = password_hash
         self.__salt = salt
         self.__encryption_key = encryption_key
-        self.__expire_time = int((datetime.datetime.now() + datetime.timedelta(minutes=10)).timestamp())
+        self.__expire_time = int((datetime.datetime.now() + current_app.config['MASTER_PASSWORD_EXPIRY']).timestamp())
 
         self._checked_expire = False
 
@@ -69,7 +70,6 @@ class MasterPassword:
         :return: `MasterPassword` object if the password is correct. `None` otherwise.
         """
         settings = Settings()
-        # TODO: do we need to call settings.read() here?
         password_hash = base64.decodebytes(settings.master_password_hash.encode())
         salt = base64.decodebytes(settings.master_password_hash_salt.encode())
         password_hash_new, _ = salted_hash(master_password_in_memory, salt)

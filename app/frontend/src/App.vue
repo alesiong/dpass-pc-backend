@@ -1,10 +1,17 @@
 <template>
     <div id="app">
-        <div class="mdui-container-fluid">
+        <div class="mdui-container-fluid app-container">
             <app-header/>
             <app-menu/>
-
-            <router-view/>
+            <div v-if="guard">
+                <guard-view v-bind:state="initState"
+                            v-bind:verify="passwordVerification"
+                            v-on:added-password="refreshState"
+                            v-on:verified-password="onVerifiedPassword"/>
+            </div>
+            <div v-else>
+                <router-view/>
+            </div>
         </div>
     </div>
 </template>
