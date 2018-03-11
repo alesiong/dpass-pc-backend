@@ -166,9 +166,10 @@ export function copyToClickboard(value: string) {
     clickboard.setAttribute('type', '');
     // $FlowFixMe
     clickboard.select();
-    document.execCommand('copy');
+    const success = document.execCommand('copy');
     clickboard.setAttribute('type', 'hidden');
     // $FlowFixMe
     clickboard.value = '';
+    return success;
   }
 }

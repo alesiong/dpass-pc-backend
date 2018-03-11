@@ -23,11 +23,11 @@
                             </div>
                             <button class="mdui-col botton-reveal mdui-row-gapless mdui-typo-caption mdui-btn mdui-ripple"
                                     @click="copyPassword(item.key)">
-                                COPY
+                                Copy
                             </button>
                             <button class="mdui-col botton-reveal mdui-row-gapless mdui-typo-caption mdui-btn mdui-ripple"
                                     @click="showToggle">
-                                reveal
+                                Reveal
                             </button>
                         </div>
                         <p></p>

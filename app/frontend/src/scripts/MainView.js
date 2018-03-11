@@ -84,7 +84,6 @@ export default {
       });
     },
     formatDate(timestamp) {
-      // FIXME: local time string
       const date = new Date(timestamp);
       return date.getFullYear() + '/' + (date.getMonth() + 1) + '/' + date.getDate();
     },
@@ -106,7 +105,10 @@ export default {
       window.encrypt = encrypt;
       window.decrypt = decrypt;
       const password = decrypt(this.passwords[key], key);
-      copyToClickboard(password);
+      if (!copyToClickboard(password)) {
+        mdui.snackbar({message: 'Failed to copy the password'});
+        return;
+      }
       mdui.snackbar({message: 'Password copied to clipboard, and will be cleared in 1 minute'});
       // TODO: only clear clipboard once if copy more
       window.setTimeout(() => {
