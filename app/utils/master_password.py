@@ -125,7 +125,10 @@ class MasterPassword:
         """
         expired = datetime.datetime.now().timestamp() > self.__expire_time
         if expired:
-            del self.__encryption_key
+            try:
+                del self.__encryption_key
+            except AttributeError:
+                pass
         else:
             self._checked_expire = True
 

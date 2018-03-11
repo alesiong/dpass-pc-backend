@@ -27,7 +27,7 @@ class KeyLookupTable(db.Model):
         """
         while True:
             key = binascii.hexlify(Random.get_random_bytes(8)).decode()
-            if cls.query.filter_by(key=key).count():
+            if cls.query.filter_by(key=key).count() == 0:
                 break
 
         entry = cls(key=key, meta_data=metadata, hidden=False)

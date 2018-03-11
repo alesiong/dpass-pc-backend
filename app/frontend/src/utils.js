@@ -4,6 +4,7 @@ import CryptoJS from 'crypto-js';
 import AES from 'crypto-js/aes';
 import hmacSHA256 from 'crypto-js/hmac-sha256';
 import mdui from 'mdui';
+import Vue from 'vue';
 
 declare var $$: mdui.jQueryStatic;
 
@@ -106,4 +107,17 @@ export async function getInitState(): Promise<number> {
     console.log(e);
   }
   return state;
+}
+
+export async function ensureSession(component: Vue): Promise<void> {
+  if (Date.now() > component.globalData.sessionKeyExpiry) {
+    component.globalData.sessionKey = await refreshSessionKey(component.globalData.sessionKey);
+    component.globalData.sessionKeyExpiry = nextMinutes(10);
+    console.log('session refreshed');
+  }
+  console.log('in session');
+}
+
+export function nextMinutes(minutes: number): number {
+  return Date.now() + minutes * 60 * 1000;
 }
