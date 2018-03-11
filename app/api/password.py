@@ -87,7 +87,8 @@ def new():
     data = master_password.simple_encrypt(json.dumps(data).encode())
     entry = KeyLookupTable.new_entry(base64.encodebytes(data).decode())
     current_app.config['STORAGE'].add(entry.key,
-                                      master_password.encrypt(request.decrypted_data.decode(), entry.key))
+                                      base64.encodebytes(
+                                          master_password.encrypt(request.decrypted_data.decode(), entry.key)))
     return SessionKey().encrypt_response({'key': entry.key})
 
 
