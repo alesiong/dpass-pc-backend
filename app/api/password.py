@@ -105,6 +105,8 @@ def new():
     current_app.config['STORAGE'].add(entry.key,
                                       base64.encodebytes(
                                           master_password.encrypt(request.decrypted_data.decode(), entry.key)).decode())
+    # FIXME: test
+    current_app.config['STORAGE'].store()
     return SessionKey().encrypt_response({'key': entry.key})
 
 

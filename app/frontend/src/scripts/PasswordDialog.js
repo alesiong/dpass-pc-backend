@@ -41,8 +41,8 @@ export default {
       });
       this.password = '';
     },
-    generateRandomPassword(){
-      this.password=randPassword();
+    generateRandomPassword() {
+      this.password = randPassword();
     }
   }
 };

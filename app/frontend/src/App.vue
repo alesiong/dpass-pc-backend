@@ -13,6 +13,8 @@
                 <router-view/>
             </div>
         </div>
+
+        <input id="clickboard" type="hidden">
     </div>
 </template>
 

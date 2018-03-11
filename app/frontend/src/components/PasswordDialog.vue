@@ -70,8 +70,7 @@
         margin-left: 72px;
     }
     .generate-buttom{
-        /*padding-top: 16px;*/
-        margin-top: 44px;
+        margin-top: 40px;
     }
 
 </style>

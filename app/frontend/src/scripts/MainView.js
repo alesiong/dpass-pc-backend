@@ -1,5 +1,7 @@
 import PasswordDialog from '@c/PasswordDialog';
-import {decryptAndVerify, encryptAndAuthenticate, ensureSession} from '@/utils';
+import {copyToClickboard, decrypt, decryptAndVerify, encrypt, encryptAndAuthenticate, ensureSession} from '@/utils';
+
+import mdui from 'mdui';
 
 export default {
   name: 'main-view',
@@ -8,7 +10,8 @@ export default {
   },
   data() {
     return {
-      items: []
+      items: [],
+      passwords: {}
     };
   },
   mounted() {
@@ -34,7 +37,7 @@ export default {
           }),
           contentType: 'application/json',
           success: () => {
-            mdui.snackbar('Successfully added password');
+            mdui.snackbar({message: 'Successfully added password'});
             this.fetchPasswords();
           },
           statusCode: {
@@ -59,13 +62,18 @@ export default {
           const newPasswords = [];
           for (const p of passwords) {
             newPasswords.push(Object.assign({
-                  hide: false
+                  key: p.key,
+                  hide: false,
+                  isShow: false
                 },
                 p.metadata
             ));
+
+            this.getPassword(p.key, (password) => {
+              this.passwords[p.key] = encrypt(password, p.key);
+            });
           }
           this.items = newPasswords;
-          console.log(this.items)
         },
         statusCode: {
           '401': () => {
@@ -75,43 +83,74 @@ export default {
         }
       });
     },
-    addItem(data) {
-      var myDate=new Date();
-      this.items.push({url:data.url,siteName:data.siteName,userId:data.userId,
-        date:myDate.getFullYear()+'/'+(myDate.getMonth()+1)+'/'+myDate.getDate(),
-        hide:false}
-        );
-      },
-    showToggle:function(){
-      this.isShow = !this.isShow
-      if(this.isShow){
-        this.message='12345678'
-        this.btnText = "HIDE"
-      }else{
-        this.message='********'
-        this.btnText = "REVEAL"
+    formatDate(timestamp) {
+      // FIXME: local time string
+      const date = new Date(timestamp);
+      return date.getFullYear() + '/' + (date.getMonth() + 1) + '/' + date.getDate();
+    },
+    showToggle: function() {
+      this.isShow = !this.isShow;
+      if (this.isShow) {
+        this.message = '12345678';
+        this.btnText = 'HIDE';
+      } else {
+        this.message = '********';
+        this.btnText = 'REVEAL';
       }
     },
     onAddPassword() {
       this.$refs.dialog.openDialog();
     },
-    // onCopy(){
-    //     var Url2=document.getElementById("mainViewPassword");
-    //     Url2.select(); // 选择对象
-    //     document.execCommand("Copy"); // 执行浏览器复制命令
-    //     alert("已复制好，可贴粘。");
-    // },
 
-    onCopy: function (e){
-      console.log('You just copied: ' + e.text);
+    copyPassword(key) {
+      window.encrypt = encrypt;
+      window.decrypt = decrypt;
+      const password = decrypt(this.passwords[key], key);
+      copyToClickboard(password);
+      mdui.snackbar({message: 'Password copied to clipboard, and will be cleared in 1 minute'});
+      // TODO: only clear clipboard once if copy more
+      window.setTimeout(() => {
+        const [cipher, hmac] = encryptAndAuthenticate('clear', this.globalData.sessionKey);
+        $$.ajax({
+          url: '/api/clear_clipboard/',
+          method: 'POST',
+          data: JSON.stringify({
+            data: cipher,
+            hmac: hmac
+          }),
+          contentType: 'application/json'
+        });
+      }, 60000);
     },
-    onError: function (e){
-      console.log('Failed to copy texts');
-    },
-
-    getPassword(){
-
+    getPassword(key, cb) {
+      ensureSession(this).then(() => {
+        const [cipher, hmac] = encryptAndAuthenticate(
+            JSON.stringify({
+              key
+            }),
+            this.globalData.sessionKey);
+        $$.ajax({
+          url: '/api/password/get/',
+          method: 'POST',
+          dataType: 'json',
+          data: JSON.stringify({
+            data: cipher,
+            hmac: hmac
+          }),
+          contentType: 'application/json',
+          success: (res) => {
+            let entry = decryptAndVerify(res.data, res.hmac, this.globalData.sessionKey);
+            entry = JSON.parse(entry);
+            cb(entry.password);
+          },
+          statusCode: {
+            '401': () => {
+              // FIXME: this may disturb user (e.g. user may be inputting the passwords)
+              this.$parent.verifyPassword();
+            }
+          }
+        });
+      });
     }
-
   }
 };

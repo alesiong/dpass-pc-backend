@@ -2,7 +2,8 @@
     <div>
         <div class="item-allbar">
             <div class="mdui-shadow-8 item-bar"
-                 v-for="item in items" v-bind:key="item.key" v-if="!item.hide">
+                 v-for="item in items" v-bind:key="item.key"
+                 v-if="!item.hide">
                 <div class="mdui-row">
                     <div class="mdui-col-xs-1 mdui-float-left site-icon">
                         <img height=90px
@@ -18,20 +19,20 @@
                                 Password
                             </div>
                             <div class=" mdui-col mdui-row-gapless mdui-typo-subheading">
-                                {{message}}
+                                **********
                             </div>
-                            <button class="mdui-col botton-1 mdui-row-gapless mdui-typo-caption mdui-btn mdui-ripple"
-                                    v-clipboard:copy="message"
-                                    v-clipboard:success="onCopy"
-                                    v-clipboard:error="onError">COPY
+                            <button class="mdui-col botton-reveal mdui-row-gapless mdui-typo-caption mdui-btn mdui-ripple"
+                                    @click="copyPassword(item.key)">
+                                COPY
                             </button>
-                            <button class="mdui-col botton-1  mdui-row-gapless mdui-typo-caption mdui-btn mdui-ripple"
-                                    v-text="btnText"
-                                    @click="showToggle"></button>
+                            <button class="mdui-col botton-reveal mdui-row-gapless mdui-typo-caption mdui-btn mdui-ripple"
+                                    @click="showToggle">
+                                reveal
+                            </button>
                         </div>
                         <p></p>
                         <div class="mdui-typo-caption-opacity">Last update at
-                            {{item.date}}
+                            {{formatDate(item.date)}}
                         </div>
                     </div>
                 </div>
@@ -50,16 +51,9 @@
                 <i class="mdui-icon material-icons">add</i>
             </button>
 
-            <!--<div class="mdui-fab-dial">-->
-            <!--<button class="mdui-fab mdui-fab-mini mdui-ripple mdui-color-blue"-->
-            <!--id="fab-verify"-->
-            <!--mdui-tooltip="{content: 'Verify Master Password', position: 'left'}"-->
-            <!--v-on:click="verifyPassword">-->
-            <!--<i class="mdui-icon material-icons">verified_user</i>-->
-            <!--</button>-->
-            <!--</div>-->
-            </div>
         </div>
+
+    </div>
 </template>
 
 <script src="../scripts/MainView.js"></script>
@@ -81,13 +75,12 @@
         min-height: 120px;
         max-height: 240px;
         float: left;
-        /*margin: 3px;*/
-        /*padding: 3px;*/
     }
-    .botton-1{
+
+    .botton-reveal {
         margin-top: -11px;
-        width:30px;
+        width: 32px;
         font-size: 12px;
-        height:30px;
+        height: 32px;
     }
 </style>

@@ -41,7 +41,7 @@
     "uglifyjs-webpack-plugin": "^1.1.8",
     "unit.js": "^2.0.0",
     "vue-loader": "^14.1.1",
-    "vue-template-compiler": "^2.5.13",
+    "vue-template-compiler": "^2.5.15",
     "webpack": "^3.10.0",
     "webpack-merge": "^4.1.1"
   },
@@ -49,8 +49,7 @@
     "babel-runtime": "^6.26.0",
     "crypto-js": "^3.1.9-1",
     "mdui": "^0.4.0",
-    "vue": "^2.5.14",
-    "vue-clipboard2": "0.0.9",
+    "vue": "^2.5.15",
     "vue-router": "^3.0.1"
   }
 }
