@@ -70,13 +70,20 @@ def get():
         return error_respond.key_not_found()
 
 
+# FIXME: catch database error
+
 @bp.route('/new/', methods=['POST'])
 @session_verify
 @master_password_verify
 def new():
     master_password: MasterPassword = current_app.config['MASTER_PASSWORD']
     data = json.loads(request.decrypted_data.decode())
-    del data['password']
+
+    try:
+        del data['password']
+    except KeyError:
+        # ignore it if the `password` entry is not provided
+        pass
     data = master_password.simple_encrypt(json.dumps(data).encode())
     entry = KeyLookupTable.new_entry(base64.encodebytes(data).decode())
     current_app.config['STORAGE'].add(entry.key,
@@ -95,21 +102,32 @@ def modify():
 @session_verify
 @master_password_verify
 def delete():
-    master_password: MasterPassword = current_app.config['MASTER_PASSWORD']
+    storage = current_app.config['STORAGE']
     data = json.loads(request.decrypted_data.decode())
-    key = data['key']
+
+    key = data.get('key')
+    if key is None:
+        error_respond.invalid_post_data()
+    if storage.get(key) is None:
+        error_respond.key_not_found()
+
+    current_app.config['STORAGE'].delete(key)
     KeyLookupTable.query.filter_by(key=key).delete()
     KeyLookupTable.query.session.commit()
-    current_app.config['STORAGE'].delete(key)
+    return jsonify(message='Success')
 
 
 @bp.route('/mark/', methods=['POST'])
 @session_verify
 @master_password_verify
 def mark():
-    master_password: MasterPassword = current_app.config['MASTER_PASSWORD']
     data = json.loads(request.decrypted_data.decode())
-    key = data['key']
-    entries = KeyLookupTable.query.filter_by(key=key)
-    entries.hidden = data['hidden']
+    key = data.get('key')
+    if key is None:
+        error_respond.invalid_post_data()
+    if 'hidden' not in data:
+        error_respond.invalid_post_data()
+    entry = KeyLookupTable.query.filter_by(key=key).first()
+    entry.hidden = data['hidden']
     KeyLookupTable.query.session.commit()
+    return jsonify(message='Success')
