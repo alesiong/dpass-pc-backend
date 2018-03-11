@@ -49,7 +49,8 @@
     "babel-runtime": "^6.26.0",
     "crypto-js": "^3.1.9-1",
     "mdui": "^0.4.0",
-    "vue": "^2.5.2",
+    "vue": "^2.5.14",
+    "vue-clipboard2": "0.0.9",
     "vue-router": "^3.0.1"
   }
 }

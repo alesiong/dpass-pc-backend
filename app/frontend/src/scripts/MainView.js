@@ -74,6 +74,43 @@ export default {
           }
         }
       });
+    },
+    addItem(data) {
+      var myDate=new Date();
+      this.items.push({url:data.url,siteName:data.siteName,userId:data.userId,
+        date:myDate.getFullYear()+'/'+(myDate.getMonth()+1)+'/'+myDate.getDate(),
+        hide:false}
+        );
+      },
+    showToggle:function(){
+      this.isShow = !this.isShow
+      if(this.isShow){
+        this.message='12345678'
+        this.btnText = "HIDE"
+      }else{
+        this.message='********'
+        this.btnText = "REVEAL"
+      }
+    },
+    onAddPassword() {
+      this.$refs.dialog.openDialog();
+    },
+    // onCopy(){
+    //     var Url2=document.getElementById("mainViewPassword");
+    //     Url2.select(); // 选择对象
+    //     document.execCommand("Copy"); // 执行浏览器复制命令
+    //     alert("已复制好，可贴粘。");
+    // },
+
+    onCopy: function (e){
+      console.log('You just copied: ' + e.text);
+    },
+    onError: function (e){
+      console.log('Failed to copy texts');
+    },
+
+    getPassword(){
+
     }
 
   }
