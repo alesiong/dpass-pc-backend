@@ -1,9 +1,8 @@
-import json
 import os
 from pathlib import Path
+from unqlite import UnQLite
 
 from flask import current_app
-from unqlite import UnQLite
 
 from app import LocalStorage
 from app.utils.misc import Singleton
