@@ -1,12 +1,16 @@
 import PasswordDialog from '@c/PasswordDialog';
-import {copyToClickboard, decrypt, decryptAndVerify, encrypt, encryptAndAuthenticate, ensureSession} from '@/utils';
+import Item from '@c/Item';
+
+import {decryptAndVerify, encrypt, encryptAndAuthenticate, ensureSession} from '@/utils';
 
 import mdui from 'mdui';
 
 export default {
   name: 'main-view',
+  props: ['type'],
   components: {
-    PasswordDialog
+    PasswordDialog,
+    Item
   },
   data() {
     return {
@@ -29,10 +33,9 @@ export default {
     window.clearInterval(this.localData.fetchingInterval);
   },
 
-  filters: {
-    formatDate(timestamp) {
-      const date = new Date(timestamp);
-      return date.getFullYear() + '/' + (date.getMonth() + 1) + '/' + date.getDate();
+  computed: {
+    length() {
+      return this.items.filter(this.shown.bind(this)).length;
     }
   },
 
@@ -70,34 +73,25 @@ export default {
     onAddPassword() {
       this.$refs.dialog.openDialog();
     },
-    onCopyPassword(key) {
-      const password = decrypt(this.localData.passwords[key], key);
-      if (!copyToClickboard(password)) {
-        mdui.snackbar({message: 'Failed to copy the password'});
-        return;
-      }
-      mdui.snackbar({message: 'Password copied to clipboard, and will be cleared in 1 minute'});
-
+    onCopiedPassword() {
       window.clearTimeout(this.localData.clearClipboardTimeout);
       this.localData.clearClipboardTimeout = window.setTimeout(() => {
-        const [cipher, hmac] = encryptAndAuthenticate('clear', this.globalData.sessionKey);
-        $$.ajax({
-          url: '/api/clear_clipboard/',
-          method: 'POST',
-          data: JSON.stringify({
-            data: cipher,
-            hmac: hmac
-          }),
-          contentType: 'application/json'
+        ensureSession(this).then(() => {
+          const [cipher, hmac] = encryptAndAuthenticate('clear', this.globalData.sessionKey);
+          $$.ajax({
+            url: '/api/clear_clipboard/',
+            method: 'POST',
+            data: JSON.stringify({
+              data: cipher,
+              hmac: hmac
+            }),
+            contentType: 'application/json'
+          });
         });
       }, 60000);
     },
 
     // utils
-    getPassword(key) {
-      return decrypt(this.localData.passwords[key], key);
-    },
-
     processUrl(url) {
       const urlWithProtocol = /^.*:\/\/.*$/g;
       if (!url.match(urlWithProtocol)) {
@@ -106,7 +100,7 @@ export default {
       return url;
     },
 
-    fetchPassword(key, inSesion = false) {
+    fetchPassword(key, inSession = false) {
       const func = resolve => {
         const [cipher, hmac] = encryptAndAuthenticate(
             JSON.stringify({
@@ -130,12 +124,20 @@ export default {
         });
       };
       return new Promise(resolve => {
-        if (inSesion) {
+        if (inSession) {
           func(resolve);
         } else {
           ensureSession(this).then(func.bind(this, resolve));
         }
       });
+    },
+
+    shown(item) {
+      if (this.type === 'all') {
+        return !item.hidden;
+      } else {
+        return !item.hidden && item.type === this.type;
+      }
     },
 
     // workers
@@ -151,8 +153,7 @@ export default {
             for (const p of passwords) {
               newPasswords.push(Object.assign({
                     key: p.key,
-                    hidden: false,
-                    showPlain: false
+                    hidden: false
                   },
                   p.metadata
               ));

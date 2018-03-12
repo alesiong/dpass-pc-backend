@@ -1,7 +1,6 @@
 import Vue from 'vue';
 import Router from 'vue-router';
 import MainView from '@c/MainView';
-import PasswordView from '@c/PasswordView'
 
 Vue.use(Router);
 
@@ -10,19 +9,19 @@ export default new Router({
   routes: [
     {
       path: '/',
-      name: 'MainView',
+      name: 'All',
       component: MainView,
       props: {type: 'all'}
     },
     {
       path: '/password/',
-      name: 'MainView',
+      name: 'Password',
       component: MainView,
       props: {type: 'password'}
     },
     {
       path: '/secret-notes/',
-      name: 'MainView',
+      name: 'Secret Notes',
       component: MainView,
       props: {type: 'secret'}
     },
