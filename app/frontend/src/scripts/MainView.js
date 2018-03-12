@@ -47,12 +47,6 @@ export default {
           success: () => {
             mdui.snackbar({message: 'Successfully added password'});
             this.fetchPasswords();
-          },
-          statusCode: {
-            '401': () => {
-              // FIXME: this may disturb user (e.g. user may just submit the password)
-              this.$parent.verifyPassword();
-            }
           }
         });
       });
@@ -83,12 +77,6 @@ export default {
               });
             }
             this.items = newPasswords;
-          },
-          statusCode: {
-            '401': () => {
-              // FIXME: this may disturb user (e.g. user may be inputting the passwords)
-              this.$parent.verifyPassword();
-            }
           }
         });
       });
@@ -151,12 +139,6 @@ export default {
             let entry = decryptAndVerify(res.data, res.hmac, this.globalData.sessionKey);
             entry = JSON.parse(entry);
             resolve(entry.password);
-          },
-          statusCode: {
-            '401': () => {
-              // FIXME: this may disturb user (e.g. user may be inputting the passwords)
-              this.$parent.verifyPassword();
-            }
           }
         });
       };

@@ -24,7 +24,7 @@ def get_table():
         entries = KeyLookupTable.query.filter_by(hidden=False).all()
 
     if master_password.check_expire(len(entries)):
-        error_respond.authentication_failure()
+        error_respond.master_password_expired()
 
     entries = [
         {

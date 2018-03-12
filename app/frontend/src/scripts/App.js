@@ -3,6 +3,7 @@ import AppHeader from '@c/AppHeader';
 import GuardView from '@c/GuardView';
 import {refreshSessionKey} from '../utils';
 import {getInitState, nextMinutes} from '@/utils';
+import mdui from 'mdui';
 
 export default {
   components: {
@@ -41,6 +42,19 @@ export default {
 
     getInitState().then((state) => {
       this.initState = state;
+    });
+
+    $$(document).ajaxError((_, xhr) => {
+      if (xhr.status === 401) {
+        const res = JSON.parse(xhr.response);
+        switch (res.error) {
+          case 'Master Password Expired':
+            // FIXME: this may disturb user (e.g. user may just submit/inputting the password)
+            this.verifyPassword();
+            console.log('password expired');
+            break;
+        }
+      }
     });
   },
   methods: {

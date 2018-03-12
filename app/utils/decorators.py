@@ -6,7 +6,7 @@ from functools import wraps
 from flask import request, current_app
 
 from app.utils.cipher import decrypt_and_verify
-from app.utils.error_respond import invalid_post_data, authentication_failure
+from app.utils.error_respond import invalid_post_data, authentication_failure, master_password_expired
 from app.utils.exceptions import StateError
 from app.utils.session_key import SessionKey
 
@@ -51,11 +51,11 @@ def master_password_verify(func):
         try:
             master_password: MasterPassword = current_app.config['MASTER_PASSWORD']
         except KeyError:
-            authentication_failure()
+            master_password_expired()
             return
         expired = master_password.check_expire(exempt_times)
         if expired:
-            authentication_failure()
+            master_password_expired()
 
         return f(*args, **kwargs)
 
