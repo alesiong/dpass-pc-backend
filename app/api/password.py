@@ -7,21 +7,24 @@ from app import SessionKey
 from app.models import KeyLookupTable
 from app.utils import error_respond
 from app.utils.decorators import session_verify, master_password_verify
+from app.utils.error_respond import authentication_failure
 from app.utils.master_password import MasterPassword
 
 bp = Blueprint('api.password', __name__, url_prefix='/api/password')
 
 
 @bp.route('/')
-@session_verify
 @master_password_verify
 def get_table():
     master_password: MasterPassword = current_app.config['MASTER_PASSWORD']
     hidden = request.args.get('hidden')
     if hidden:
-        entries = KeyLookupTable.query.filter_by(hidden=False).all()
-    else:
         entries = KeyLookupTable.query.all()
+    else:
+        entries = KeyLookupTable.query.filter_by(hidden=False).all()
+
+    if master_password.check_expire(len(entries)):
+        error_respond.master_password_expired()
 
     entries = [
         {
@@ -31,7 +34,6 @@ def get_table():
                     base64.decodebytes(entry.meta_data.encode())).decode())
         } for entry in entries
     ]
-
     return SessionKey().encrypt_response(entries)
 
 
@@ -74,7 +76,7 @@ def get():
 
 @bp.route('/new/', methods=['POST'])
 @session_verify
-@master_password_verify
+@master_password_verify(2)
 def new():
     master_password: MasterPassword = current_app.config['MASTER_PASSWORD']
     data = json.loads(request.decrypted_data.decode())
@@ -84,11 +86,14 @@ def new():
     except KeyError:
         # ignore it if the `password` entry is not provided
         pass
-    data = master_password.simple_encrypt(json.dumps(data).encode())
+    data = master_password.simple_encrypt(json.dumps(data))
+
     entry = KeyLookupTable.new_entry(base64.encodebytes(data).decode())
     current_app.config['STORAGE'].add(entry.key,
                                       base64.encodebytes(
                                           master_password.encrypt(request.decrypted_data.decode(), entry.key)).decode())
+    # FIXME: test
+    current_app.config['STORAGE'].store()
     return SessionKey().encrypt_response({'key': entry.key})
 
 

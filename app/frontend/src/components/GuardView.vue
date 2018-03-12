@@ -1,21 +1,8 @@
 <!-- This view is used to create/verify the master password-->
 
 <template>
-    <!--Verify the password-->
-    <div v-if="verify">
-        <div class="mdui-textfield">
-            <label class="mdui-textfield-label">Enter Master Password</label>
-            <input class="mdui-textfield-input" type="password"
-                   v-model="password"/>
-        </div>
-        <button class="mdui-btn mdui-btn-raised mdui-ripple mdui-color-theme-accent"
-                v-on:click="onVerifyMasterPassword">
-            Unlock DPass
-        </button>
-    </div>
-
     <!--Set the password-->
-    <div v-else-if="state === 0">
+    <div v-if="state === 0">
         <div class="mdui-textfield">
             <label class="mdui-textfield-label">Enter Master Password</label>
             <input class="mdui-textfield-input" type="password"
@@ -41,10 +28,25 @@
     </div>
 
     <!--Loading-->
-    <div v-else>
-        <span>Initializing</span>
-        <div class="mdui-spinner mdui-text-color-theme"></div>
+    <div v-else-if="state === 1">
+        <p>Initializing</p>
+        <div class="mdui-progress">
+            <div class="mdui-progress-indeterminate"></div>
+        </div>
     </div>
+    <!--Verify the password-->
+    <div v-else-if="verify">
+        <div class="mdui-textfield">
+            <label class="mdui-textfield-label">Enter Master Password</label>
+            <input class="mdui-textfield-input" type="password"
+                   v-model="password"/>
+        </div>
+        <button class="mdui-btn mdui-btn-raised mdui-ripple mdui-color-theme-accent"
+                v-on:click="onVerifyMasterPassword">
+            Unlock DPass
+        </button>
+    </div>
+    <div v-else></div>
 </template>
 
 <script src="../scripts/GuardView.js">

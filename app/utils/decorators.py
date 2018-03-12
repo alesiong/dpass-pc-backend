@@ -6,7 +6,7 @@ from functools import wraps
 from flask import request, current_app
 
 from app.utils.cipher import decrypt_and_verify
-from app.utils.error_respond import invalid_post_data, authentication_failure
+from app.utils.error_respond import invalid_post_data, authentication_failure, master_password_expired
 from app.utils.exceptions import StateError
 from app.utils.session_key import SessionKey
 
@@ -44,16 +44,36 @@ def session_verify(func):
 
 def master_password_verify(func):
     from app.utils.master_password import MasterPassword
-    @wraps(func)
-    def __wrapper(*args, **kwargs):
-        master_password: MasterPassword = current_app.config['MASTER_PASSWORD']
-        expired = master_password.check_expire()
+
+    exempt_times = func if isinstance(func, int) else 1
+
+    def __inner_wrapper(f, *args, **kwargs):
+        try:
+            master_password: MasterPassword = current_app.config['MASTER_PASSWORD']
+        except KeyError:
+            master_password_expired()
+            return
+        expired = master_password.check_expire(exempt_times)
         if expired:
-            authentication_failure()
+            master_password_expired()
 
-        return func(*args, **kwargs)
+        return f(*args, **kwargs)
 
-    return __wrapper
+    if callable(func):
+        @wraps(func)
+        def __wrapper(*args, **kwargs):
+            return __inner_wrapper(func, *args, **kwargs)
+
+        return __wrapper
+    else:
+        def __decorator(f):
+            @wraps(f)
+            def __wrapper(*args, **kwargs):
+                return __inner_wrapper(f, *args, **kwargs)
+
+            return __wrapper
+
+        return __decorator
 
 
 def check_state(state_name):
@@ -92,7 +112,11 @@ def check_and_unset_state(state_name):
         @check_state(state_name)
         def __wrapper(self, *args, **kwargs):
             rtn = func(self, *args, **kwargs)
-            setattr(self, state_name, False)
+            state = getattr(self, state_name)
+            if isinstance(state, int):
+                setattr(self, state_name, max(state - 1, 0))
+            else:
+                setattr(self, state_name, False)
             return rtn
 
         return __wrapper
