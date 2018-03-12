@@ -13,18 +13,22 @@
                 Passwords
             </router-link>
             <router-link class="mdui-list-item mdui-ripple"
-                         to="/secretNote/"
+                         to="/secret-notes/"
                          exact-active-class="mdui-list-item-active">
                 Secret Notes
             </router-link>
-            <li class="mdui-divider mdui-color-white"  ></li>
-            <li class="mdui-menu-item mdui-ripple"style="margin-top:2.5em" >
-                <i class="mdui-menu-item-icon mdui-icon material-icons">settings_backup_restore
-                </i>Sync & Backup
-            </li>
-            <li class="mdui-menu-item mdui-ripple"style="margin-top:1.0em">
-                <i class="mdui-menu-item-icon mdui-icon material-icons">settings</i>Setting
 
+            <li class="mdui-divider"></li>
+
+            <li class="mdui-list-item mdui-ripple">
+                <i class="mdui-icon material-icons mdui-m-r-2">
+                    settings_backup_restore
+                </i>
+                Sync & Backup
+            </li>
+            <li class="mdui-list-item mdui-ripple">
+                <i class="mdui-icon material-icons mdui-m-r-2">settings</i>
+                Settings
             </li>
         </ul>
     </div>

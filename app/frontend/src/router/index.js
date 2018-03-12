@@ -11,12 +11,20 @@ export default new Router({
     {
       path: '/',
       name: 'MainView',
-      component: MainView
+      component: MainView,
+      props: {type: 'all'}
     },
     {
       path: '/password/',
-      name: 'PasswordView',
-      component: PasswordView
+      name: 'MainView',
+      component: MainView,
+      props: {type: 'password'}
+    },
+    {
+      path: '/secret-notes/',
+      name: 'MainView',
+      component: MainView,
+      props: {type: 'secret'}
     },
     {
       path: '*',
