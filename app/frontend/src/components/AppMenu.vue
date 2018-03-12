@@ -1,5 +1,4 @@
 <template>
-    <!--TODO: here are the navigation menu-->
     <div class="mdui-drawer mdui-color-theme-800" id="left-drawer">
         <ul class="mdui-list" id="menu">
             <router-link class="mdui-list-item mdui-ripple"

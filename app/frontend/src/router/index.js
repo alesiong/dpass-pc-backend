@@ -5,7 +5,6 @@ import PasswordView from '@c/PasswordView'
 
 Vue.use(Router);
 
-// TODO: add each page in router like this (don't forget to import)
 export default new Router({
   mode: 'history',
   routes: [

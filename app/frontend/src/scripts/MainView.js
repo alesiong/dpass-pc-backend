@@ -10,15 +10,23 @@ export default {
   },
   data() {
     return {
-      items: [],
-      passwords: {}
+      items: []
     };
   },
   mounted() {
-  },
-  created() {
+    console.log('mounted');
     this.fetchPasswords();
-    window.setInterval(this.fetchPasswords.bind(this), 30000);
+    const fetchingInterval = window.setInterval(this.fetchPasswords.bind(this), 30000);
+    this.localData = {
+      fetchingInterval,
+      clearClipboardTimeout: null,
+      passwords: {}
+    };
+  },
+
+  beforeDestroy() {
+    console.log('destroying');
+    window.clearInterval(this.localData.fetchingInterval);
   },
 
   methods: {
@@ -53,65 +61,64 @@ export default {
       this.$refs.dialog.openDialog();
     },
     fetchPasswords() {
-      $$.ajax({
-        url: '/api/password/',
-        dataType: 'json',
-        success: (res) => {
-          let passwords = decryptAndVerify(res.data, res.hmac, this.globalData.sessionKey);
-          passwords = JSON.parse(passwords);
-          const newPasswords = [];
-          for (const p of passwords) {
-            newPasswords.push(Object.assign({
-                  key: p.key,
-                  hide: false,
-                  isShow: false
-                },
-                p.metadata
-            ));
+      ensureSession(this).then(() => {
+        $$.ajax({
+          url: '/api/password/',
+          dataType: 'json',
+          success: (res) => {
+            let passwords = decryptAndVerify(res.data, res.hmac, this.globalData.sessionKey);
+            passwords = JSON.parse(passwords);
+            const newPasswords = [];
+            for (const p of passwords) {
+              newPasswords.push(Object.assign({
+                    key: p.key,
+                    hide: false,
+                    isShow: false
+                  },
+                  p.metadata
+              ));
 
-            this.getPassword(p.key, (password) => {
-              this.passwords[p.key] = encrypt(password, p.key);
-            });
+              this.getPassword(p.key, true).then(password => {
+                this.localData.passwords[p.key] = encrypt(password, p.key);
+              });
+            }
+            this.items = newPasswords;
+          },
+          statusCode: {
+            '401': () => {
+              // FIXME: this may disturb user (e.g. user may be inputting the passwords)
+              this.$parent.verifyPassword();
+            }
           }
-          this.items = newPasswords;
-        },
-        statusCode: {
-          '401': () => {
-            // FIXME: this may disturb user (e.g. user may be inputting the passwords)
-            this.$parent.verifyPassword();
-          }
-        }
+        });
       });
     },
     formatDate(timestamp) {
       const date = new Date(timestamp);
       return date.getFullYear() + '/' + (date.getMonth() + 1) + '/' + date.getDate();
     },
-    showToggle: function() {
+    showToggle: function(index) {
+      const item = this.items[index];
+      item.isShow = !item.isShow;
       this.isShow = !this.isShow;
-      if (this.isShow) {
-        this.message = '12345678';
-        this.btnText = 'HIDE';
-      } else {
-        this.message = '********';
-        this.btnText = 'REVEAL';
-      }
     },
     onAddPassword() {
       this.$refs.dialog.openDialog();
     },
+    getPass(key) {
+      return decrypt(this.localData.passwords[key], key);
+    },
 
     copyPassword(key) {
-      window.encrypt = encrypt;
-      window.decrypt = decrypt;
-      const password = decrypt(this.passwords[key], key);
+      const password = decrypt(this.localData.passwords[key], key);
       if (!copyToClickboard(password)) {
         mdui.snackbar({message: 'Failed to copy the password'});
         return;
       }
       mdui.snackbar({message: 'Password copied to clipboard, and will be cleared in 1 minute'});
-      // TODO: only clear clipboard once if copy more
-      window.setTimeout(() => {
+
+      window.clearTimeout(this.localData.clearClipboardTimeout);
+      this.localData.clearClipboardTimeout = window.setTimeout(() => {
         const [cipher, hmac] = encryptAndAuthenticate('clear', this.globalData.sessionKey);
         $$.ajax({
           url: '/api/clear_clipboard/',
@@ -124,8 +131,8 @@ export default {
         });
       }, 60000);
     },
-    getPassword(key, cb) {
-      ensureSession(this).then(() => {
+    getPassword(key, inSesion = false) {
+      const func = resolve => {
         const [cipher, hmac] = encryptAndAuthenticate(
             JSON.stringify({
               key
@@ -143,7 +150,7 @@ export default {
           success: (res) => {
             let entry = decryptAndVerify(res.data, res.hmac, this.globalData.sessionKey);
             entry = JSON.parse(entry);
-            cb(entry.password);
+            resolve(entry.password);
           },
           statusCode: {
             '401': () => {
@@ -152,6 +159,13 @@ export default {
             }
           }
         });
+      };
+      return new Promise(resolve => {
+        if (inSesion) {
+          func(resolve);
+        } else {
+          ensureSession(this).then(func.bind(this, resolve));
+        }
       });
     }
   }

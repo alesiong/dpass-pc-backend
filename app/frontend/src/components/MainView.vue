@@ -2,7 +2,7 @@
     <div>
         <div class="item-allbar">
             <div class="mdui-shadow-8 item-bar"
-                 v-for="item in items" v-bind:key="item.key"
+                 v-for="(item, index) in items" v-bind:key="item.key"
                  v-if="!item.hide">
                 <div class="mdui-row">
                     <div class="mdui-col-xs-1 mdui-float-left site-icon">
@@ -11,28 +11,38 @@
                     </div>
                     <div class="mdui-col-xs-6">
                         <div class="mdui-typo-headline">{{ item.url }}</div>
-                        <p></p>
+                        <br/>
                         <div class="mdui-typo-subheading">{{item.userId}}</div>
-                        <p></p>
-                        <div class="mdui-row-xs-6">
-                            <div class=" mdui-col passwordZoneFirst mdui-typo-subheading">
+                        <br/>
+                        <div class="mdui-row">
+                            <span class="mdui-col passwordZoneFirst mdui-typo-subheading">
                                 Password
-                            </div>
-                            <div class=" mdui-col mdui-row-gapless mdui-typo-subheading">
-                                **********
-                            </div>
-                            <button class="mdui-col botton-reveal mdui-row-gapless mdui-typo-caption mdui-btn mdui-ripple"
+                            </span>
+                            <span class="mdui-col mdui-typo-subheading">
+                                <span v-if="item.isShow">
+                                    {{ getPass(item.key) }}
+                                </span>
+                                <span v-else>
+                                    ••••••••
+                                </span>
+                            </span>
+                            <button class="mdui-col botton-reveal mdui-typo-caption mdui-btn mdui-ripple"
                                     @click="copyPassword(item.key)">
                                 Copy
                             </button>
-                            <button class="mdui-col botton-reveal mdui-row-gapless mdui-typo-caption mdui-btn mdui-ripple"
-                                    @click="showToggle">
-                                Reveal
+                            <button class="mdui-col botton-reveal mdui-typo-caption mdui-btn mdui-ripple"
+                                    @click="showToggle(index)">
+                                <span v-if="item.isShow">
+                                    Hide
+                                </span>
+                                <span v-else>
+                                    Reveal
+                                </span>
                             </button>
                         </div>
-                        <p></p>
-                        <div class="mdui-typo-caption-opacity">Last update at
-                            {{formatDate(item.date)}}
+                        <br/>
+                        <div class="mdui-typo-caption-opacity">
+                            Last update at {{formatDate(item.date)}}
                         </div>
                     </div>
                 </div>
@@ -60,7 +70,6 @@
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 
-<!-- TODO: either write the styles here or use 'src' attribute-->
 <style scoped>
     .item-allbar .item-bar:not(:first-child) {
         margin-top: 24px;

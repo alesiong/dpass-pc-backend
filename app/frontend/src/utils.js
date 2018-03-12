@@ -132,8 +132,8 @@ export async function getInitState(): Promise<number> {
 
 export async function ensureSession(component: Vue): Promise<void> {
   if (Date.now() > component.globalData.sessionKeyExpiry) {
-    component.globalData.sessionKey = await refreshSessionKey(component.globalData.sessionKey);
     component.globalData.sessionKeyExpiry = nextMinutes(10);
+    component.globalData.sessionKey = await refreshSessionKey(component.globalData.sessionKey);
     console.log('session refreshed');
   }
   console.log('in session');
