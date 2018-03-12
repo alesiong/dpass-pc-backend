@@ -119,7 +119,7 @@ class MasterPassword:
         decrypt_key = SHA256.new(data=key.encode() + self.__encryption_key).digest()
         return decrypt_fixed_iv(ciphertext, decrypt_key)
 
-    def check_expire(self) -> bool:
+    def check_expire(self, exempt_times=1) -> bool:
         """
         Return True if the master password has expired, should generate a new MasterPassword object
         """
@@ -130,6 +130,6 @@ class MasterPassword:
             except AttributeError:
                 pass
         else:
-            self._checked_expire = True
+            self._checked_expire = exempt_times
 
         return expired

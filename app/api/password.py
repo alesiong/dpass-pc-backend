@@ -22,28 +22,19 @@ def get_table():
         entries = KeyLookupTable.query.all()
     else:
         entries = KeyLookupTable.query.filter_by(hidden=False).all()
-    result = []
-    for entry in entries:
-        if master_password.check_expire():
-            error_respond.authentication_failure()
-        result.append(
-            {
-                'key': entry.key,
-                'metadata': json.loads(
-                    master_password.simple_decrypt(
-                        base64.decodebytes(entry.meta_data.encode())).decode())
-            }
-        )
 
-    # entries = [
-    #     {
-    #         'key': entry.key,
-    #         'metadata': json.loads(
-    #             master_password.simple_decrypt(
-    #                 base64.decodebytes(entry.meta_data.encode())).decode())
-    #     } for entry in entries
-    # ]
-    return SessionKey().encrypt_response(result)
+    if master_password.check_expire(len(entries)):
+        error_respond.authentication_failure()
+
+    entries = [
+        {
+            'key': entry.key,
+            'metadata': json.loads(
+                master_password.simple_decrypt(
+                    base64.decodebytes(entry.meta_data.encode())).decode())
+        } for entry in entries
+    ]
+    return SessionKey().encrypt_response(entries)
 
 
 @bp.route('/persistent/', methods=['POST'])
@@ -85,7 +76,7 @@ def get():
 
 @bp.route('/new/', methods=['POST'])
 @session_verify
-@master_password_verify
+@master_password_verify(2)
 def new():
     master_password: MasterPassword = current_app.config['MASTER_PASSWORD']
     data = json.loads(request.decrypted_data.decode())
@@ -96,10 +87,6 @@ def new():
         # ignore it if the `password` entry is not provided
         pass
     data = master_password.simple_encrypt(json.dumps(data))
-
-    # FIXME: bad design
-    if master_password.check_expire():
-        error_respond.authentication_failure()
 
     entry = KeyLookupTable.new_entry(base64.encodebytes(data).decode())
     current_app.config['STORAGE'].add(entry.key,

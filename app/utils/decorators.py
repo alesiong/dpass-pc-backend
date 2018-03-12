@@ -44,20 +44,36 @@ def session_verify(func):
 
 def master_password_verify(func):
     from app.utils.master_password import MasterPassword
-    @wraps(func)
-    def __wrapper(*args, **kwargs):
+
+    exempt_times = func if isinstance(func, int) else 1
+
+    def __inner_wrapper(*args, **kwargs):
         try:
             master_password: MasterPassword = current_app.config['MASTER_PASSWORD']
         except KeyError:
             authentication_failure()
             return
-        expired = master_password.check_expire()
+        expired = master_password.check_expire(exempt_times)
         if expired:
             authentication_failure()
 
         return func(*args, **kwargs)
 
-    return __wrapper
+    if callable(func):
+        @wraps(func)
+        def __wrapper(*args, **kwargs):
+            return __inner_wrapper(*args, **kwargs)
+
+        return __wrapper
+    else:
+        def __decorator(f):
+            @wraps(f)
+            def __wrapper(*args, **kwargs):
+                return __inner_wrapper(*args, **kwargs)
+
+            return __wrapper
+
+        return __decorator
 
 
 def check_state(state_name):
@@ -96,7 +112,11 @@ def check_and_unset_state(state_name):
         @check_state(state_name)
         def __wrapper(self, *args, **kwargs):
             rtn = func(self, *args, **kwargs)
-            setattr(self, state_name, False)
+            state = getattr(self, state_name)
+            if isinstance(state, int):
+                setattr(self, state_name, max(state - 1, 0))
+            else:
+                setattr(self, state_name, False)
             return rtn
 
         return __wrapper
