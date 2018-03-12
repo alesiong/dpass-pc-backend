@@ -1,6 +1,32 @@
 <template>
     <div>
-        <div class="item-allbar">
+
+        <h1 class="doc-chapter-title doc-chapter-title-first mdui-text-color-grey"
+            style="margin-top:1.5em">All (6)</h1>
+
+
+        <div class="mdui-container mdui-valign" >
+            <div class="mdui-toolbar-spacer"></div>
+
+            <button class="mdui-fab mdui-fab-mini mdui-ripple mdui-color-red"
+                    mdui-tooltip="{content: 'sort by date'}">
+                <i class="mdui-icon material-icons">sort</i>
+            </button>
+
+            <button class="mdui-fab mdui-fab-mini mdui-color-theme-accent mdui-ripple mdui-color-yellow"
+                    mdui-tooltip="{content: 'sort by alpha'}">
+                <i class="mdui-icon material-icons">sort_by_alpha</i>
+            </button>
+
+            <select class="mdui-select" mdui-select="{position: 'bottom'}"
+                    style="margin-left:2.5em; margin-bottom:1.5em" >
+                <option value="1">Sort by alpha</option>
+                <option value="2">Sort by date</option>
+            </select>
+        </div>
+
+
+        <div class="item-allbar" >
             <div class="mdui-shadow-8 item-bar"
                  v-for="(item, index) in items" v-bind:key="item.key"
                  v-if="!item.hidden">
