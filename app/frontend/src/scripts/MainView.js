@@ -36,6 +36,16 @@ export default {
   computed: {
     length() {
       return this.items.filter(this.shown.bind(this)).length;
+    },
+    title() {
+      switch (this.type) {
+        case 'all':
+          return 'All';
+        case 'password':
+          return 'Password';
+        case 'secret':
+          return 'Secret Notes';
+      }
     }
   },
 
@@ -65,6 +75,9 @@ export default {
     },
     onAddPassword() {
       this.$refs.dialog.openDialog();
+    },
+    onAddSecretNote() {
+
     },
     onToggleReveal: function(index) {
       const item = this.items[index];

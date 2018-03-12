@@ -1,8 +1,8 @@
 <template>
     <div>
         <div class="mdui-row action-bar">
-            <div class="mdui-col-xs-3 mdui-typo-display-1-opacity mdui-m-l-1">
-                All ({{length}})
+            <div class="mdui-col-xs-4 mdui-typo-display-1-opacity mdui-m-l-1">
+                {{title}} ({{length}})
             </div>
 
             <!--<button class="mdui-btn mdui-btn-icon mdui-ripple mdui-btn-raised mdui-color-red"-->
@@ -15,7 +15,7 @@
             <!--<i class="mdui-icon material-icons">sort_by_alpha</i>-->
             <!--</button>-->
 
-            <div class="mdui-col-xs-2 mdui-col-offset-xs-10 ">
+            <div class="mdui-col-xs-3 mdui-col-offset-xs-10 ">
                 <select class="mdui-select" mdui-select="{position: 'bottom'}">
                     <option value="1">Sort by alpha</option>
                     <option value="2">Sort by date</option>
@@ -30,7 +30,7 @@
                   v-bind:key="item.key"
                   v-if="shown(item)"
 
-                  type="password"
+                  v-bind:type="item.type"
                   v-bind:data="{
                     url: item.url,
                     siteName: item.siteName,
@@ -47,13 +47,22 @@
                 ref="dialog"
                 v-on:click-add="onConfirmAddItem"/>
 
+        <!--TODO: dynamically change this by type-->
         <div class="mdui-fab-wrapper" mdui-fab="{trigger: 'hover'}">
             <button class="mdui-fab mdui-ripple mdui-color-theme"
                     id="fab-add"
-                    mdui-tooltip="{content: 'New Password', position: 'left'}"
+                    mdui-tooltip="{content: 'Add Password', position: 'left'}"
                     v-on:click="onAddPassword">
                 <i class="mdui-icon material-icons">add</i>
             </button>
+
+            <div class="mdui-fab-dial">
+                <button class="mdui-fab mdui-fab-mini mdui-ripple mdui-color-yellow"
+                        mdui-tooltip="{content: 'Add Secret Note', position: 'left'}"
+                        v-on:click="onAddSecretNote">
+                    <i class="mdui-icon material-icons">note_add</i>
+                </button>
+            </div>
 
         </div>
 

@@ -37,7 +37,8 @@ export default {
         url: this.url,
         siteName: this.siteName,
         userId: this.userId,
-        password: this.password
+        password: this.password,
+        type: 'password'
       });
       this.password = '';
     },
