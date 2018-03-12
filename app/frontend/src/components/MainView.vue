@@ -10,7 +10,9 @@
                              v-bind:src="item.url+'/favicon.ico'"/>
                     </div>
                     <div class="mdui-col-xs-6">
-                        <div class="mdui-typo-headline">{{ item.url }}</div>
+                        <div class="mdui-typo-headline">{{ item.siteName }}</div>
+                        <br/>
+                        <div class="mdui-typo-subheading-opacity">{{ item.url }}</div>
                         <br/>
                         <div class="mdui-typo-subheading">{{item.userId}}</div>
                         <br/>

@@ -7,6 +7,8 @@
                 <i class="mdui-icon material-icons">note_add</i>
                 <label class="mdui-textfield-label">URL</label>
                 <input class="mdui-textfield-input"
+                       type="text"
+                       autocomplete="off"
                        v-model="url"/>
             </div>
 
@@ -14,13 +16,17 @@
                 <i class="mdui-icon material-icons">explore</i>
                 <label class="mdui-textfield-label">Site Name</label>
                 <input class="mdui-textfield-input"
+                       type="text"
+                       autocomplete="off"
                        v-model="siteName"/>
             </div>
 
             <div class="mdui-textfield">
                 <i class="mdui-icon material-icons">account_circle</i>
                 <label class="mdui-textfield-label">User Name</label>
-                <input class="mdui-textfield-input" type="text"
+                <input class="mdui-textfield-input"
+                       type="text"
+                       autocomplete="off"
                        v-model="userId"/>
             </div>
 
@@ -29,7 +35,9 @@
                     <div class="mdui-textfield">
                         <i class="mdui-icon material-icons">vpn_key</i>
                         <label class="mdui-textfield-label">Password</label>
-                        <input class="mdui-textfield-input" type="password"
+                        <input class="mdui-textfield-input"
+                               type="password"
+                               autocomplete="off"
                                v-model="password"/>
                     </div>
                 </div>
@@ -69,7 +77,8 @@
         padding-top: 16px;
         margin-left: 72px;
     }
-    .generate-buttom{
+
+    .generate-buttom {
         margin-top: 40px;
     }
 

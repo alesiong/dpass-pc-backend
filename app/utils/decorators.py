@@ -47,7 +47,7 @@ def master_password_verify(func):
 
     exempt_times = func if isinstance(func, int) else 1
 
-    def __inner_wrapper(*args, **kwargs):
+    def __inner_wrapper(f, *args, **kwargs):
         try:
             master_password: MasterPassword = current_app.config['MASTER_PASSWORD']
         except KeyError:
@@ -57,19 +57,19 @@ def master_password_verify(func):
         if expired:
             authentication_failure()
 
-        return func(*args, **kwargs)
+        return f(*args, **kwargs)
 
     if callable(func):
         @wraps(func)
         def __wrapper(*args, **kwargs):
-            return __inner_wrapper(*args, **kwargs)
+            return __inner_wrapper(func, *args, **kwargs)
 
         return __wrapper
     else:
         def __decorator(f):
             @wraps(f)
             def __wrapper(*args, **kwargs):
-                return __inner_wrapper(*args, **kwargs)
+                return __inner_wrapper(f, *args, **kwargs)
 
             return __wrapper
 
