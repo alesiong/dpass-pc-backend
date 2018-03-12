@@ -1,4 +1,5 @@
 import 'mdui/dist/css/mdui.css';
+import 'ionicons/dist/css/ionicons.css'
 
 import Vue from 'vue';
 import App from './App';

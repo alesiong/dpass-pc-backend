@@ -29,9 +29,18 @@ export default {
     window.clearInterval(this.localData.fetchingInterval);
   },
 
+  filters: {
+    formatDate(timestamp) {
+      const date = new Date(timestamp);
+      return date.getFullYear() + '/' + (date.getMonth() + 1) + '/' + date.getDate();
+    }
+  },
+
   methods: {
-    addItem(data) {
+    // listeners
+    onConfirmAddItem(data) {
       data.date = Date.now();
+      data.url = this.processUrl(data.url);
       ensureSession(this).then(() => {
         const passwordEntry = JSON.stringify(data);
         const [cipher, hmac] = encryptAndAuthenticate(passwordEntry, this.globalData.sessionKey);
@@ -54,50 +63,14 @@ export default {
     onAddPassword() {
       this.$refs.dialog.openDialog();
     },
-    fetchPasswords() {
-      ensureSession(this).then(() => {
-        $$.ajax({
-          url: '/api/password/',
-          dataType: 'json',
-          success: (res) => {
-            let passwords = decryptAndVerify(res.data, res.hmac, this.globalData.sessionKey);
-            passwords = JSON.parse(passwords);
-            const newPasswords = [];
-            for (const p of passwords) {
-              newPasswords.push(Object.assign({
-                    key: p.key,
-                    hide: false,
-                    isShow: false
-                  },
-                  p.metadata
-              ));
-
-              this.getPassword(p.key, true).then(password => {
-                this.localData.passwords[p.key] = encrypt(password, p.key);
-              });
-            }
-            this.items = newPasswords;
-          }
-        });
-      });
-    },
-    formatDate(timestamp) {
-      const date = new Date(timestamp);
-      return date.getFullYear() + '/' + (date.getMonth() + 1) + '/' + date.getDate();
-    },
-    showToggle: function(index) {
+    onToggleReveal: function(index) {
       const item = this.items[index];
-      item.isShow = !item.isShow;
-      this.isShow = !this.isShow;
+      item.showPlain = !item.showPlain;
     },
     onAddPassword() {
       this.$refs.dialog.openDialog();
     },
-    getPass(key) {
-      return decrypt(this.localData.passwords[key], key);
-    },
-
-    copyPassword(key) {
+    onCopyPassword(key) {
       const password = decrypt(this.localData.passwords[key], key);
       if (!copyToClickboard(password)) {
         mdui.snackbar({message: 'Failed to copy the password'});
@@ -119,7 +92,21 @@ export default {
         });
       }, 60000);
     },
-    getPassword(key, inSesion = false) {
+
+    // utils
+    getPassword(key) {
+      return decrypt(this.localData.passwords[key], key);
+    },
+
+    processUrl(url) {
+      const urlWithProtocol = /^.*:\/\/.*$/g;
+      if (!url.match(urlWithProtocol)) {
+        return 'http://' + url;
+      }
+      return url;
+    },
+
+    fetchPassword(key, inSesion = false) {
       const func = resolve => {
         const [cipher, hmac] = encryptAndAuthenticate(
             JSON.stringify({
@@ -148,6 +135,35 @@ export default {
         } else {
           ensureSession(this).then(func.bind(this, resolve));
         }
+      });
+    },
+
+    // workers
+    fetchPasswords() {
+      ensureSession(this).then(() => {
+        $$.ajax({
+          url: '/api/password/',
+          dataType: 'json',
+          success: (res) => {
+            let passwords = decryptAndVerify(res.data, res.hmac, this.globalData.sessionKey);
+            passwords = JSON.parse(passwords);
+            const newPasswords = [];
+            for (const p of passwords) {
+              newPasswords.push(Object.assign({
+                    key: p.key,
+                    hidden: false,
+                    showPlain: false
+                  },
+                  p.metadata
+              ));
+
+              this.fetchPassword(p.key, true).then(password => {
+                this.localData.passwords[p.key] = encrypt(password, p.key);
+              });
+            }
+            this.items = newPasswords;
+          }
+        });
       });
     }
   }

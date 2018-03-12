@@ -3,48 +3,52 @@
         <div class="item-allbar">
             <div class="mdui-shadow-8 item-bar"
                  v-for="(item, index) in items" v-bind:key="item.key"
-                 v-if="!item.hide">
+                 v-if="!item.hidden">
                 <div class="mdui-row">
                     <div class="mdui-col-xs-1 mdui-float-left site-icon">
                         <img height=90px
+                             v-if="item.url.startsWith('http')"
                              v-bind:src="item.url+'/favicon.ico'"/>
                     </div>
                     <div class="mdui-col-xs-6">
-                        <div class="mdui-typo-headline">{{ item.siteName }}</div>
+                        <div class="mdui-typo-headline">{{ item.siteName }}
+                        </div>
                         <br/>
-                        <div class="mdui-typo-subheading-opacity">{{ item.url }}</div>
+                        <div class="mdui-typo-subheading-opacity">
+                            {{ item.url }}
+                        </div>
                         <br/>
                         <div class="mdui-typo-subheading">{{item.userId}}</div>
                         <br/>
                         <div class="mdui-row">
-                            <span class="mdui-col passwordZoneFirst mdui-typo-subheading">
+                            <span class="mdui-col-xs-3 mdui-typo-subheading">
                                 Password
                             </span>
-                            <span class="mdui-col mdui-typo-subheading">
-                                <span v-if="item.isShow">
-                                    {{ getPass(item.key) }}
+                            <span class="mdui-col-xs-3 mdui-typo-subheading">
+                                <span v-if="item.showPlain">
+                                    {{ getPassword(item.key) }}
                                 </span>
                                 <span v-else>
                                     ••••••••
                                 </span>
                             </span>
-                            <button class="mdui-col botton-reveal mdui-typo-caption mdui-btn mdui-ripple"
-                                    @click="copyPassword(item.key)">
-                                Copy
+                            <button class="mdui-col-xs-3 mdui-btn mdui-ripple mdui-btn-icon botton-reveal"
+                                    @click="onCopyPassword(item.key)">
+                                <i class="mdui-icon material-icons">content_copy</i>
                             </button>
-                            <button class="mdui-col botton-reveal mdui-typo-caption mdui-btn mdui-ripple"
-                                    @click="showToggle(index)">
-                                <span v-if="item.isShow">
-                                    Hide
+                            <button class="mdui-col-xs-3 mdui-btn mdui-ripple mdui-btn-icon botton-reveal"
+                                    @click="onToggleReveal(index)">
+                                <span v-if="item.showPlain">
+                                    <i class="mdui-icon ion-md-eye-off"></i>
                                 </span>
                                 <span v-else>
-                                    Reveal
+                                    <i class="mdui-icon ion-md-eye"></i>
                                 </span>
                             </button>
                         </div>
                         <br/>
                         <div class="mdui-typo-caption-opacity">
-                            Last update at {{formatDate(item.date)}}
+                            Last update at {{item.date | formatDate}}
                         </div>
                     </div>
                 </div>
@@ -53,7 +57,7 @@
 
         <password-dialog
                 ref="dialog"
-                v-on:click-add="addItem"/>
+                v-on:click-add="onConfirmAddItem"/>
 
         <div class="mdui-fab-wrapper" mdui-fab="{trigger: 'hover'}">
             <button class="mdui-fab mdui-ripple mdui-color-theme"
@@ -89,9 +93,8 @@
     }
 
     .botton-reveal {
-        margin-top: -11px;
-        width: 32px;
-        font-size: 12px;
-        height: 32px;
+        margin-top: -16px;
+        width: 48px;
+        height: 48px;
     }
 </style>

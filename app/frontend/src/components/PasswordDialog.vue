@@ -31,7 +31,7 @@
             </div>
 
             <div class="mdui-row">
-                <div class="mdui-col-xs-9">
+                <div class="mdui-col-xs-10">
                     <div class="mdui-textfield">
                         <i class="mdui-icon material-icons">vpn_key</i>
                         <label class="mdui-textfield-label">Password</label>
@@ -41,12 +41,12 @@
                                v-model="password"/>
                     </div>
                 </div>
-                <div class="mdui-col-xs-3">
+                <div class="mdui-col-xs-2">
                     <button class="mdui-btn mdui-ripple generate-buttom"
                             mdui-tooltip="{content: 'Generate a Random Complicated Key in 8-16 Digits', position: 'top'}"
                             v-on:click="generateRandomPassword">
-                        <i class="mdui-icon mdui-icon-left material-icons ">autorenew</i>
-                        generate key
+                        <!--<i class="mdui-icon mdui-icon-left material-icons ">autorenew</i>-->
+                        generate
                     </button>
                 </div>
             </div>
