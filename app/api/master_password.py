@@ -34,4 +34,4 @@ def verify():
     if master_pass:
         current_app.config['MASTER_PASSWORD'] = master_pass
         return jsonify(message='Success')
-    error_respond.authentication_failure()
+    error_respond.master_password_wrong()

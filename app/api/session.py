@@ -45,7 +45,7 @@ def refresh_session():
             queue.get()
         queue.put(new_key)
         data, hmac = encrypt_and_authenticate(new_key.encode(), binascii.unhexlify(key))
-        return jsonify(data=base64.encodebytes(data).decode().strip(),
-                       hmac=base64.encodebytes(hmac).decode().strip())
+        return jsonify(data=base64.encodebytes(data).decode().replace('\n', ''),
+                       hmac=base64.encodebytes(hmac).decode().replace('\n', ''))
 
     authentication_failure()

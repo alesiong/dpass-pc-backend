@@ -1,43 +1,71 @@
 <template>
     <div>
-        <div class="item-allbar">
-            <div class="mdui-shadow-8 item-bar"
-                 v-for="item in items" v-if="!item.hide">
-                <div class="mdui-row">
-                    <div class="mdui-col-xs-1 mdui-float-left site-icon">
-                        <img height=90px
-                             v-bind:src="item.url+'/favicon.ico'"/>
-                    </div>
-                    <div class="mdui-col-xs-6">
-                        <div class="mdui-typo-headline">{{ item.url }}</div>
-                        <p>{{item.userId}}</p>
-                        <p>Last {{item.date}}</p>
-                    </div>
-                </div>
+        <div class="mdui-row action-bar">
+            <div class="mdui-col-xs-4 mdui-typo-display-1-opacity mdui-m-l-1">
+                {{title}} ({{length}})
             </div>
+
+            <!--<button class="mdui-btn mdui-btn-icon mdui-ripple mdui-btn-raised mdui-color-red"-->
+            <!--mdui-tooltip="{content: 'sort by date'}">-->
+            <!--<i class="mdui-icon material-icons">sort</i>-->
+            <!--</button>-->
+
+            <!--<button class="mdui-btn mdui-btn-icon mdui-color-theme-accent mdui-btn-raised mdui-ripple"-->
+            <!--mdui-tooltip="{content: 'sort by alpha'}">-->
+            <!--<i class="mdui-icon material-icons">sort_by_alpha</i>-->
+            <!--</button>-->
+
+            <div class="mdui-col-xs-3 mdui-col-offset-xs-10 ">
+                <select class="mdui-select" mdui-select="{position: 'bottom'}">
+                    <option value="1">Sort by alpha</option>
+                    <option value="2">Sort by date</option>
+                </select>
+            </div>
+
+        </div>
+
+
+        <div class="item-allbar">
+            <item v-for="item in items"
+                  v-bind:key="item.key"
+                  v-if="shown(item)"
+
+                  v-bind:type="item.type"
+                  v-bind:data="{
+                    url: item.url,
+                    siteName: item.siteName,
+                    userId: item.userId,
+                    date: item.date,
+                    key: item.key
+                  }"
+                  v-on:copy-success="onCopiedPassword"
+            />
+
         </div>
 
         <password-dialog
                 ref="dialog"
-                v-on:click-add="addItem"/>
+                v-on:click-add="onConfirmAddItem"/>
 
+        <!--TODO: dynamically change this by type-->
         <div class="mdui-fab-wrapper" mdui-fab="{trigger: 'hover'}">
             <button class="mdui-fab mdui-ripple mdui-color-theme"
                     id="fab-add"
-                    mdui-tooltip="{content: 'New Password', position: 'left'}"
+                    mdui-tooltip="{content: 'Add Password', position: 'left'}"
                     v-on:click="onAddPassword">
                 <i class="mdui-icon material-icons">add</i>
             </button>
 
-            <!--<div class="mdui-fab-dial">-->
-            <!--<button class="mdui-fab mdui-fab-mini mdui-ripple mdui-color-blue"-->
-            <!--id="fab-verify"-->
-            <!--mdui-tooltip="{content: 'Verify Master Password', position: 'left'}"-->
-            <!--v-on:click="verifyPassword">-->
-            <!--<i class="mdui-icon material-icons">verified_user</i>-->
-            <!--</button>-->
-            <!--</div>-->
+            <div class="mdui-fab-dial">
+                <button class="mdui-fab mdui-fab-mini mdui-ripple mdui-color-yellow"
+                        mdui-tooltip="{content: 'Add Secret Note', position: 'left'}"
+                        v-on:click="onAddSecretNote">
+                    <i class="mdui-icon material-icons">note_add</i>
+                </button>
+            </div>
+
         </div>
+
     </div>
 </template>
 
@@ -45,22 +73,12 @@
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 
-<!-- TODO: either write the styles here or use 'src' attribute-->
 <style scoped>
-    .item-allbar .item-bar:not(:first-child) {
+    .item-allbar .item-block:not(:first-child) {
         margin-top: 24px;
     }
 
-    .item-bar {
-        padding: 24px;
-    }
-
-    .site-icon {
-        width: 120px;
-        min-height: 120px;
-        max-height: 240px;
-        float: left;
-        /*margin: 3px;*/
-        /*padding: 3px;*/
+    .action-bar {
+        margin-bottom: 40px;
     }
 </style>

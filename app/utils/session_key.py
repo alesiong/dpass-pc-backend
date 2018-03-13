@@ -36,5 +36,5 @@ class SessionKey(metaclass=Singleton):
         if not isinstance(response_data, bytes):
             response_data = json.dumps(response_data).encode()
         data, hmac = encrypt_and_authenticate(response_data, binascii.unhexlify(self.session_key))
-        return jsonify(data=base64.encodebytes(data).decode().strip(),
-                       hmac=base64.encodebytes(hmac).decode().strip())
+        return jsonify(data=base64.encodebytes(data).decode().replace('\n', ''),
+                       hmac=base64.encodebytes(hmac).decode().replace('\n', ''))
