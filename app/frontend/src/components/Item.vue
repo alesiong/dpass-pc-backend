@@ -30,10 +30,12 @@
                                 </span>
                             </span>
                         <button class="mdui-col-xs-3 mdui-btn mdui-ripple mdui-btn-icon button-reveal"
+                                mdui-tooltip="{content: 'Copy', position: 'top'}"
                                 @click="onCopyPassword(data.key)">
                             <i class="mdui-icon material-icons">content_copy</i>
                         </button>
                         <button class="mdui-col-xs-3 mdui-btn mdui-ripple mdui-btn-icon button-reveal"
+                                mdui-tooltip="{content: 'Reveal/Hide', position: 'top'}"
                                 @click="onToggleReveal">
                                 <span v-if="showPlain">
                                     <i class="mdui-icon ion-md-eye-off"></i>
