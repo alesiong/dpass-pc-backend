@@ -1,7 +1,9 @@
 <template>
     <div id="app">
         <div class="mdui-container-fluid app-container">
-            <app-header/>
+            <app-header
+                    v-bind:guard="guard"
+                    v-on:search="onSearch"/>
             <app-menu/>
             <div v-if="guard">
                 <guard-view v-bind:state="initState"
@@ -10,7 +12,8 @@
                             v-on:verified-password="onVerifiedPassword"/>
             </div>
             <div v-else>
-                <router-view/>
+                <router-view
+                        v-bind:search="search"/>
             </div>
         </div>
 

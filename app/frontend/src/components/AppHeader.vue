@@ -11,10 +11,13 @@
                style="font-style: italic">DPass</a>
 
             <div class="mdui-toolbar-spacer"></div>
-            <div class="mdui-textfield search-bar">
+
+            <div class="mdui-textfield search-bar"
+                 v-if="!guard">
                 <i class="mdui-icon material-icons">search</i>
                 <input class="mdui-textfield-input search-text" type="text"
-                       placeholder="Search"/>
+                       placeholder="Search"
+                       v-on:input="onSearchChanged"/>
             </div>
             <!--TODO: lock storage-->
             <!--<span class="mdui-textfield mdui-textfield-expandable"-->
@@ -64,7 +67,13 @@
 
 <script>
   export default {
-    name: 'app-header'
+    name: 'app-header',
+    props: ['guard'],
+    methods: {
+      onSearchChanged(event) {
+        this.$emit('search', event.target.value);
+      }
+    }
   };
 </script>
 

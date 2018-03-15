@@ -14,7 +14,8 @@ export default {
   data() {
     return {
       initState: null,
-      passwordVerification: false
+      passwordVerification: false,
+      search: ''
     };
   },
   name: 'App',
@@ -73,6 +74,9 @@ export default {
     },
     onVerifiedPassword() {
       this.passwordVerification = false;
+    },
+    onSearch(value) {
+      this.search = value;
     }
   }
 };

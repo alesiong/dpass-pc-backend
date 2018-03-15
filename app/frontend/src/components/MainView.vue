@@ -1,8 +1,14 @@
 <template>
     <div>
         <div class="mdui-row action-bar">
-            <div class="mdui-col-xs-4 mdui-typo-display-1-opacity mdui-m-l-1">
-                {{title}} ({{length}})
+            <div class="mdui-col-xs-4 mdui-m-l-1">
+                <div class="mdui-row mdui-typo-display-1-opacity">
+                    {{title}} ({{length}})
+                </div>
+                <div class="mdui-row mdui-typo-caption-opacity mdui-m-t-1"
+                     v-if="search">
+                    Searching: {{search}}
+                </div>
             </div>
 
             <!--<button class="mdui-btn mdui-btn-icon mdui-ripple mdui-btn-raised mdui-color-red"-->
@@ -15,7 +21,7 @@
             <!--<i class="mdui-icon material-icons">sort_by_alpha</i>-->
             <!--</button>-->
 
-            <div class="mdui-col-xs-3 mdui-col-offset-xs-10 ">
+            <div class="mdui-col-xs-2 mdui-float-right">
                 <select class="mdui-select" mdui-select="{position: 'bottom'}">
                     <option value="1">Sort by alpha</option>
                     <option value="2">Sort by date</option>
