@@ -7,7 +7,7 @@ import mdui from 'mdui';
 
 export default {
   name: 'main-view',
-  props: ['type'],
+  props: ['type', 'search'],
   components: {
     PasswordDialog,
     Item
@@ -146,11 +146,12 @@ export default {
     },
 
     shown(item) {
-      if (this.type === 'all') {
-        return !item.hidden;
-      } else {
-        return !item.hidden && item.type === this.type;
-      }
+      const notHidden = !item.hidden;
+      const type = this.type === 'all' ? true : item.type === this.type;
+      // FIXME: these may not apply to secret notes
+      const regexSearch = new RegExp(this.search, 'i');
+      const matchSearch = item.siteName.match(regexSearch) || item.url.match(regexSearch);
+      return notHidden && type && matchSearch;
     },
 
     // workers
