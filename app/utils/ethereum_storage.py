@@ -33,14 +33,14 @@ class EthereumStorage:
         self.__store_interval = 15
         self.__load_interval = 5
         self.__store_event = Event()
-        self.__blockchain_length = self.__ethereum_utils.get_length(account)
+        self.__blockchain_length = 0
 
         # TODO: load the blockchain
         # TODO: if we cache the blockchain on the disk, don't forget to do it at `store`
 
         # FIXME: should the operating system be considered ?
-        self.__load_thread = Thread(target=self.load_blockchain, daemon=True)
-        self.__store_thread = Thread(target=self.store, daemon=True)
+        self.__load_thread = Thread(target=self.load_worker, daemon=True)
+        self.__store_thread = Thread(target=self.store_worker, daemon=True)
         self.__load_thread.start()
         self.__store_thread.start()
 
@@ -121,40 +121,22 @@ class EthereumStorage:
         """
         Synchronize the changes with underlying database.
         """
-        while True:
-            self.__store_event.set()
+        self.__ethereum_utils.unlock_account(self.__account, self.__password, duration=60)
 
-            self.__ethereum_utils.unlock_account(self.__account, self.__password, duration=60)
+        # FIXME: use async add
+        # TODO: how to determine if a key is really stored? only update persistence if transaction mined?
+        add_list = []
+        with self.__lock:
+            for k, v in self.__get_all_add():
+                add_list.append((k, v, self.__ethereum_utils.add_async(self.__account, k, v)))
 
-            # FIXME: use async add
-            # TODO: how to determine if a key is really stored? only update persistence if transaction mined?
-            add_list = []
-            with self.__lock:
-                for k, v in self.__get_all_add():
-                    add_list.append((k, v, self.__ethereum_utils.add_async(self.__account, k, v)))
+            for k in self.__get_all_del():
+                add_list.append((None, None, self.__ethereum_utils.add_async(self.__account, k)))
 
-                for k in self.__get_all_del():
-                    add_list.append((None, None, self.__ethereum_utils.add_async(self.__account, k)))
+            self.__change_set = set()
+            self.__delete_set = set()
 
-                self.__change_set = set()
-                self.__delete_set = set()
-
-            if self.__terminating:
-                # Terminating, hopefully someone will mine our transaction :)
-                return
-
-            finished = set()
-            while len(finished) < len(add_list):
-                for k, v, h in add_list:
-                    if h not in finished and self.__ethereum_utils.get_transaction_receipt(h):
-                        finished.add(h)
-                        if k:
-                            with self.__lock:
-                                self.__cache_dict[k] = (v, True)
-                time.sleep(0.01)
-
-            self.__store_event.clear()
-            time.sleep(self.__store_interval)
+        return add_list
 
     def estimate_cost(self, args: dict) -> int:
         """
@@ -191,27 +173,6 @@ class EthereumStorage:
         # TODO: is it necessary to return password?
         return self.__account
 
-    def load_blockchain(self):
-        while True:
-            if self.__terminating:
-                return
-
-            if self.__ethereum_utils.get_length(self.__account) > self.__blockchain_length:
-                self.__store_event.wait()
-                with self.__lock:
-                    for k, v in self.__ethereum_utils.get_history(self.__account, 0, self.__storage):
-                        if v == "":
-                            del self.__cache_dict[k]
-                        else:
-                            self.__cache_dict[k] = (v, True)
-
-            time.sleep(self.__load_interval)
-
-    def terminate(self):
-        self.__terminating = True
-        self.__load_thread.join()
-        self.__store_thread.join()
-
     def size(self) -> int:
         return len(self.__cache_dict)
 
@@ -226,3 +187,50 @@ class EthereumStorage:
 
     def __len__(self):
         return self.size()
+
+    def store_worker(self):
+        while True:
+            self.__store_event.clear()
+
+            add_list = self.store()
+
+            if self.__terminating:
+                # Terminating, hopefully someone will mine our transaction :)
+                return
+
+            finished = set()
+            while len(finished) < len(add_list):
+                for k, v, h in add_list:
+                    if h not in finished and self.__ethereum_utils.get_transaction_receipt(h):
+                        finished.add(h)
+                        if k:
+                            with self.__lock:
+                                if self.__cache_dict.get(k) == v:
+                                    self.__cache_dict[k] = (v, True)
+                time.sleep(0.01)
+
+            self.__store_event.set()
+            time.sleep(self.__store_interval)
+
+    def load_worker(self):
+        while True:
+            if self.__terminating:
+                return
+            new_length = self.__ethereum_utils.get_length(self.__account)
+            if new_length > self.__blockchain_length:
+                self.__store_event.wait()
+                self.__blockchain_length = new_length
+                with self.__lock:
+                    for k, v in self.__ethereum_utils.get_history(self.__account, self.__blockchain_length,
+                                                                  self.__storage):
+                        if v == "":
+                            del self.__cache_dict[k]
+                        else:
+                            self.__cache_dict[k] = (v, True)
+
+            time.sleep(self.__load_interval)
+
+    def terminate(self):
+        self.__terminating = True
+        self.__load_thread.join()
+        self.__store_thread.join()
