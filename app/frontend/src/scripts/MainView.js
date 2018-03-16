@@ -42,10 +42,24 @@ export default {
         case 'all':
           return 'All';
         case 'password':
-          return 'Password';
+          return 'Passwords';
         case 'secret':
           return 'Secret Notes';
       }
+    },
+    typeName() {
+      switch (this.type) {
+        case 'password':
+          return 'Password';
+        case 'secret':
+          return 'Secret Note';
+      }
+    }
+  },
+
+  filters: {
+    mduiToolbar(content) {
+      return `{content: '${content}', position: 'left'}`;
     }
   },
 
