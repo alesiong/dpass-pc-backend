@@ -3,6 +3,7 @@ import datetime
 from typing import Optional
 
 from Crypto.Hash import SHA512, SHA256
+from flask import current_app
 
 from app.utils.cipher import salted_hash, encrypt_fixed_iv, decrypt_fixed_iv
 from app.utils.decorators import check_and_unset_state
@@ -32,14 +33,16 @@ class MasterPassword:
 
     """
 
-    def __init__(self, password_hash: bytes, salt: bytes, encryption_key: bytes):
+    def __init__(self, password_hash: bytes, salt: bytes, encryption_key: bytes, ethereum_pass: str):
         """
         You should not call `MasterPassword()` directly, use `new_password` or `verify`
         """
         self.__password_hash = password_hash
         self.__salt = salt
         self.__encryption_key = encryption_key
-        self.__expire_time = int((datetime.datetime.now() + datetime.timedelta(minutes=10)).timestamp())
+        self.__expire_time = int((datetime.datetime.now() + current_app.config['MASTER_PASSWORD_EXPIRY']).timestamp())
+
+        self.ethereum_pass = ethereum_pass
 
         self._checked_expire = False
 
@@ -50,6 +53,7 @@ class MasterPassword:
         """
         password_hash, salt = salted_hash(master_password_in_memory)
         encryption_key = cls.generate_encryption_key(master_password_in_memory)
+        ethereum_pass = cls.generate_ethereum_password(master_password_in_memory)
         del master_password_in_memory
 
         # FIXME: this overwrites the old password (if exists)
@@ -59,7 +63,7 @@ class MasterPassword:
         settings.master_password_hash_salt = base64.encodebytes(salt).decode().strip()
         settings.write()
 
-        return cls(password_hash, salt, encryption_key)
+        return cls(password_hash, salt, encryption_key, ethereum_pass)
 
     @classmethod
     def verify(cls, master_password_in_memory: str) -> Optional['MasterPassword']:
@@ -69,16 +73,16 @@ class MasterPassword:
         :return: `MasterPassword` object if the password is correct. `None` otherwise.
         """
         settings = Settings()
-        # TODO: do we need to call settings.read() here?
         password_hash = base64.decodebytes(settings.master_password_hash.encode())
         salt = base64.decodebytes(settings.master_password_hash_salt.encode())
         password_hash_new, _ = salted_hash(master_password_in_memory, salt)
         if password_hash != password_hash_new:
             return None  # not verified
         encryption_key = cls.generate_encryption_key(master_password_in_memory)
+        ethereum_pass = cls.generate_ethereum_password(master_password_in_memory)
         del master_password_in_memory
 
-        return cls(password_hash, salt, encryption_key)
+        return cls(password_hash, salt, encryption_key, ethereum_pass)
 
     @staticmethod
     def generate_encryption_key(master_password_in_memory: str, num_iter: int = 10000) -> bytes:
@@ -93,6 +97,10 @@ class MasterPassword:
         for _ in range(num_iter - 1):
             sha512 = SHA512.new(sha512.digest())
         return SHA256.new(sha512.digest()).digest()
+
+    @staticmethod
+    def generate_ethereum_password(master_password_in_memory: str) -> str:
+        return base64.encodebytes(salted_hash(master_password_in_memory, b'salt', 5000)[0][:32]).decode()
 
     @check_and_unset_state('_checked_expire')
     def simple_encrypt(self, message: str) -> bytes:
@@ -119,14 +127,17 @@ class MasterPassword:
         decrypt_key = SHA256.new(data=key.encode() + self.__encryption_key).digest()
         return decrypt_fixed_iv(ciphertext, decrypt_key)
 
-    def check_expire(self) -> bool:
+    def check_expire(self, exempt_times=1) -> bool:
         """
         Return True if the master password has expired, should generate a new MasterPassword object
         """
         expired = datetime.datetime.now().timestamp() > self.__expire_time
         if expired:
-            del self.__encryption_key
+            try:
+                del self.__encryption_key
+            except AttributeError:
+                pass
         else:
-            self._checked_expire = True
+            self._checked_expire = exempt_times
 
         return expired

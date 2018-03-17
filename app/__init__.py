@@ -17,7 +17,7 @@ from config import configs
 db = SQLAlchemy()
 
 
-def create_app(config_name='development', queue=None):
+def create_app(config_name='development', queue=None, use_storage=None):
     """
     Create a Flask applicaction.
     """
@@ -35,9 +35,6 @@ def create_app(config_name='development', queue=None):
 
     from app.api import api as api_blueprint
     app.register_blueprint(api_blueprint)
-
-    from app.views.demo import bp as demo_blueprint
-    app.register_blueprint(demo_blueprint)
 
     from app.api.session import bp as session_blueprint
     app.register_blueprint(session_blueprint)
@@ -71,23 +68,28 @@ def create_app(config_name='development', queue=None):
             return url_for(endpoint, **values)
 
     app.config['QUEUE'] = queue
+    if use_storage == 'ethereum':
+        app.config['USE_ETHEREUM'] = True
 
     @app.before_first_request
     def startup():
         if app.config['QUEUE']:
             SessionKey(app.config['QUEUE'].get())
-        ethereum_utils = EthereumUtils(Web3(IPCProvider(get_ipc('./ethereum_private/data', 'geth.ipc'))))
-        storage_factory_abi = json.load(open('./ethereum_private/contracts/storage_factory.abi.json'))
-        storage_abi = json.load(open('./ethereum_private/contracts/storage.abi.json'))
-        ethereum_utils.init_contracts(get_env()['ETH_STORAGE'], storage_factory_abi, storage_abi)
 
-        Settings('db/settings.json')
-        app.config['STORAGE'] = LocalStorage('chain')
+        if app.config['USE_ETHEREUM']:
+            ethereum_utils = EthereumUtils(Web3(IPCProvider(get_ipc('./ethereum_private/data', 'geth.ipc'))))
+            storage_factory_abi = json.load(open('./ethereum_private/contracts/storage_factory.abi.json'))
+            storage_abi = json.load(open('./ethereum_private/contracts/storage.abi.json'))
+            ethereum_utils.init_contracts(get_env()['ETH_STORAGE'], storage_factory_abi, storage_abi)
 
-        
-    @app.route('/')
-    def index():
+        Settings(app.config['SETTINGS_FILE'])
+
+
+    @app.route('/', defaults={'path': ''})
+    @app.route('/<path:path>')
+    def index(path):
         return render_template('page/index.html')
+
 
 
     return app

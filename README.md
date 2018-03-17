@@ -19,7 +19,7 @@ Put unit tests under `tests/` folder.
 
 ### Python
 ```
-pip install -r requirements.txt
+pip install -r requirements.dev.txt
 ```
 
 ### Javascript
@@ -37,7 +37,7 @@ npm run watch
 Then the flask server:
 
 ```
-python manage.py runserver
+python run.py --develop
 ```
 
 
@@ -47,12 +47,3 @@ python manage.py test
 ```
 
 
-## Demo pages
-
-* `http://localhost:5000/api/demo/hello`
-
-The server will echo back the message using json, you can change `hello` to any other string.
-
-* `http://localhost:5000/pages/demo/`
-
-Demo page, build by MDUI.

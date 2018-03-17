@@ -1,9 +1,10 @@
-import json
 import os
 from pathlib import Path
+from unqlite import UnQLite
 
 from flask import current_app
 
+from app import LocalStorage
 from app.utils.misc import Singleton
 
 
@@ -13,46 +14,43 @@ class Settings(metaclass=Singleton):
         if not os.path.exists(filename):
             directory = Path(filename[:filename.rfind('/')])
             directory.mkdir(parents=True, exist_ok=True)
-            with open(filename, 'w') as f:
-                json.dump({}, f)
-            current_app.config['INIT_STATE'] = 1
-        else:
+
+        self.__db = UnQLite(filename)
+
+        if self.__db_get('master_password_hash'):
             current_app.config['INIT_STATE'] = 2
 
-        self.__filename = filename
-        self.__master_password_hash: str = None
-        self.__master_password_hash_salt: str = None
-        self.read()
-
-    def read(self):
-        with open(self.__filename) as f:
-            settings = json.load(f)
-        master_password = settings.get('master_password')
-        if master_password:
-            self.__master_password_hash = master_password.get('hash')
-            self.__master_password_hash_salt = master_password.get('salt')
-
     def write(self):
-        with open(self.__filename, 'w') as f:
-            json.dump({
-                'master_password': {
-                    'hash': self.__master_password_hash,
-                    'salt': self.__master_password_hash_salt
-                }
-            }, f)
+        self.__db.commit()
 
     @property
     def master_password_hash(self) -> str:
-        return self.__master_password_hash
+        return self.__db_get('master_password_hash')
 
     @master_password_hash.setter
     def master_password_hash(self, v: str):
-        self.__master_password_hash = v
+        self.__db['master_password_hash'] = v
 
     @property
     def master_password_hash_salt(self) -> str:
-        return self.__master_password_hash_salt
+        return self.__db_get('master_password_hash_salt')
 
     @master_password_hash_salt.setter
     def master_password_hash_salt(self, v: str):
-        self.__master_password_hash_salt = v
+        self.__db['master_password_hash_salt'] = v
+
+    @property
+    def ethereum_address(self) -> str:
+        return self.__db_get('ethereum_address')
+
+    @ethereum_address.setter
+    def ethereum_address(self, v: str):
+        self.__db['ethereum_address'] = v
+
+    def __del__(self):
+        self.__db.close()
+
+    def __db_get(self, key, default=None):
+        if key in self.__db:
+            return self.__db[key]
+        return default

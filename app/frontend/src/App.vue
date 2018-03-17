@@ -1,16 +1,28 @@
 <template>
     <div id="app">
-        <div class="mdui-container-fluid">
-            <app-header/>
+        <div class="mdui-container-fluid ">
+            <app-header
+                    v-bind:guard="guard"
+                    v-on:search="onSearch"/>
             <app-menu/>
 
-            <router-view/>
+            <div class="app-container">
+                <guard-view v-if="guard"
+                            v-bind:state="initState"
+                            v-bind:verify="passwordVerification"
+                            v-on:added-password="refreshState"
+                            v-on:verified-password="onVerifiedPassword"
+                            v-on:verified-with-account="refreshState"/>
+                <router-view v-else
+                             v-bind:search="search"/>
+            </div>
+
         </div>
+
+        <input id="clickboard" type="hidden">
     </div>
 </template>
 
-<!--TODO: write scripts here like this-->
 <script src="./scripts/App.js"></script>
 
-<!--TODO: global(app-wise) style sheet should be put in the file app/frontend/src/css/app.css-->
 <style src="./css/app.css"></style>
