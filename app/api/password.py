@@ -97,6 +97,21 @@ def new():
 @master_password_verify
 def modify():
     master_password: MasterPassword = current_app.config['MASTER_PASSWORD']
+    data = json.loads(request.decrypted_data.decode())
+    modify_key = data.get('key')
+    if modify_key is None:
+        error_respond.invalid_post_data()
+    entry = KeyLookupTable.query.filter_by(key=modify_key).first()
+    if entry is None:
+        error_respond.key_not_found()
+    for k in data['modified']:
+        entry[k] = data['modified'][k]
+    KeyLookupTable.query.session.commit()
+    current_app.config['STORAGE'].add(entry.key,
+                                      base64.encodebytes(
+                                          master_password.encrypt(request.decrypted_data.decode(), entry.key)).decode())
+    current_app.config['STORAGE'].store()
+    return SessionKey().encrypt_response({'key': entry.key})
 
 
 @bp.route('/delete/', methods=['POST'])
