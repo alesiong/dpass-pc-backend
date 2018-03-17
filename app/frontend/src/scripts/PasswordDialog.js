@@ -24,6 +24,7 @@ export default {
   methods: {
     openDialog(options, initValue) {
       options = Object.assign({modal: true}, options);
+      initValue = initValue || {};
       if (initValue) {
         this.url = initValue.url || '';
         this.siteName = initValue.siteName || '';

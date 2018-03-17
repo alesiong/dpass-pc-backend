@@ -1,20 +1,22 @@
 <template>
     <div id="app">
-        <div class="mdui-container-fluid app-container">
+        <div class="mdui-container-fluid ">
             <app-header
                     v-bind:guard="guard"
                     v-on:search="onSearch"/>
             <app-menu/>
-            <div v-if="guard">
-                <guard-view v-bind:state="initState"
+
+            <div class="app-container">
+                <guard-view v-if="guard"
+                            v-bind:state="initState"
                             v-bind:verify="passwordVerification"
                             v-on:added-password="refreshState"
-                            v-on:verified-password="onVerifiedPassword"/>
+                            v-on:verified-password="onVerifiedPassword"
+                            v-on:verified-with-account="refreshState"/>
+                <router-view v-else
+                             v-bind:search="search"/>
             </div>
-            <div v-else>
-                <router-view
-                        v-bind:search="search"/>
-            </div>
+
         </div>
 
         <input id="clickboard" type="hidden">

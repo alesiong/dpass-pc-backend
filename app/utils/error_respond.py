@@ -27,3 +27,7 @@ def master_password_already_set():
 
 def key_not_found():
     abort(make_response(jsonify(error='Key Not Found'), 400))
+
+
+def blockchain_account_wrong():
+    abort(make_response(jsonify(error='Blockchain Account Wrong'), 400))

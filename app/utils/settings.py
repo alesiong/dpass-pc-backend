@@ -18,8 +18,6 @@ class Settings(metaclass=Singleton):
         self.__db = UnQLite(filename)
 
         if self.__db_get('master_password_hash'):
-            current_app.config['INIT_STATE'] = 1
-            current_app.config['STORAGE'] = LocalStorage('chain')
             current_app.config['INIT_STATE'] = 2
 
     def write(self):
@@ -40,6 +38,14 @@ class Settings(metaclass=Singleton):
     @master_password_hash_salt.setter
     def master_password_hash_salt(self, v: str):
         self.__db['master_password_hash_salt'] = v
+
+    @property
+    def ethereum_address(self) -> str:
+        return self.__db_get('ethereum_address')
+
+    @ethereum_address.setter
+    def ethereum_address(self, v: str):
+        self.__db['ethereum_address'] = v
 
     def __del__(self):
         self.__db.close()

@@ -22,7 +22,6 @@ export default {
       this.showPlain = !this.showPlain;
     },
     getPassword(key) {
-      console.log(this.$parent.passwords);
       return decrypt(this.$parent.localData.passwords[key], key);
     },
     onCopyPassword(key) {

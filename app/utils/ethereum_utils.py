@@ -170,6 +170,10 @@ def initialize_ethereum_account(master_password_in_memory: str) -> Address:
     ethereum_utils.start_mining(new_account)
     while ethereum_utils.get_balance(new_account) <= 0:
         time.sleep(0.1)
-    ethereum_utils.new_storage(new_account)
+    while True:
+        transaction_hash = ethereum_utils.new_storage(new_account)
+        if transaction_hash is None:
+            break
     ethereum_utils.lock_account(new_account)
+    # ethereum_utils.stop_mining()
     return new_account
