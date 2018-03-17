@@ -73,7 +73,7 @@
         </div>
         <div v-else>
             <button class="mdui-fab mdui-fab-fixed mdui-ripple mdui-color-theme"
-                    v-bind:mdui-tooltip="'Add ' + typeName | mduiToolbar"
+                    v-bind:mdui-tooltip="'Add ' + typeName | mduiTooltip"
                     v-on:click="type === 'password'? onAddPassword() : onAddSecretNote()">
                 <i class="mdui-icon material-icons">add</i>
             </button>
