@@ -18,7 +18,6 @@ export default {
     };
   },
   mounted() {
-    console.log('mounted');
     this.fetchPasswords();
     const fetchingInterval = window.setInterval(this.fetchPasswords.bind(this), 30000);
     this.localData = {
@@ -29,7 +28,6 @@ export default {
   },
 
   beforeDestroy() {
-    console.log('destroying');
     window.clearInterval(this.localData.fetchingInterval);
   },
 

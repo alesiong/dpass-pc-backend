@@ -2,6 +2,8 @@ import time
 from threading import Thread, Lock, Event
 from typing import Optional, Union, Tuple, Generator, Dict, Set
 
+from web3.exceptions import BadFunctionCallOutput
+
 from app.utils.ethereum_utils import EthereumUtils
 from app.utils.misc import Address
 
@@ -25,7 +27,10 @@ class EthereumStorage:
         self.__ethereum_utils = EthereumUtils()
         self.__account = account
         self.__password = password
-        self.__storage = self.__ethereum_utils.get_storage(account)
+        try:
+            self.__storage = self.__ethereum_utils.get_storage(account)
+        except TypeError:
+            raise TypeError
 
         self.__lock = Lock()
         self.__terminating = False
@@ -35,18 +40,12 @@ class EthereumStorage:
         self.__store_event = Event()
         self.__blockchain_length = 0
 
-        # TODO: load the blockchain
-        # TODO: if we cache the blockchain on the disk, don't forget to do it at `store`
-
-        # FIXME: should the operating system be considered ?
         self.__load_thread = Thread(target=self.load_worker, daemon=True)
         self.__store_thread = Thread(target=self.store_worker, daemon=True)
         self.__load_thread.start()
         self.__store_thread.start()
 
-        # TODO: current state model for CRUD may need to change to fit the ethereum model:
-        # TODO: i.e.: store method cannot return immediately, or the data cannot be put on the chain immediately
-        # TODO: also need to consider how/when to update(download/sync) data from blockchain
+        self.__loaded = False
 
     def add(self, k: str, v: str):
         """
@@ -128,9 +127,11 @@ class EthereumStorage:
         add_list = []
         with self.__lock:
             for k, v in self.__get_all_add():
+                print('adding:', k, v)
                 add_list.append((k, v, self.__ethereum_utils.add_async(self.__account, k, v)))
 
             for k in self.__get_all_del():
+                print('deleting:', k)
                 add_list.append((None, None, self.__ethereum_utils.add_async(self.__account, k)))
 
             self.__change_set = set()
@@ -190,47 +191,68 @@ class EthereumStorage:
 
     def store_worker(self):
         while True:
-            self.__store_event.clear()
+            try:
+                self.__store_event.set()
 
-            add_list = self.store()
+                add_list = self.store()
 
-            if self.__terminating:
-                # Terminating, hopefully someone will mine our transaction :)
-                return
+                if self.__terminating:
+                    # Terminating, hopefully someone will mine our transaction :)
+                    return
 
-            finished = set()
-            while len(finished) < len(add_list):
-                for k, v, h in add_list:
-                    if h not in finished and self.__ethereum_utils.get_transaction_receipt(h):
-                        finished.add(h)
-                        if k:
-                            with self.__lock:
-                                if self.__cache_dict.get(k) == v:
-                                    self.__cache_dict[k] = (v, True)
-                time.sleep(0.01)
+                finished = set()
+                while len(finished) < len(add_list):
+                    for k, v, h in add_list:
+                        if h not in finished and self.__ethereum_utils.get_transaction_receipt(h):
+                            finished.add(h)
+                            if k:
+                                with self.__lock:
+                                    if self.__cache_dict.get(k) == v:
+                                        self.__cache_dict[k] = (v, True)
+                    time.sleep(0.01)
 
-            self.__store_event.set()
-            time.sleep(self.__store_interval)
+                self.__store_event.clear()
+                time.sleep(self.__store_interval)
+            except Exception as e:
+                print(e)
+                time.sleep(self.__store_interval)
 
     def load_worker(self):
         while True:
-            if self.__terminating:
-                return
-            new_length = self.__ethereum_utils.get_length(self.__account)
-            if new_length > self.__blockchain_length:
-                self.__store_event.wait()
-                self.__blockchain_length = new_length
-                with self.__lock:
-                    for k, v in self.__ethereum_utils.get_history(self.__account, self.__blockchain_length,
-                                                                  self.__storage):
-                        if v == "":
-                            del self.__cache_dict[k]
-                        else:
-                            self.__cache_dict[k] = (v, True)
+            try:
+                if self.__terminating:
+                    return
+                new_length = self.__ethereum_utils.get_length(self.__account)
+                print('load', self.__blockchain_length, new_length)
+                if new_length > self.__blockchain_length:
+                    self.__store_event.wait()
+                    with self.__lock:
+                        for k, v in self.__ethereum_utils.get_history(self.__account, self.__blockchain_length,
+                                                                      self.__storage):
+                            print('loading:', k, v)
+                            if v == "":
+                                del self.__cache_dict[k]
+                            else:
+                                self.__cache_dict[k] = (v, True)
+                    self.__blockchain_length = new_length
 
-            time.sleep(self.__load_interval)
+                self.__loaded = True
+                time.sleep(self.__load_interval)
+            except BadFunctionCallOutput:
+                self.__loaded = True
+                break
+            except Exception as e:
+                print(e)
+                time.sleep(self.__load_interval)
 
     def terminate(self):
         self.__terminating = True
         self.__load_thread.join()
         self.__store_thread.join()
+
+    def __del__(self):
+        self.terminate()
+
+    @property
+    def loaded(self):
+        return self.__loaded

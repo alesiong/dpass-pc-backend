@@ -67,7 +67,7 @@ export default {
             window.clearInterval(id);
           }
         });
-      }, 100);
+      }, 500);
     },
     verifyPassword() {
       this.passwordVerification = true;
