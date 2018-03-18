@@ -262,6 +262,8 @@ class EthereumStorage:
                                 db.session.add(new_entry)
                             if v == "":
                                 del self.__cache_dict[k]
+                                KeyLookupTable.query.filter_by(key=k).delete()
+                                KeyLookupTable.query.session.commit()
                             else:
                                 self.__cache_dict[k] = (v, True)
                     self.__blockchain_length = new_length
