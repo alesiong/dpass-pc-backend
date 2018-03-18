@@ -7,6 +7,10 @@ from web3.exceptions import BadFunctionCallOutput
 from app.utils.ethereum_utils import EthereumUtils
 from app.utils.misc import Address
 
+from app.models import KeyLookupTable
+from app import db
+
+
 
 class EthereumStorage:
     def __init__(self, account: Address, password: str):
@@ -253,11 +257,15 @@ class EthereumStorage:
                         for k, v in self.__ethereum_utils.get_history(self.__account, self.__blockchain_length,
                                                                       self.__storage):
                             print('loading:', k, v)
+                            if k not in self.__cache_dict:
+                                new_entry = KeyLookupTable(key=k, meta_data="", hidden=False)
+                                db.session.add(new_entry)
                             if v == "":
                                 del self.__cache_dict[k]
                             else:
                                 self.__cache_dict[k] = (v, True)
                     self.__blockchain_length = new_length
+                    db.session.commit()
 
                 self.__loaded = True
                 time.sleep(self.__load_interval)
