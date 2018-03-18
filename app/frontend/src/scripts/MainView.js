@@ -56,7 +56,7 @@ export default {
   },
 
   filters: {
-    mduiToolbar(content) {
+    mduiTooltip(content) {
       return `{content: '${content}', position: 'left'}`;
     }
   },

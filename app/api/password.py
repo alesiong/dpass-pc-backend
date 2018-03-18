@@ -23,7 +23,7 @@ def get_table():
     else:
         entries = KeyLookupTable.query.filter_by(hidden=False).all()
 
-    new_entries = sum(entry for entry in entries if entry.meta_data == '')
+    new_entries = [entry for entry in entries if entry.meta_data == '']
 
     if master_password.check_expire(len(entries) + len(new_entries) * 2):
         error_respond.master_password_expired()
