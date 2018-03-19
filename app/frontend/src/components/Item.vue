@@ -18,9 +18,7 @@
                     <div class="mdui-typo-subheading">{{data.userId}}</div>
                     <br/>
                     <div class="mdui-row">
-                            <span class="mdui-col-xs-3 mdui-typo-subheading">
-                                Password
-                            </span>
+
                         <span class="mdui-col-xs-3 mdui-typo-subheading">
                                 <span v-if="showPlain">
                                     {{ getPassword(data.key) }}
@@ -29,7 +27,7 @@
                                     ••••••••
                                 </span>
                             </span>
-                        <button class="mdui-col-xs-3 mdui-btn mdui-ripple mdui-btn-icon button-reveal"
+                        <button class="mdui-col-xs-3 mdui-btn mdui-ripple mdui-btn-icon button-copy"
                                 mdui-tooltip="{content: 'Copy', position: 'top'}"
                                 @click="onCopyPassword(data.key)">
                             <i class="mdui-icon material-icons">content_copy</i>
@@ -43,6 +41,15 @@
                             <span v-else>
                                     <i class="mdui-icon ion-md-eye"></i>
                                 </span>
+                        </button>
+                        <button class="mdui-col-xs-3 mdui-btn mdui-ripple  mdui-btn-icon button-edit"
+                                mdui-tooltip="{content: 'Edit', position: 'top'}">
+                                <i class="mdui-icon material-icons">edit</i>
+                        </button>
+                        <button class="mdui-col-xs-3 mdui-btn mdui-ripple  mdui-btn-icon button-delete"
+                                mdui-tooltip="{content: 'Delete', position: 'top'}"
+                                @click="onDelete(data)">
+                            <i class="mdui-icon material-icons">delete_forever</i>
                         </button>
                     </div>
                     <br/>
@@ -72,9 +79,28 @@
         float: left;
     }
 
+    .button-copy {
+        margin-top: -16px;
+        width: 48px;
+        height: 48px;
+        color:#F06292;
+    }
     .button-reveal {
         margin-top: -16px;
         width: 48px;
         height: 48px;
+        color:#5C6BC0;
+    }
+    .button-edit {
+        margin-top:-16px;
+        width: 48px;
+        height: 48px;
+        color:#2E7D32;
+    }
+    .button-delete {
+        margin-top: -16px;
+        width: 48px;
+        height: 48px;
+        color:#A1887F;
     }
 </style>
