@@ -3,12 +3,13 @@
         <div class="mdui-shadow-8 item-block">
             <div class="mdui-row">
                 <div class="mdui-col-xs-1 mdui-float-left site-icon">
-                    <img height=90px
-                         v-if="data.url.startsWith('http')"
-                         v-bind:src="data.url+'/favicon.ico'"/>
+                <img height=90px
+                     v-if="data.url.startsWith('http')"
+                     v-bind:src="data.url+'/favicon.ico'"/>
                 </div>
                 <div class="mdui-col-xs-6">
-                    <div class="mdui-typo-headline">{{ data.siteName }}
+                    <div class="mdui-typo-headline">
+                        {{ data.userId }}
                     </div>
                     <br/>
                     <div class="mdui-typo-subheading-opacity">
@@ -41,6 +42,15 @@
                             <span v-else>
                                     <i class="mdui-icon ion-md-eye"></i>
                                 </span>
+                        </button>
+
+                        <modify-dialog
+                                ref="dialog"
+                                v-on:click-add="onConfirmAddItem"/>
+
+                        <button class="mdui-col-xs-3 mdui-btn mdui-ripple mdui-btn-icon button-reveal"
+                                @click="onRevise(data.key)">
+                            <i class="mdui-icon material-icons">border_color</i>
                         </button>
                     </div>
                     <br/>
