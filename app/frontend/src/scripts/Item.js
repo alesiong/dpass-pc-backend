@@ -35,6 +35,11 @@ export default {
 
       this.$emit('copy-success');
 
-    }
+    },
+    onDelete(data){
+      this.$emit('click-delete', {
+        data:this.data
+      });
+    },
   }
 };

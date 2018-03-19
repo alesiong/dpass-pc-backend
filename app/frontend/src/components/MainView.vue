@@ -45,6 +45,7 @@
                     key: item.key
                   }"
                   v-on:copy-success="onCopiedPassword"
+                  v-on:click-delete="onConfirmDelete"
             />
 
         </div>
