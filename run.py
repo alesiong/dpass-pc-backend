@@ -19,7 +19,8 @@ def main():
     parser.add_argument('--develop', action='store_true', help='Run on development config.')
     parser.add_argument('--use_ethereum', action='store_true', help='Launch Ethereum (geth)')
     args = parser.parse_args()
-    app = create_app('development' if args.develop else 'production', queue)
+    app = create_app('development' if args.develop else 'production', queue,
+                     'ethereum' if args.use_ethereum else 'local')
     os = get_os()
     if os == 'win32':
         print('Windows 32-bit is not supported.')

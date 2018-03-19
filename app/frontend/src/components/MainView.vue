@@ -54,23 +54,30 @@
                 ref="dialog"
                 v-on:click-add="onConfirmAddItem"/>
 
-        <!--TODO: dynamically change this by type-->
-        <div class="mdui-fab-wrapper" mdui-fab="{trigger: 'hover'}">
-            <button class="mdui-fab mdui-ripple mdui-color-theme"
-                    id="fab-add"
-                    mdui-tooltip="{content: 'Add Password', position: 'left'}"
-                    v-on:click="onAddPassword">
+        <div v-if="type === 'all'">
+            <div class="mdui-fab-wrapper" mdui-fab="{trigger: 'hover'}">
+                <button class="mdui-fab mdui-ripple mdui-color-theme"
+                        mdui-tooltip="{content: 'Add Password', position: 'left'}"
+                        v-on:click="onAddPassword">
+                    <i class="mdui-icon material-icons">add</i>
+                </button>
+
+                <div class="mdui-fab-dial">
+                    <button class="mdui-fab mdui-fab-mini mdui-ripple mdui-color-yellow"
+                            mdui-tooltip="{content: 'Add Secret Note', position: 'left'}"
+                            v-on:click="onAddSecretNote">
+                        <i class="mdui-icon material-icons">note_add</i>
+                    </button>
+                </div>
+
+            </div>
+        </div>
+        <div v-else>
+            <button class="mdui-fab mdui-fab-fixed mdui-ripple mdui-color-theme"
+                    v-bind:mdui-tooltip="'Add ' + typeName | mduiToolbar"
+                    v-on:click="type === 'password'? onAddPassword() : onAddSecretNote()">
                 <i class="mdui-icon material-icons">add</i>
             </button>
-
-            <div class="mdui-fab-dial">
-                <button class="mdui-fab mdui-fab-mini mdui-ripple mdui-color-yellow"
-                        mdui-tooltip="{content: 'Add Secret Note', position: 'left'}"
-                        v-on:click="onAddSecretNote">
-                    <i class="mdui-icon material-icons">note_add</i>
-                </button>
-            </div>
-
         </div>
 
     </div>

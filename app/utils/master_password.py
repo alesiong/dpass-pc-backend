@@ -33,7 +33,7 @@ class MasterPassword:
 
     """
 
-    def __init__(self, password_hash: bytes, salt: bytes, encryption_key: bytes):
+    def __init__(self, password_hash: bytes, salt: bytes, encryption_key: bytes, ethereum_pass: str):
         """
         You should not call `MasterPassword()` directly, use `new_password` or `verify`
         """
@@ -41,6 +41,8 @@ class MasterPassword:
         self.__salt = salt
         self.__encryption_key = encryption_key
         self.__expire_time = int((datetime.datetime.now() + current_app.config['MASTER_PASSWORD_EXPIRY']).timestamp())
+
+        self.ethereum_pass = ethereum_pass
 
         self._checked_expire = False
 
@@ -51,6 +53,7 @@ class MasterPassword:
         """
         password_hash, salt = salted_hash(master_password_in_memory)
         encryption_key = cls.generate_encryption_key(master_password_in_memory)
+        ethereum_pass = cls.generate_ethereum_password(master_password_in_memory)
         del master_password_in_memory
 
         # FIXME: this overwrites the old password (if exists)
@@ -60,7 +63,7 @@ class MasterPassword:
         settings.master_password_hash_salt = base64.encodebytes(salt).decode().strip()
         settings.write()
 
-        return cls(password_hash, salt, encryption_key)
+        return cls(password_hash, salt, encryption_key, ethereum_pass)
 
     @classmethod
     def verify(cls, master_password_in_memory: str) -> Optional['MasterPassword']:
@@ -76,9 +79,10 @@ class MasterPassword:
         if password_hash != password_hash_new:
             return None  # not verified
         encryption_key = cls.generate_encryption_key(master_password_in_memory)
+        ethereum_pass = cls.generate_ethereum_password(master_password_in_memory)
         del master_password_in_memory
 
-        return cls(password_hash, salt, encryption_key)
+        return cls(password_hash, salt, encryption_key, ethereum_pass)
 
     @staticmethod
     def generate_encryption_key(master_password_in_memory: str, num_iter: int = 10000) -> bytes:
@@ -93,6 +97,10 @@ class MasterPassword:
         for _ in range(num_iter - 1):
             sha512 = SHA512.new(sha512.digest())
         return SHA256.new(sha512.digest()).digest()
+
+    @staticmethod
+    def generate_ethereum_password(master_password_in_memory: str) -> str:
+        return base64.encodebytes(salted_hash(master_password_in_memory, b'salt', 5000)[0][:32]).decode()
 
     @check_and_unset_state('_checked_expire')
     def simple_encrypt(self, message: str) -> bytes:

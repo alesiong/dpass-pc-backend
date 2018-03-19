@@ -1,5 +1,4 @@
 import base64
-import random
 
 from flask import Blueprint, current_app, jsonify, request, json
 
@@ -7,7 +6,6 @@ from app import SessionKey
 from app.models import KeyLookupTable
 from app.utils import error_respond
 from app.utils.decorators import session_verify, master_password_verify
-from app.utils.error_respond import authentication_failure
 from app.utils.master_password import MasterPassword
 
 bp = Blueprint('api.password', __name__, url_prefix='/api/password')
@@ -16,15 +14,32 @@ bp = Blueprint('api.password', __name__, url_prefix='/api/password')
 @bp.route('/')
 @master_password_verify
 def get_table():
-    master_password: MasterPassword = current_app.config['MASTER_PASSWORD']
     hidden = request.args.get('hidden')
+    master_password: MasterPassword = current_app.config['MASTER_PASSWORD']
+    storage = current_app.config['STORAGE']
+
     if hidden:
         entries = KeyLookupTable.query.all()
     else:
         entries = KeyLookupTable.query.filter_by(hidden=False).all()
 
-    if master_password.check_expire(len(entries)):
+    new_entries = sum(entry for entry in entries if entry.meta_data == '')
+
+    if master_password.check_expire(len(entries) + len(new_entries) * 2):
         error_respond.master_password_expired()
+
+    for new_entry in new_entries:
+        encrypted = storage.get(new_entry.key)
+        if encrypted:
+            metadata = json.loads(
+                master_password.decrypt(
+                    base64.decodebytes(encrypted.encode()),
+                    new_entry.key).decode())
+            del metadata['password']
+            metadata = base64.encodebytes(master_password.simple_encrypt(json.dumps(metadata))).decode()
+            new_entry.meta_data = metadata
+
+    KeyLookupTable.query.session.commit()
 
     entries = [
         {
@@ -92,8 +107,6 @@ def new():
     current_app.config['STORAGE'].add(entry.key,
                                       base64.encodebytes(
                                           master_password.encrypt(request.decrypted_data.decode(), entry.key)).decode())
-    # FIXME: test
-    current_app.config['STORAGE'].store()
     return SessionKey().encrypt_response({'key': entry.key})
 
 
@@ -102,6 +115,21 @@ def new():
 @master_password_verify
 def modify():
     master_password: MasterPassword = current_app.config['MASTER_PASSWORD']
+    data = json.loads(request.decrypted_data.decode())
+    modify_key = data.get('key')
+    if modify_key is None:
+        error_respond.invalid_post_data()
+    entry = KeyLookupTable.query.filter_by(key=modify_key).first()
+    if entry is None:
+        error_respond.key_not_found()
+    for k in data['modified']:
+        entry[k] = data['modified'][k]
+    KeyLookupTable.query.session.commit()
+    current_app.config['STORAGE'].add(entry.key,
+                                      base64.encodebytes(
+                                          master_password.encrypt(request.decrypted_data.decode(), entry.key)).decode())
+    current_app.config['STORAGE'].store()
+    return SessionKey().encrypt_response({'key': entry.key})
 
 
 @bp.route('/delete/', methods=['POST'])

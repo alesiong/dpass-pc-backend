@@ -12,11 +12,12 @@ from app.utils.session_key import SessionKey
 from app.utils.settings import Settings
 from config import configs
 
+
 # Instantiate Flask extensions
 db = SQLAlchemy()
 
 
-def create_app(config_name='development', queue=None):
+def create_app(config_name='development', queue=None, use_storage=None):
     """
     Create a Flask applicaction.
     """
@@ -67,6 +68,8 @@ def create_app(config_name='development', queue=None):
             return url_for(endpoint, **values)
 
     app.config['QUEUE'] = queue
+    if use_storage == 'ethereum':
+        app.config['USE_ETHEREUM'] = True
 
     @app.before_first_request
     def startup():
@@ -81,9 +84,12 @@ def create_app(config_name='development', queue=None):
 
         Settings(app.config['SETTINGS_FILE'])
 
+
     @app.route('/', defaults={'path': ''})
     @app.route('/<path:path>')
     def index(path):
         return render_template('page/index.html')
+
+
 
     return app
