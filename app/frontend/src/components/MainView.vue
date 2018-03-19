@@ -3,7 +3,7 @@
         <div class="mdui-row action-bar">
             <div class="mdui-col-xs-4 mdui-m-l-1">
                 <div class="mdui-row mdui-typo-display-1-opacity">
-                    {{title}} ({{length}})
+                    {{title}} ({{filteredItems.length}})
                 </div>
                 <div class="mdui-row mdui-typo-caption-opacity mdui-m-t-1"
                      v-if="search">
@@ -22,8 +22,9 @@
             <!--</button>-->
 
             <div class="mdui-col-xs-2 mdui-float-right">
-                <select class="mdui-select" mdui-select="{position: 'bottom'}">
-                    <option value="1">Sort by alpha</option>
+                <select class="mdui-select" mdui-select="{position: 'bottom'}"
+                        v-model="sortBy">
+                    <option value="1">Sort by name</option>
                     <option value="2">Sort by date</option>
                 </select>
             </div>
@@ -32,9 +33,8 @@
 
 
         <div class="item-allbar">
-            <item v-for="item in items"
+            <item v-for="item in filteredItems"
                   v-bind:key="item.key"
-                  v-if="shown(item)"
 
                   v-bind:type="item.type"
                   v-bind:data="{
@@ -45,7 +45,8 @@
                     key: item.key
                   }"
                   v-on:copy-success="onCopiedPassword"
-                  v-on:click-delete="onConfirmDelete"
+                  v-on:click-delete="onDeleteItem"
+                  v-on:click-hide="onHideItem"
             />
 
         </div>

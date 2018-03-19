@@ -44,11 +44,20 @@ class EthereumStorage:
         self.__blockchain_length = Settings().blockchain_length
         self.__blockchain = Settings().blockchain
 
+        # load blockchain from disk
         for k, v in self.__blockchain:
             if v == '':
                 del self.__cache_dict[k]
             else:
                 self.__cache_dict[k] = (v, True)
+
+        # make up for the missing entries (delete entries that have not sync'ed)
+        for k in self.__cache_dict:
+            if not k.startswith('__') and KeyLookupTable.query.get(k) is None:
+                new_entry = KeyLookupTable(key=k, meta_data='', hidden=False)
+                KeyLookupTable.query.session.add(new_entry)
+
+        KeyLookupTable.query.session.commit()
 
         self.__load_thread = Thread(target=self.load_worker, daemon=True)
         self.__store_thread = Thread(target=self.store_worker, daemon=True)

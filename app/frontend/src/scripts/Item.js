@@ -40,6 +40,9 @@ export default {
           () => {
             this.$emit('click-delete', this.data.key);
           });
+    },
+    onHide() {
+      this.$emit('click-hide', this.data.key);
     }
   }
 };
