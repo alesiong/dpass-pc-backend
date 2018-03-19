@@ -40,6 +40,12 @@ Then the flask server:
 python run.py --develop
 ```
 
+If you want to use ethereum:
+```
+python run.py --develop --use_ethereum
+```
+Please ensure that you have initialized the ethereum block chain before.
+
 
 ## Run Unittest
 ```

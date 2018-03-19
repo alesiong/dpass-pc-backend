@@ -23,7 +23,7 @@ def get_table():
     else:
         entries = KeyLookupTable.query.filter_by(hidden=False).all()
 
-    new_entries = sum(entry for entry in entries if entry.meta_data == '')
+    new_entries = [entry for entry in entries if entry.meta_data == '']
 
     if master_password.check_expire(len(entries) + len(new_entries) * 2):
         error_respond.master_password_expired()
@@ -112,24 +112,44 @@ def new():
 
 @bp.route('/modify/', methods=['POST'])
 @session_verify
-@master_password_verify
+@master_password_verify(4)
 def modify():
     master_password: MasterPassword = current_app.config['MASTER_PASSWORD']
     data = json.loads(request.decrypted_data.decode())
     modify_key = data.get('key')
-    if modify_key is None:
+    if modify_key is None or 'modified' not in data:
         error_respond.invalid_post_data()
-    entry = KeyLookupTable.query.filter_by(key=modify_key).first()
+    entry = KeyLookupTable.query.get(modify_key)
     if entry is None:
         error_respond.key_not_found()
+    password = data['modified'].get('password')
+    if password:
+        del data['modified']['password']
+
+    # modify metadata
+    metadata = json.loads(master_password.simple_decrypt(base64.decodebytes(entry.meta_data.encode())))
     for k in data['modified']:
-        entry[k] = data['modified'][k]
+        metadata[k] = data['modified'][k]
+    entry.meta_data = base64.encodebytes(master_password.simple_encrypt(json.dumps(metadata))).decode()
     KeyLookupTable.query.session.commit()
-    current_app.config['STORAGE'].add(entry.key,
-                                      base64.encodebytes(
-                                          master_password.encrypt(request.decrypted_data.decode(), entry.key)).decode())
-    current_app.config['STORAGE'].store()
-    return SessionKey().encrypt_response({'key': entry.key})
+
+    # modify storage
+    storage = current_app.config['STORAGE']
+    encrypted = storage.get(modify_key)
+
+    password_data = json.loads(
+        master_password.decrypt(
+            base64.decodebytes(encrypted.encode()),
+            modify_key).decode())
+    for k in data['modified']:
+        password_data[k] = data['modified'][k]
+    if password:
+        password_data['password'] = password
+
+    storage.add(modify_key,
+                base64.encodebytes(
+                    master_password.encrypt(json.dumps(password_data), modify_key)).decode())
+    return SessionKey().encrypt_response({'key': modify_key})
 
 
 @bp.route('/delete/', methods=['POST'])
@@ -161,7 +181,9 @@ def mark():
         error_respond.invalid_post_data()
     if 'hidden' not in data:
         error_respond.invalid_post_data()
-    entry = KeyLookupTable.query.filter_by(key=key).first()
+    entry = KeyLookupTable.query.get(key)
+    if entry is None:
+        error_respond.key_not_found()
     entry.hidden = data['hidden']
     KeyLookupTable.query.session.commit()
     return jsonify(message='Success')

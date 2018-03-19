@@ -2,8 +2,10 @@ import time
 from threading import Thread, Lock, Event
 from typing import Optional, Union, Tuple, Generator, Dict, Set
 
+from flask import current_app
 from web3.exceptions import BadFunctionCallOutput
 
+from app.models import KeyLookupTable
 from app.utils.ethereum_utils import EthereumUtils
 from app.utils.misc import Address
 
@@ -35,7 +37,6 @@ class EthereumStorage:
         self.__lock = Lock()
         self.__terminating = False
 
-
         self.__store_interval = 15
         self.__load_interval = 5
         self.__store_event = Event()
@@ -47,6 +48,8 @@ class EthereumStorage:
         self.__store_thread.start()
 
         self.__loaded = False
+
+        self.__app = current_app._get_current_object()
 
     def add(self, k: str, v: str):
         """
@@ -176,27 +179,6 @@ class EthereumStorage:
         # TODO: is it necessary to return password?
         return self.__account
 
-    def load_blockchain(self):
-        while True:
-            if self.__terminating:
-                return
-
-            if self.__ethereum_utils.get_length(self.__account) > self.__blockchain_length:
-                self.__store_event.wait()
-                with self.__lock:
-                    for k, v in self.__ethereum_utils.get_history(self.__account, 0, self.__storage):
-                        if v == "":
-                            del self.__cache_dict[k]
-                        else:
-                            self.__cache_dict[k] = (v, True)
-
-            time.sleep(self.__load_interval)
-
-    def terminate(self):
-        self.__terminating = True
-        self.__load_thread.join()
-        self.__store_thread.join()
-
     def size(self) -> int:
         return len(self.__cache_dict)
 
@@ -250,14 +232,22 @@ class EthereumStorage:
                 if new_length > self.__blockchain_length:
                     self.__store_event.wait()
                     with self.__lock:
-                        for k, v in self.__ethereum_utils.get_history(self.__account, self.__blockchain_length,
-                                                                      self.__storage):
-                            print('loading:', k, v)
-                            if v == "":
-                                del self.__cache_dict[k]
-                            else:
-                                self.__cache_dict[k] = (v, True)
-                    self.__blockchain_length = new_length
+                        with self.__app.app_context():
+                            for k, v in self.__ethereum_utils.get_history(self.__account, self.__blockchain_length,
+                                                                          self.__storage):
+                                print('loading:', k, v)
+
+                                if v == "":
+                                    del self.__cache_dict[k]
+                                    if not k.startswith('__'):
+                                        KeyLookupTable.query.filter_by(key=k).delete()
+                                else:
+                                    self.__cache_dict[k] = (v, True)
+                                    if not k.startswith('__'):
+                                        new_entry = KeyLookupTable(key=k, meta_data="", hidden=False)
+                                        KeyLookupTable.query.session.add(new_entry)
+                            self.__blockchain_length = new_length
+                            KeyLookupTable.query.session.commit()
 
                 self.__loaded = True
                 time.sleep(self.__load_interval)

@@ -58,7 +58,7 @@ def verify():
     master_password_in_memory = request.decrypted_data.decode()
 
     master_pass = MasterPassword.verify(master_password_in_memory)
-    ethereum_pass = current_app.config['MASTER_PASSWORD'].ethereum_pass
+    ethereum_pass = master_pass.ethereum_pass
 
     del request.decrypted_data
     del master_password_in_memory
