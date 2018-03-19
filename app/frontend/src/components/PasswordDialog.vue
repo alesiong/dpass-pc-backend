@@ -30,19 +30,26 @@
                        v-model="userId"/>
             </div>
 
-            <div class="mdui-row">
+            <div class="mdui-row" style="position: relative">
                 <div class="mdui-col-xs-10">
                     <div class="mdui-textfield">
                         <i class="mdui-icon material-icons">vpn_key</i>
                         <label class="mdui-textfield-label">Password</label>
                         <input class="mdui-textfield-input"
-                               type="password"
+                               v-bind:type="showPlain? 'text' : 'password'"
                                autocomplete="off"
                                v-model="password"/>
                     </div>
+                    <button class="mdui-btn mdui-btn-icon mdui-ripple reveal-button"
+                            v-on:click="showPlain = !showPlain">
+                        <i v-if="!showPlain"
+                           class="mdui-icon ion-md-eye"></i>
+                        <i v-else
+                           class="mdui-icon ion-md-eye-off"></i>
+                    </button>
                 </div>
                 <div class="mdui-col-xs-2">
-                    <button class="mdui-btn mdui-ripple generate-buttom"
+                    <button class="mdui-btn mdui-ripple generate-button"
                             mdui-tooltip="{content: 'Generate a Random Complicated Key in 8-16 Digits', position: 'top'}"
                             v-on:click="generateRandomPassword">
                         <!--<i class="mdui-icon mdui-icon-left material-icons ">autorenew</i>-->
@@ -63,7 +70,7 @@
             <button class="mdui-btn mdui-ripple" mdui-dialog-confirm
                     v-on:click="onClickAdd"
                     v-bind:disabled="!valid">
-                add
+                {{confirmButton}}
             </button>
         </div>
     </div>
@@ -78,8 +85,14 @@
         margin-left: 72px;
     }
 
-    .generate-buttom {
+    .generate-button {
         margin-top: 40px;
+    }
+
+    .reveal-button {
+        position: absolute;
+        right: 8px;
+        bottom: 8px;
     }
 
 </style>

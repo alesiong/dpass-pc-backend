@@ -50,13 +50,15 @@
                   v-on:copy-success="onCopiedPassword"
                   v-on:click-delete="onDeleteItem"
                   v-on:click-hide="onHideItem"
+                  v-on:click-modify="onModifyItem"
             />
 
         </div>
 
         <password-dialog
                 ref="dialog"
-                v-on:click-add="onConfirmAddItem"/>
+                v-on:click-add="onConfirmAddItem"
+                v-on:click-modify="onConfirmModifyItem"/>
 
         <div v-if="type === 'all'">
             <div class="mdui-fab-wrapper" mdui-fab="{trigger: 'hover'}">

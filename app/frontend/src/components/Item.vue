@@ -41,7 +41,8 @@
                            class="mdui-icon ion-md-eye"></i>
                     </button>
                     <button class="mdui-col-xs-3 mdui-btn mdui-ripple mdui-btn-icon action-button mdui-text-color-green-800"
-                            mdui-tooltip="{content: 'Edit', position: 'top'}">
+                            mdui-tooltip="{content: 'Edit', position: 'top'}"
+                            @click="onModify">
                         <i class="mdui-icon material-icons">edit</i>
                     </button>
                     <!-- TODO: It would be better to only allow deletion from editing dialog -->

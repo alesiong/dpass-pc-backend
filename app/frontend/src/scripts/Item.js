@@ -46,6 +46,9 @@ export default {
         key: this.data.key,
         hidden: !this.data.hidden
       });
+    },
+    onModify() {
+      this.$emit('click-modify', this.data)
     }
   }
 };

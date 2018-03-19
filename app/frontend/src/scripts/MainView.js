@@ -121,6 +121,33 @@ export default {
         });
       });
     },
+    onConfirmModifyItem(data) {
+      data.date = Date.now();
+      if (data.url) data.url = this.processUrl(data.url);
+      ensureSession(this).then(() => {
+        const key = data.key;
+        delete data.key;
+        const passwordEntry = JSON.stringify({
+          key: key,
+          modified: data
+        });
+        const [cipher, hmac] = encryptAndAuthenticate(passwordEntry, this.globalData.sessionKey);
+        $$.ajax({
+          url: '/api/password/modify/',
+          method: 'POST',
+          dataType: 'json',
+          data: JSON.stringify({
+            data: cipher,
+            hmac: hmac
+          }),
+          contentType: 'application/json',
+          success: () => {
+            mdui.snackbar({message: 'Successfully modified one password'});
+            this.fetchPasswords();
+          }
+        });
+      });
+    },
     onHideItem(data) {
       data = Object.assign({hidden: true}, data);
       ensureSession(this).then(() => {
@@ -146,6 +173,10 @@ export default {
     },
     onAddSecretNote() {
 
+    },
+    onModifyItem(data) {
+      data.password = this.localData.passwords[data.key];
+      this.$refs.dialog.openDialog(data, 'modify');
     },
     onToggleReveal: function(index) {
       const item = this.items[index];
