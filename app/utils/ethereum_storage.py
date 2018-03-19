@@ -5,6 +5,7 @@ from typing import Optional, Union, Tuple, Generator, Dict, Set
 from flask import current_app
 from web3.exceptions import BadFunctionCallOutput
 
+from app.utils.settings import Settings
 from app.models import KeyLookupTable
 from app.utils.ethereum_utils import EthereumUtils
 from app.utils.misc import Address
@@ -40,7 +41,14 @@ class EthereumStorage:
         self.__store_interval = 15
         self.__load_interval = 5
         self.__store_event = Event()
-        self.__blockchain_length = 0
+        self.__blockchain_length = Settings().blockchain_length
+        self.__blockchain = Settings().blockchain
+
+        for k, v in self.__blockchain:
+            if v == '':
+                del self.__cache_dict[k]
+            else:
+                self.__cache_dict[k] = (v, True)
 
         self.__load_thread = Thread(target=self.load_worker, daemon=True)
         self.__store_thread = Thread(target=self.store_worker, daemon=True)
@@ -222,6 +230,22 @@ class EthereumStorage:
                 print(e)
                 time.sleep(self.__store_interval)
 
+    def load_key_value(self, k: str, v: str):
+        self.__blockchain.append((k, v))
+        if v == '':
+            del self.__cache_dict[k]
+            if not k.startswith('__'):
+                KeyLookupTable.query.filter_by(key=k).delete()
+        else:
+            self.__cache_dict[k] = (v, True)
+            if not k.startswith('__'):
+                old_entry = KeyLookupTable.query.get(k)
+                if old_entry:
+                    old_entry.meta_data = ''
+                else:
+                    new_entry = KeyLookupTable(key=k, meta_data='', hidden=False)
+                    KeyLookupTable.query.session.add(new_entry)
+
     def load_worker(self):
         while True:
             try:
@@ -236,26 +260,20 @@ class EthereumStorage:
                             for k, v in self.__ethereum_utils.get_history(self.__account, self.__blockchain_length,
                                                                           self.__storage):
                                 print('loading:', k, v)
+                                self.load_key_value(k, v)
 
-                                if v == "":
-                                    del self.__cache_dict[k]
-                                    if not k.startswith('__'):
-                                        KeyLookupTable.query.filter_by(key=k).delete()
-                                else:
-                                    self.__cache_dict[k] = (v, True)
-                                    if not k.startswith('__'):
-                                        new_entry = KeyLookupTable(key=k, meta_data="", hidden=False)
-                                        KeyLookupTable.query.session.add(new_entry)
                             self.__blockchain_length = new_length
                             KeyLookupTable.query.session.commit()
+                            Settings().blockchain_length = new_length
+                            Settings().blockchain = self.__blockchain
+                            Settings().write()
 
-                self.__loaded = True
-                time.sleep(self.__load_interval)
             except BadFunctionCallOutput:
-                self.__loaded = True
                 break
             except Exception as e:
                 print(e)
+            finally:
+                self.__loaded = True
                 time.sleep(self.__load_interval)
 
     def terminate(self):
