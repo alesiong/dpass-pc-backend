@@ -62,21 +62,9 @@ export default {
   },
 
   methods: {
-   //  indexOf(val) {
-   //  for (var i = 0; i < this.items.length; i++) {
-   //    if (this.items[i] == val) return i;
-   //  }
-   //  return -1;
-   //  },
-   //  remove(val) {
-   //  var index = this.items.indexOf(val);
-   //  if (index > -1) {
-   //    this.items.splice(index, 1);
-   //  }
-   // },
-    onConfirmDelete(data) {
+    onConfirmDelete(key) {
       ensureSession(this).then(() => {
-        const passwordEntry = JSON.stringify(data);
+        const passwordEntry = JSON.stringify({key});
         const [cipher, hmac] = encryptAndAuthenticate(passwordEntry, this.globalData.sessionKey);
         $$.ajax({
           url: '/api/password/delete/',
@@ -111,7 +99,7 @@ export default {
           }),
           contentType: 'application/json',
           success: () => {
-            mdui.snackbar({message: 'Successfully deleted password'});
+            mdui.snackbar({message: 'Successfully added password'});
             this.fetchPasswords();
           }
         });

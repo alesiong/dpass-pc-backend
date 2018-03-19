@@ -27,13 +27,14 @@
                                     ••••••••
                                 </span>
                             </span>
-                        <button class="mdui-col-xs-3 mdui-btn mdui-ripple mdui-btn-icon button-copy"
+                        <button class="mdui-col-xs-3 mdui-btn mdui-ripple mdui-btn-icon action-button mdui-text-color-pink-300"
                                 mdui-tooltip="{content: 'Copy', position: 'top'}"
                                 @click="onCopyPassword(data.key)">
                             <i class="mdui-icon material-icons">content_copy</i>
                         </button>
-                        <button class="mdui-col-xs-3 mdui-btn mdui-ripple mdui-btn-icon button-reveal"
-                                mdui-tooltip="{content: 'Reveal/Hide', position: 'top'}"
+                        <button class="mdui-col-xs-3 mdui-btn mdui-ripple mdui-btn-icon action-button mdui-text-color-indigo-400"
+                                :mdui-tooltip="JSON.stringify(
+                                    {content: showPlain ? 'Hide': 'Show', position: 'top'})"
                                 @click="onToggleReveal">
                                 <span v-if="showPlain">
                                     <i class="mdui-icon ion-md-eye-off"></i>
@@ -42,13 +43,13 @@
                                     <i class="mdui-icon ion-md-eye"></i>
                                 </span>
                         </button>
-                        <button class="mdui-col-xs-3 mdui-btn mdui-ripple  mdui-btn-icon button-edit"
+                        <button class="mdui-col-xs-3 mdui-btn mdui-ripple  mdui-btn-icon action-button mdui-text-color-green-800"
                                 mdui-tooltip="{content: 'Edit', position: 'top'}">
-                                <i class="mdui-icon material-icons">edit</i>
+                            <i class="mdui-icon material-icons">edit</i>
                         </button>
-                        <button class="mdui-col-xs-3 mdui-btn mdui-ripple  mdui-btn-icon button-delete"
+                        <button class="mdui-col-xs-3 mdui-btn mdui-ripple  mdui-btn-icon action-button mdui-text-color-brown-300"
                                 mdui-tooltip="{content: 'Delete', position: 'top'}"
-                                @click="onDelete(data)">
+                                @click="onDelete">
                             <i class="mdui-icon material-icons">delete_forever</i>
                         </button>
                     </div>
@@ -79,28 +80,10 @@
         float: left;
     }
 
-    .button-copy {
+    .action-button {
         margin-top: -16px;
         width: 48px;
         height: 48px;
-        color:#F06292;
     }
-    .button-reveal {
-        margin-top: -16px;
-        width: 48px;
-        height: 48px;
-        color:#5C6BC0;
-    }
-    .button-edit {
-        margin-top:-16px;
-        width: 48px;
-        height: 48px;
-        color:#2E7D32;
-    }
-    .button-delete {
-        margin-top: -16px;
-        width: 48px;
-        height: 48px;
-        color:#A1887F;
-    }
+
 </style>

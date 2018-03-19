@@ -35,10 +35,11 @@ export default {
       this.$emit('copy-success');
 
     },
-    onDelete(data){
-      this.$emit('click-delete', {
-        data:this.data
-      });
-    },
+    onDelete() {
+      mdui.confirm('Deleting password from blockchain will cost storage space!', 'Do you really want to delete?',
+          () => {
+            this.$emit('click-delete', this.data.key);
+          });
+    }
   }
 };
