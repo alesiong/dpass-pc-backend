@@ -16,16 +16,16 @@
                 <br/>
                 <div class="mdui-typo-subheading">{{data.userId}}</div>
                 <br/>
-                <div class="mdui-row">
-
-                        <span class="mdui-col-xs-3 mdui-typo-subheading">
-                                <span v-if="showPlain">
-                                    {{ getPassword(data.key) }}
-                                </span>
-                                <span v-else>
-                                    ••••••••
-                                </span>
-                            </span>
+                <div v-if="!data.hidden"
+                     class="mdui-row">
+                    <span class="mdui-col-xs-3 mdui-typo-subheading">
+                        <span v-if="showPlain">
+                            {{ getPassword(data.key) }}
+                        </span>
+                        <span v-else>
+                            ••••••••
+                        </span>
+                    </span>
                     <button class="mdui-col-xs-3 mdui-btn mdui-ripple mdui-btn-icon action-button mdui-text-color-pink-300"
                             mdui-tooltip="{content: 'Copy', position: 'top'}"
                             @click="onCopyPassword(data.key)">
@@ -35,12 +35,10 @@
                             :mdui-tooltip="JSON.stringify(
                                     {content: showPlain ? 'Hide': 'Show', position: 'top'})"
                             @click="onToggleReveal">
-                                <span v-if="showPlain">
-                                    <i class="mdui-icon ion-md-eye-off"></i>
-                                </span>
-                        <span v-else>
-                                    <i class="mdui-icon ion-md-eye"></i>
-                                </span>
+                        <i v-if="showPlain"
+                           class="mdui-icon ion-md-eye-off"></i>
+                        <i v-else
+                           class="mdui-icon ion-md-eye"></i>
                     </button>
                     <button class="mdui-col-xs-3 mdui-btn mdui-ripple mdui-btn-icon action-button mdui-text-color-green-800"
                             mdui-tooltip="{content: 'Edit', position: 'top'}">
@@ -62,9 +60,12 @@
         </div>
 
         <button class="mdui-btn mdui-ripple mdui-btn-icon hide-button"
-                mdui-tooltip="{content: 'Hide from the list'}"
+                v-bind:mdui-tooltip="`{content: '${data.hidden? 'Show in list' : 'Hide from list'}'}`"
                 @click="onHide">
-            <i class="mdui-icon material-icons">close</i>
+            <i v-if="!data.hidden"
+               class="mdui-icon material-icons">close</i>
+            <i v-else
+               class="mdui-icon material-icons">wb_sunny</i>
         </button>
     </div>
     <div v-else-if="type === 'secret'"></div>

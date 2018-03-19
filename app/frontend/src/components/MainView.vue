@@ -1,7 +1,7 @@
 <template>
     <div>
         <div class="mdui-row action-bar">
-            <div class="mdui-col-xs-4 mdui-m-l-1">
+            <div class="mdui-m-l-1" style="flex-grow: 1">
                 <div class="mdui-row mdui-typo-display-1-opacity">
                     {{title}} ({{filteredItems.length}})
                 </div>
@@ -21,7 +21,16 @@
             <!--<i class="mdui-icon material-icons">sort_by_alpha</i>-->
             <!--</button>-->
 
-            <div class="mdui-col-xs-2 mdui-float-right">
+            <div style="display: flex; align-items: baseline;">
+                <div class="mdui-m-r-2">Show hidden items</div>
+                <label class="mdui-switch">
+                    <input type="checkbox"
+                           v-model="showHidden"/>
+                    <i class="mdui-switch-icon"></i>
+                </label>
+            </div>
+
+            <div class="mdui-m-l-4">
                 <select class="mdui-select" mdui-select="{position: 'bottom'}"
                         v-model="sortBy">
                     <option value="1">Sort by name</option>
@@ -32,18 +41,12 @@
         </div>
 
 
-        <div class="item-allbar">
+        <div class="item-all-block">
             <item v-for="item in filteredItems"
                   v-bind:key="item.key"
 
                   v-bind:type="item.type"
-                  v-bind:data="{
-                    url: item.url,
-                    siteName: item.siteName,
-                    userId: item.userId,
-                    date: item.date,
-                    key: item.key
-                  }"
+                  v-bind:data="item"
                   v-on:copy-success="onCopiedPassword"
                   v-on:click-delete="onDeleteItem"
                   v-on:click-hide="onHideItem"
@@ -89,11 +92,13 @@
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 
 <style scoped>
-    .item-allbar .item-block:not(:first-child) {
+    .item-all-block .item-block:not(:first-child) {
         margin-top: 24px;
     }
 
     .action-bar {
         margin-bottom: 40px;
+        display: flex;
+        display: -webkit-flex;
     }
 </style>

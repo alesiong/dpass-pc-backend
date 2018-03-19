@@ -42,7 +42,10 @@ export default {
           });
     },
     onHide() {
-      this.$emit('click-hide', this.data.key);
+      this.$emit('click-hide', {
+        key: this.data.key,
+        hidden: !this.data.hidden
+      });
     }
   }
 };

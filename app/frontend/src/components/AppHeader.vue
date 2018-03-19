@@ -7,8 +7,7 @@
                 </span>
 
             <!--TODO: icon-->
-            <a class="mdui-typo-title mdui-text-color-theme-grey-50"
-               style="font-style: italic">DPass</a>
+            <a class="mdui-typo-title mdui-text-color-theme-grey-50">DPass</a>
 
             <div class="mdui-toolbar-spacer"></div>
 

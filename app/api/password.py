@@ -44,6 +44,7 @@ def get_table():
     entries = [
         {
             'key': entry.key,
+            'hidden': entry.hidden,
             'metadata': json.loads(
                 master_password.simple_decrypt(
                     base64.decodebytes(entry.meta_data.encode())).decode())
