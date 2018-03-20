@@ -116,6 +116,8 @@ if __name__ == '__main__':
         print('Also start mining, it will take a lot of time to generate DAG (~3 min)...')
         if args.compile:
             storage_factory_abi, storage_factory_bin = compile_sol('./contracts/storage.sol', 'StorageFactory')
+            json.dump(storage_factory_abi, open('contracts/storage_factory.abi.json', 'w'))
+            json.dump(storage_factory_bin, open('contracts/storage_factory.bin', 'w'))
         else:
             storage_factory_abi = json.load(open('contracts/storage_factory.abi.json'))
             storage_factory_bin = open('contracts/storage_factory.bin').read().strip()
