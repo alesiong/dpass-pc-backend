@@ -1,7 +1,7 @@
 import PasswordDialog from '@c/PasswordDialog';
 import Item from '@c/Item';
 
-import {decryptAndVerify, encrypt, encryptAndAuthenticate, ensureSession} from '@/utils';
+import {decrypt, decryptAndVerify, encrypt, encryptAndAuthenticate, ensureSession} from '@/utils';
 
 import mdui from 'mdui';
 
@@ -175,7 +175,7 @@ export default {
 
     },
     onModifyItem(data) {
-      data.password = this.localData.passwords[data.key];
+      data.password = decrypt(this.localData.passwords[data.key], data.key);
       this.$refs.dialog.openDialog(data, 'modify');
     },
     onToggleReveal: function(index) {

@@ -1,6 +1,6 @@
 from flask import Blueprint, current_app, jsonify, request, json
 
-from app import EthereumUtils
+from app.utils.ethereum_utils import EthereumUtils
 from app.utils import error_respond
 from app.utils.decorators import session_verify
 
@@ -19,18 +19,20 @@ def get_settings():
         error_respond.invalid_arguments()
 
 
-@bp.route('', methods=['POST'])
+@bp.route('/', methods=['POST'])
 @session_verify
 def change_settings():
     ethereum_utils = EthereumUtils()
     data = json.loads(request.decrypted_data.decode())
     setting_type = data.get('type')
     setting_args = data.get('args')
-    if setting_type is None or setting_args is None:
+    if setting_type is None:
         error_respond.invalid_post_data()
     if setting_type == 'mining':
-        if setting_args is False:
-            ethereum_utils.stop_mining()
+        if setting_args is None:
+            error_respond.invalid_post_data()
+        if setting_args:
+            ethereum_utils.start_mining(current_app.config['STORAGE'].get_constructor_arguments())
         else:
-            ethereum_utils.start_mining()
+            ethereum_utils.stop_mining()
     return jsonify(message='Success')

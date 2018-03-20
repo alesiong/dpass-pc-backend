@@ -1,6 +1,6 @@
 import mdui from 'mdui';
 
-import {copyToClickboard, decrypt, encryptAndAuthenticate, ensureSession} from '@/utils';
+import {copyToClickboard, decrypt, encryptAndAuthenticate} from '@/utils';
 
 export default {
   name: 'item',
@@ -13,13 +13,10 @@ export default {
   },
 
   mounted() {
-    this.persistenceWorker = window.setInterval(async () => {
-      this.persistence = await this.fetchPersistence(this.data.key);
-      if (this.persistence) window.clearInterval(this.persistenceWorker);
-    }, 1000);
+    this.persistenceWorker = window.setTimeout(this.persistenceWorkerFunction.bind(this), 1000);
   },
   beforeDestroy() {
-    window.clearInterval(this.persistenceWorker);
+    window.clearTimeout(this.persistenceWorker);
   },
 
   updated() {
@@ -87,6 +84,15 @@ export default {
           }
         });
       });
+    },
+
+    async persistenceWorkerFunction() {
+      this.persistence = await this.fetchPersistence(this.data.key);
+      if (this.persistence) {
+        window.setTimeout(this.persistenceWorkerFunction.bind(this), 5000);
+      } else {
+        window.setTimeout(this.persistenceWorkerFunction.bind(this), 1000);
+      }
     }
   }
 };
