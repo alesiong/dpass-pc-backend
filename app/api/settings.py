@@ -28,8 +28,9 @@ def change_settings():
     setting_args = data.get('args')
     if setting_type is None or setting_args is None:
         error_respond.invalid_post_data()
-    if setting_type == 'mining' and setting_args is False:
+    if setting_type == 'mining':
+        if setting_args is False:
             ethereum_utils.stop_mining()
-    if setting_type == 'mining' and setting_args is True:
+        else:
             ethereum_utils.start_mining()
     return jsonify(message='Success')
