@@ -24,16 +24,12 @@ def get_settings():
 def change_settings():
     ethereum_utils = EthereumUtils()
     data = json.loads(request.decrypted_data.decode())
-    setting_type = data['type']
-    setting_args = data['args']
+    setting_type = data.get('type')
+    setting_args = data.get('args')
     if setting_type is None or setting_args is None:
         error_respond.invalid_post_data()
     if setting_type == 'mining' and setting_args is False:
-        if ethereum_utils.is_mining:
             ethereum_utils.stop_mining()
-            ethereum_utils.is_mining = False
     if setting_type == 'mining' and setting_args is True:
-        if not ethereum_utils.is_mining:
             ethereum_utils.start_mining()
-            ethereum_utils.is_mining = True
     return jsonify(message='Success')
