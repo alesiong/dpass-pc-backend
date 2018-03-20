@@ -61,11 +61,12 @@
         <div class="mdui-dialog-actions">
                 <span class="mdui-float-left dialog-warn mdui-text-color-red-a400"
                       v-if="!valid">
-                    <i class="mdui-icon material-icons">error</i>
+                    <i class="mdui-icon material-icons"
+                       style="margin-top: -4px;">error_outline</i>
                     All entries should be filled.
                 </span>
 
-            <button class="mdui-btn mdui-ripple" mdui-dialog-close>
+            <button class=" mdui-btn mdui-ripple" mdui-dialog-close>
                 cancel
             </button>
             <button class="mdui-btn mdui-ripple" mdui-dialog-confirm
@@ -84,6 +85,9 @@
     .dialog-warn {
         padding-top: 12px;
         margin-left: 72px;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
         user-select: none;
     }
 

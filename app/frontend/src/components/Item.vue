@@ -68,6 +68,16 @@
             <i v-else
                class="mdui-icon material-icons">wb_sunny</i>
         </button>
+
+        <div class="persistence"
+             v-if="typeof(persistence) === 'boolean'">
+            <div class="mdui-spinner mdui-spinner-colorful"
+                 mdui-tooltip="{content: 'Synchronizing...'}"
+                 v-if="!persistence"></div>
+            <i class="mdui-icon material-icons mdui-text-color-theme"
+               mdui-tooltip="{content: 'Already synchronized !'}"
+               v-else>check</i>
+        </div>
     </div>
     <div v-else-if="type === 'secret'"></div>
     <div v-else></div>
@@ -99,6 +109,16 @@
         top: 24px;
         right: 24px;
         position: absolute;
+    }
+
+    .persistence {
+        bottom: 24px;
+        right: 32px;
+        position: absolute;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
     }
 
 </style>

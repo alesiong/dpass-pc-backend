@@ -1,14 +1,29 @@
 import mdui from 'mdui';
 
-import {copyToClickboard, decrypt} from '@/utils';
+import {copyToClickboard, decrypt, encryptAndAuthenticate, ensureSession} from '@/utils';
 
 export default {
   name: 'item',
   props: ['type', 'data'],
   data() {
     return {
-      showPlain: false
+      showPlain: false,
+      persistence: null
     };
+  },
+
+  mounted() {
+    this.persistenceWorker = window.setInterval(async () => {
+      this.persistence = await this.fetchPersistence(this.data.key);
+      if (this.persistence) window.clearInterval(this.persistenceWorker);
+    }, 1000);
+  },
+  beforeDestroy() {
+    window.clearInterval(this.persistenceWorker);
+  },
+
+  updated() {
+    mdui.mutation();
   },
   filters: {
     formatDate(timestamp) {
@@ -48,7 +63,30 @@ export default {
       });
     },
     onModify() {
-      this.$emit('click-modify', this.data)
+      this.$emit('click-modify', this.data);
+    },
+
+    fetchPersistence(key) {
+      return new Promise(resolve => {
+        const [cipher, hmac] = encryptAndAuthenticate(
+            JSON.stringify({
+              key
+            }),
+            this.globalData.sessionKey);
+        $$.ajax({
+          url: '/api/password/persistent/',
+          method: 'POST',
+          dataType: 'json',
+          data: JSON.stringify({
+            data: cipher,
+            hmac: hmac
+          }),
+          contentType: 'application/json',
+          success: (res) => {
+            resolve(res.result);
+          }
+        });
+      });
     }
   }
 };
