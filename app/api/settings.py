@@ -35,4 +35,6 @@ def change_settings():
             ethereum_utils.start_mining(current_app.config['STORAGE'].get_constructor_arguments())
         else:
             ethereum_utils.stop_mining()
+    elif setting_type == 'lock':
+        current_app.config['MASTER_PASSWORD'].lock()
     return jsonify(message='Success')
