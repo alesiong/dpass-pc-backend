@@ -61,7 +61,8 @@
         <div class="mdui-dialog-actions">
                 <span class="mdui-float-left dialog-warn mdui-text-color-red-a400"
                       v-if="!valid">
-                    Warning: All entries should be filled.
+                    <i class="mdui-icon material-icons">error</i>
+                    All entries should be filled.
                 </span>
 
             <button class="mdui-btn mdui-ripple" mdui-dialog-close>
@@ -81,8 +82,9 @@
 
 <style scoped>
     .dialog-warn {
-        padding-top: 16px;
+        padding-top: 12px;
         margin-left: 72px;
+        user-select: none;
     }
 
     .generate-button {

@@ -41,7 +41,12 @@ export default {
         this.key = initValue.key;
       }
       this.mode = mode;
-      new mdui.Dialog('#' + this.id, options).open();
+      this.showPlain = false;
+      this.dialog = new mdui.Dialog('#' + this.id, options);
+      this.dialog.open();
+      $$('#' + this.id).on('opened.mdui.dialog', () => {
+        this.dialog.handleUpdate();
+      });
     },
     onClickAdd() {
       if (this.mode === 'add') {
