@@ -30,7 +30,7 @@ if __name__ == '__main__':
 
     # os.system(get_executable('./geth', 'geth') + ' makedag 10 ./ethereum_private/data/ethash')
 
-    password = getpass.getpass('Please input the password for the new account:')
+    # password = getpass.getpass('Please input the password for the new account:')
 
     print('Start the geth process')
     geth = subprocess.Popen([get_executable('./geth', 'geth'),

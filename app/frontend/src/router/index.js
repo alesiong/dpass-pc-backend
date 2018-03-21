@@ -1,6 +1,7 @@
 import Vue from 'vue';
 import Router from 'vue-router';
 import MainView from '@c/MainView';
+import SettingsView from '@c/SettingsView';
 
 Vue.use(Router);
 
@@ -24,6 +25,11 @@ export default new Router({
       name: 'Secret Notes',
       component: MainView,
       props: {type: 'secret'}
+    },
+    {
+      path: '/settings/',
+      name: 'Settings',
+      component: SettingsView
     },
     {
       path: '*',

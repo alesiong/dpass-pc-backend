@@ -17,7 +17,7 @@
     </div>
     <!--Verify the password-->
     <div v-else-if="verify">
-        <div class="mdui-textfield">
+        <div class="mdui-textfield " @keyup.13="onVerifyMasterPassword">
             <label class="mdui-textfield-label">Enter Master Password</label>
             <input class="mdui-textfield-input" type="password"
                    v-model="password"/>

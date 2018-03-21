@@ -1,3 +1,4 @@
+import json
 import os
 from pathlib import Path
 from unqlite import UnQLite
@@ -46,6 +47,22 @@ class Settings(metaclass=Singleton):
     @ethereum_address.setter
     def ethereum_address(self, v: str):
         self.__db['ethereum_address'] = v
+
+    @property
+    def blockchain_length(self) -> int:
+        return int(self.__db_get('blockchain_length', 0))
+
+    @blockchain_length.setter
+    def blockchain_length(self, v: int):
+        self.__db['blockchain_length'] = str(v)
+
+    @property
+    def blockchain(self) -> list:
+        return json.loads(self.__db_get('blockchain', '[]'))
+
+    @blockchain.setter
+    def blockchain(self, v: list):
+        self.__db['blockchain'] = json.dumps(v)
 
     def __del__(self):
         self.__db.close()

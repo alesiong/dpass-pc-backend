@@ -1,7 +1,7 @@
 import json
 import os
 
-from flask import Flask, url_for, render_template
+from flask import Flask, url_for, render_template, redirect
 from flask_sqlalchemy import SQLAlchemy
 from web3 import Web3, IPCProvider
 
@@ -11,7 +11,6 @@ from app.utils.misc import get_env, get_ipc
 from app.utils.session_key import SessionKey
 from app.utils.settings import Settings
 from config import configs
-
 
 # Instantiate Flask extensions
 db = SQLAlchemy()
@@ -84,12 +83,13 @@ def create_app(config_name='development', queue=None, use_storage=None):
 
         Settings(app.config['SETTINGS_FILE'])
 
-
     @app.route('/', defaults={'path': ''})
     @app.route('/<path:path>')
     def index(path):
         return render_template('page/index.html')
 
-
+    @app.route('/favicon.ico')
+    def favicon():
+        return redirect(url_for('static', filename='images/favicon.ico'))
 
     return app

@@ -42,6 +42,9 @@ export default {
         });
       });
     },
+    warnClose() {
+      new mdui.Dialog('#warn').close();
+    },
     onVerifyMasterPassword() {
       ensureSession(this).then(() => {
         const [cipher, hmac] = encryptAndAuthenticate(this.password, this.globalData.sessionKey);
@@ -62,10 +65,16 @@ export default {
             '401': (res) => {
               res = JSON.parse(res.response);
               if (res.error === 'Master Password Wrong') {
-                mdui.alert('Verification failed');
+                // mdui.Dialog('#warn').open();
+                mdui.snackbar({
+                  message: 'Verification Failed'
+                });
               } else {
                 // Fixme: general bad situation
-                mdui.alert('Session Key broken!');
+                // mdui.alert('Session Key broken!');
+                mdui.snackbar({
+                  message: 'Session Key broken'
+                });
               }
             }
           }
