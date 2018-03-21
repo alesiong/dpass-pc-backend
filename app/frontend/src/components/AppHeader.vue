@@ -42,6 +42,7 @@
         this.$emit('search', event.target.value);
       },
       lockDPass() {
+        $$('.mdui-tooltip-open').remove();
         ensureSession(this).then(() => {
           const [cipher, hmac] = encryptAndAuthenticate(
               JSON.stringify({

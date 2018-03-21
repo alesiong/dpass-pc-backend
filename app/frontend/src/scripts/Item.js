@@ -54,6 +54,7 @@ export default {
           });
     },
     onHide() {
+      $$('.mdui-tooltip-open').removeClass('mdui-tooltip-open');
       this.$emit('click-hide', {
         key: this.data.key,
         hidden: !this.data.hidden

@@ -47,7 +47,7 @@ export default {
       if (this.sortBy === '1') {
         keys.push(a => a.siteName);
       } else {
-        keys.push(a => a.date);
+        keys.push(a => -a.date);
       }
       return this.items.filter(this.shown.bind(this)).sort(comparator(keys));
     },
