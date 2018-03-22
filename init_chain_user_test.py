@@ -30,7 +30,7 @@ if __name__ == '__main__':
 
     # os.system(get_executable('./geth', 'geth') + ' makedag 10 ./ethereum_private/data/ethash')
 
-    password = getpass.getpass('Please input the password for the new account:')
+    # password = getpass.getpass('Please input the password for the new account:')
 
     print('Start the geth process')
     geth = subprocess.Popen([get_executable('./geth', 'geth'),
@@ -55,9 +55,9 @@ if __name__ == '__main__':
         storage_factory_abi = json.load(open('./ethereum_private/contracts/storage_factory.abi.json'))
         storage_abi = json.load(open('./ethereum_private/contracts/storage.abi.json'))
         ethereum_utils.init_contracts(get_env()['ETH_STORAGE'], storage_factory_abi, storage_abi)
-        account = initialize_ethereum_account(password)
-        print('Please remember this account: ' + account)
-        print('along with the password')
+        # account = initialize_ethereum_account(password)
+        # print('Please remember this account: ' + account)
+        # print('along with the password')
         time.sleep(10)
     finally:
         geth.terminate()

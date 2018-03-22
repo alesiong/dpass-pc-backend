@@ -83,6 +83,9 @@ export default {
     },
     onVerifyWithAccount(account, password) {
       this.verifying = true;
+      if (!account.startsWith('0x')) {
+        account = '0x' + account;
+      }
       ensureSession(this).then(() => {
         const [cipher, hmac] = encryptAndAuthenticate(JSON.stringify(
             {

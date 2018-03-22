@@ -39,14 +39,17 @@ def new():
                 ethereum_account = initialize_ethereum_account(ethereum_pass)
                 current_app.config['STORAGE'] = EthereumStorage(ethereum_account, ethereum_pass)
                 settings.ethereum_address = ethereum_account
-                print(ethereum_account)
                 settings.write()
             else:
                 current_app.config['STORAGE'] = LocalStorage('chain')
-            current_app.config['STORAGE'].add(MASTER_KEY, settings.master_password_hash)
-            current_app.config['STORAGE'].add(MASTER_SALT_KEY, settings.master_password_hash_salt)
+            storage = current_app.config['STORAGE']
+            storage.add(MASTER_KEY, settings.master_password_hash)
+            storage.add(MASTER_SALT_KEY, settings.master_password_hash_salt)
+            while True:
+                if storage.get(MASTER_KEY, True)[1] and storage.get(MASTER_SALT_KEY, True)[1]:
+                    break
+                time.sleep(0.1)
             current_app.config['INIT_STATE'] = 2
-            print(settings.ethereum_address, ethereum_pass)
 
     Thread(target=initializing_worker, daemon=True, args=(current_app._get_current_object(),)).start()
     return jsonify(message='Success')
@@ -58,7 +61,7 @@ def verify():
     master_password_in_memory = request.decrypted_data.decode()
 
     master_pass = MasterPassword.verify(master_password_in_memory)
-    ethereum_pass = current_app.config['MASTER_PASSWORD'].ethereum_pass
+    ethereum_pass = master_pass.ethereum_pass
 
     del request.decrypted_data
     del master_password_in_memory

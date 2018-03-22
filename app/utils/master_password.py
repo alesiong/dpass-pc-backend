@@ -141,3 +141,6 @@ class MasterPassword:
             self._checked_expire = exempt_times
 
         return expired
+
+    def lock(self):
+        self.__expire_time = 0

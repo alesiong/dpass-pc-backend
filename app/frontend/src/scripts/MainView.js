@@ -1,7 +1,7 @@
 import PasswordDialog from '@c/PasswordDialog';
 import Item from '@c/Item';
 
-import {decryptAndVerify, encrypt, encryptAndAuthenticate, ensureSession} from '@/utils';
+import {decrypt, decryptAndVerify, encrypt, encryptAndAuthenticate, ensureSession} from '@/utils';
 
 import mdui from 'mdui';
 
@@ -14,12 +14,14 @@ export default {
   },
   data() {
     return {
-      items: []
+      items: [],
+      sortBy: '1',
+      showHidden: false
     };
   },
   mounted() {
     this.fetchPasswords();
-    const fetchingInterval = window.setInterval(this.fetchPasswords.bind(this), 30000);
+    const fetchingInterval = window.setInterval(this.fetchPasswords.bind(this), 15000);
     this.localData = {
       fetchingInterval,
       clearClipboardTimeout: null,
@@ -32,8 +34,22 @@ export default {
   },
 
   computed: {
-    length() {
-      return this.items.filter(this.shown.bind(this)).length;
+    filteredItems() {
+      function comparator(keyFuncs) {
+        const cmp = (a, b) => a < b ? -1 : (a === b ? 0 : 1);
+        return (a, b) => {
+          const result = cmp(keyFuncs[0](a), keyFuncs[0](b));
+          return result === 0 && keyFuncs.length > 1 ? comparator(keyFuncs.slice(1))(a, b) : result;
+        };
+      }
+
+      let keys = [a => a.hidden];
+      if (this.sortBy === '1') {
+        keys.push(a => a.siteName);
+      } else {
+        keys.push(a => -a.date);
+      }
+      return this.items.filter(this.shown.bind(this)).sort(comparator(keys));
     },
     title() {
       switch (this.type) {
@@ -56,27 +72,16 @@ export default {
   },
 
   filters: {
-    mduiToolbar(content) {
+    mduiTooltip(content) {
       return `{content: '${content}', position: 'left'}`;
     }
   },
 
   methods: {
-   //  indexOf(val) {
-   //  for (var i = 0; i < this.items.length; i++) {
-   //    if (this.items[i] == val) return i;
-   //  }
-   //  return -1;
-   //  },
-   //  remove(val) {
-   //  var index = this.items.indexOf(val);
-   //  if (index > -1) {
-   //    this.items.splice(index, 1);
-   //  }
-   // },
-    onConfirmDelete(data) {
+    // listeners
+    onDeleteItem(key) {
       ensureSession(this).then(() => {
-        const passwordEntry = JSON.stringify(data);
+        const passwordEntry = JSON.stringify({key});
         const [cipher, hmac] = encryptAndAuthenticate(passwordEntry, this.globalData.sessionKey);
         $$.ajax({
           url: '/api/password/delete/',
@@ -88,13 +93,12 @@ export default {
           }),
           contentType: 'application/json',
           success: () => {
-            mdui.snackbar({message: 'Successfully deleted password'});
+            mdui.snackbar({message: 'Successfully deleted one password'});
             this.fetchPasswords();
           }
         });
       });
     },
-    // listeners
     onConfirmAddItem(data) {
       data.date = Date.now();
       data.url = this.processUrl(data.url);
@@ -111,7 +115,54 @@ export default {
           }),
           contentType: 'application/json',
           success: () => {
-            mdui.snackbar({message: 'Successfully deleted password'});
+            mdui.snackbar({message: 'Successfully added one password'});
+            this.fetchPasswords();
+          }
+        });
+      });
+    },
+    onConfirmModifyItem(data) {
+      data.date = Date.now();
+      if (data.url) data.url = this.processUrl(data.url);
+      ensureSession(this).then(() => {
+        const key = data.key;
+        delete data.key;
+        const passwordEntry = JSON.stringify({
+          key: key,
+          modified: data
+        });
+        const [cipher, hmac] = encryptAndAuthenticate(passwordEntry, this.globalData.sessionKey);
+        $$.ajax({
+          url: '/api/password/modify/',
+          method: 'POST',
+          dataType: 'json',
+          data: JSON.stringify({
+            data: cipher,
+            hmac: hmac
+          }),
+          contentType: 'application/json',
+          success: () => {
+            mdui.snackbar({message: 'Successfully modified one password'});
+            this.fetchPasswords();
+          }
+        });
+      });
+    },
+    onHideItem(data) {
+      data = Object.assign({hidden: true}, data);
+      ensureSession(this).then(() => {
+        const passwordEntry = JSON.stringify(data);
+        const [cipher, hmac] = encryptAndAuthenticate(passwordEntry, this.globalData.sessionKey);
+        $$.ajax({
+          url: '/api/password/mark/',
+          method: 'POST',
+          dataType: 'json',
+          data: JSON.stringify({
+            data: cipher,
+            hmac: hmac
+          }),
+          contentType: 'application/json',
+          success: () => {
             this.fetchPasswords();
           }
         });
@@ -122,6 +173,10 @@ export default {
     },
     onAddSecretNote() {
 
+    },
+    onModifyItem(data) {
+      data.password = decrypt(this.localData.passwords[data.key], data.key);
+      this.$refs.dialog.openDialog(data, 'modify');
     },
     onToggleReveal: function(index) {
       const item = this.items[index];
@@ -190,7 +245,7 @@ export default {
     },
 
     shown(item) {
-      const notHidden = !item.hidden;
+      const notHidden = this.showHidden || !item.hidden;
       const type = this.type === 'all' ? true : item.type === this.type;
       // FIXME: these may not apply to secret notes
       const regexSearch = new RegExp(this.search, 'i');
@@ -202,7 +257,7 @@ export default {
     fetchPasswords() {
       ensureSession(this).then(() => {
         $$.ajax({
-          url: '/api/password/',
+          url: '/api/password/?hidden=1',
           dataType: 'json',
           success: (res) => {
             let passwords = decryptAndVerify(res.data, res.hmac, this.globalData.sessionKey);
@@ -211,7 +266,7 @@ export default {
             for (const p of passwords) {
               newPasswords.push(Object.assign({
                     key: p.key,
-                    hidden: false
+                    hidden: p.hidden
                   },
                   p.metadata
               ));

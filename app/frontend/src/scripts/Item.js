@@ -1,14 +1,26 @@
 import mdui from 'mdui';
 
-import {copyToClickboard, decrypt} from '@/utils';
+import {copyToClickboard, decrypt, encryptAndAuthenticate} from '@/utils';
 
 export default {
   name: 'item',
   props: ['type', 'data'],
   data() {
     return {
-      showPlain: false
+      showPlain: false,
+      persistence: null
     };
+  },
+
+  mounted() {
+    this.persistenceWorker = window.setTimeout(this.persistenceWorkerFunction.bind(this), 1000);
+  },
+  beforeDestroy() {
+    window.clearTimeout(this.persistenceWorker);
+  },
+
+  updated() {
+    mdui.mutation();
   },
   filters: {
     formatDate(timestamp) {
@@ -35,10 +47,53 @@ export default {
       this.$emit('copy-success');
 
     },
-    onDelete(data){
-      this.$emit('click-delete', {
-        data:this.data
+    onDelete() {
+      mdui.confirm('Deleting password from blockchain will cost storage space!', 'Do you really want to delete?',
+          () => {
+            this.$emit('click-delete', this.data.key);
+          });
+    },
+    onHide() {
+      $$('.mdui-tooltip-open').removeClass('mdui-tooltip-open');
+      this.$emit('click-hide', {
+        key: this.data.key,
+        hidden: !this.data.hidden
       });
     },
+    onModify() {
+      this.$emit('click-modify', this.data);
+    },
+
+    fetchPersistence(key) {
+      return new Promise(resolve => {
+        const [cipher, hmac] = encryptAndAuthenticate(
+            JSON.stringify({
+              key
+            }),
+            this.globalData.sessionKey);
+        $$.ajax({
+          url: '/api/password/persistent/',
+          method: 'POST',
+          dataType: 'json',
+          data: JSON.stringify({
+            data: cipher,
+            hmac: hmac
+          }),
+          contentType: 'application/json',
+          success: (res) => {
+            resolve(res.result);
+          }
+        });
+      });
+    },
+
+    async persistenceWorkerFunction() {
+      this.persistence = await this.fetchPersistence(this.data.key);
+      if (this.persistence) {
+        window.setTimeout(this.persistenceWorkerFunction.bind(this), 5000);
+      } else {
+        window.setTimeout(this.persistenceWorkerFunction.bind(this), 1000);
+      }
+    }
   }
 };

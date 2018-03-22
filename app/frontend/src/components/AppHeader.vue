@@ -7,8 +7,7 @@
                 </span>
 
             <!--TODO: icon-->
-            <a class="mdui-typo-title mdui-text-color-theme-grey-50"
-               style="font-style: italic">DPass</a>
+            <a class="mdui-typo-title mdui-text-color-theme-grey-50">DPass</a>
 
             <div class="mdui-toolbar-spacer"></div>
 
@@ -19,59 +18,51 @@
                        placeholder="Search"
                        v-on:input="onSearchChanged"/>
             </div>
-            <!--TODO: lock storage-->
-            <!--<span class="mdui-textfield mdui-textfield-expandable"-->
-            <!--style="max-width: 480px;">-->
-            <!--<button class="mdui-textfield-icon mdui-btn mdui-btn-icon ">-->
-            <!--<i class="mdui-icon material-icons">search</i></button>-->
-            <!--<input class="mdui-textfield-input mdui-color-white"-->
-            <!--type="text" placeholder="Search"/>-->
-            <!--<button class="mdui-textfield-close mdui-btn mdui-btn-icon">-->
-            <!--<i class="mdui-icon material-icons">close</i></button>-->
-            <!--</span>-->
 
-            <!--<span class="mdui-btn mdui-btn-icon mdui-ripple mdui-ripple-white"-->
-            <!--mdui-menu="{target: '#example-2'}">-->
-            <!--<i class="mdui-icon material-icons">account_circle</i>-->
-            <!--</span>-->
+            <span class="mdui-btn mdui-btn-icon mdui-ripple"
+                  mdui-tooltip="{content: 'Lock DPass'}"
+                  v-if="!guard"
+                  @click="lockDPass">
+                <i class="mdui-icon material-icons">lock</i>
+            </span>
 
-            <!--<ul class="mdui-menu" id="example-2">-->
-            <!--<li class="mdui-menu-item">-->
-            <!--<a href="javascript:;" class="mdui-ripple">-->
-            <!--<i class="mdui-menu-item-icon mdui-icon material-icons">power_settings_new</i>log-->
-            <!--in-->
-            <!--</a>-->
-            <!--</li>-->
-            <!--<li class="mdui-menu-item">-->
-            <!--<a href="javascript:;" class="mdui-ripple">-->
-            <!--<i class="mdui-menu-item-icon mdui-icon material-icons">settings_power</i>log-->
-            <!--out-->
-            <!--</a>-->
-            <!--</li>-->
-            <!--</ul>-->
         </div>
     </header>
 </template>
 
 
-<!--<template>
-    <header class="mdui-appbar mdui-appbar-fixed mdui-color-theme-900">
-        <div class="mdui-toolbar">
-            <button class="mdui-btn mdui-btn-icon"
-                    mdui-drawer="{target: '#left-drawer'}">
-                <i class="mdui-icon material-icons">menu</i>
-            </button>
-        </div>
-    </header>
-</template>-->
-
 <script>
+  import {encryptAndAuthenticate, ensureSession} from '@/utils';
+
   export default {
     name: 'app-header',
     props: ['guard'],
     methods: {
       onSearchChanged(event) {
         this.$emit('search', event.target.value);
+      },
+      lockDPass() {
+        $$('.mdui-tooltip-open').remove();
+        ensureSession(this).then(() => {
+          const [cipher, hmac] = encryptAndAuthenticate(
+              JSON.stringify({
+                type: 'lock'
+              }),
+              this.globalData.sessionKey);
+          $$.ajax({
+            url: '/api/settings/',
+            method: 'POST',
+            dataType: 'json',
+            data: JSON.stringify({
+              data: cipher,
+              hmac: hmac
+            }),
+            contentType: 'application/json',
+            success: () => {
+              this.$parent.verifyPassword();
+            }
+          });
+        });
       }
     }
   };
@@ -84,7 +75,7 @@
     }
 
     .search-bar {
-        margin-right: 40px;
-        width: calc(100% - 280px);
+        margin-right: 24px;
+        width: calc(100% - 400px);
     }
 </style>

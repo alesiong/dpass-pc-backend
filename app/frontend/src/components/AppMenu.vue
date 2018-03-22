@@ -26,10 +26,12 @@
                 </i>
                 Sync & Backup
             </li>
-            <li class="mdui-list-item mdui-ripple">
+            <router-link class="mdui-list-item mdui-ripple"
+                         to="/settings/"
+                         exact-active-class="mdui-list-item-active">
                 <i class="mdui-icon material-icons mdui-m-r-2">settings</i>
                 Settings
-            </li>
+            </router-link>
         </ul>
     </div>
 </template>
