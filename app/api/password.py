@@ -1,4 +1,4 @@
-import base64
+from typing import Union
 
 from flask import Blueprint, current_app, jsonify, request, json
 
@@ -7,8 +7,19 @@ from app.models import KeyLookupTable
 from app.utils import error_respond
 from app.utils.decorators import session_verify, master_password_verify
 from app.utils.master_password import MasterPassword
+from app.utils.misc import base64_decode, base64_encode
 
 bp = Blueprint('api.password', __name__, url_prefix='/api/password')
+
+
+def simple_decrypt_then_json(master_password: MasterPassword, data: Union[str, bytes]) -> Union[dict, list]:
+    if isinstance(data, str):
+        data = base64_decode(data)
+    return json.loads(master_password.simple_decrypt(data).decode())
+
+
+def simple_encrypt_from_dict(master_password: MasterPassword, data: Union[dict, list]) -> bytes:
+    return master_password.simple_encrypt(json.dumps(data))
 
 
 @bp.route('/')
@@ -29,14 +40,14 @@ def get_table():
         error_respond.master_password_expired()
 
     for new_entry in new_entries:
-        encrypted = storage.get(new_entry.key)
+        encrypted: str = storage.get(new_entry.key)
         if encrypted:
             metadata = json.loads(
                 master_password.decrypt(
-                    base64.decodebytes(encrypted.encode()),
+                    base64_decode(encrypted),
                     new_entry.key).decode())
             del metadata['password']
-            metadata = base64.encodebytes(master_password.simple_encrypt(json.dumps(metadata))).decode()
+            metadata = base64_encode(simple_encrypt_from_dict(metadata))
             new_entry.meta_data = metadata
 
     KeyLookupTable.query.session.commit()
@@ -45,9 +56,7 @@ def get_table():
         {
             'key': entry.key,
             'hidden': entry.hidden,
-            'metadata': json.loads(
-                master_password.simple_decrypt(
-                    base64.decodebytes(entry.meta_data.encode())).decode())
+            'metadata': simple_decrypt_then_json(master_password, entry.meta_data)
         } for entry in entries
     ]
     return SessionKey().encrypt_response(entries)
@@ -82,7 +91,7 @@ def get():
         return error_respond.invalid_post_data()
     get_password = current_app.config['STORAGE'].get(key)
     if get_password is not None:
-        password_entry = base64.decodebytes(get_password.encode())
+        password_entry = base64_decode(get_password)
         return SessionKey().encrypt_response(master_password.decrypt(password_entry, key))
     else:
         return error_respond.key_not_found()
@@ -102,12 +111,11 @@ def new():
     except KeyError:
         # ignore it if the `password` entry is not provided
         pass
-    data = master_password.simple_encrypt(json.dumps(data))
 
-    entry = KeyLookupTable.new_entry(base64.encodebytes(data).decode())
+    entry = KeyLookupTable.new_entry(base64_encode(simple_encrypt_from_dict(master_password, data)))
     current_app.config['STORAGE'].add(entry.key,
-                                      base64.encodebytes(
-                                          master_password.encrypt(request.decrypted_data.decode(), entry.key)).decode())
+                                      base64_encode(
+                                          master_password.encrypt(request.decrypted_data.decode(), entry.key)))
     return SessionKey().encrypt_response({'key': entry.key})
 
 
@@ -128,10 +136,10 @@ def modify():
         del data['modified']['password']
 
     # modify metadata
-    metadata = json.loads(master_password.simple_decrypt(base64.decodebytes(entry.meta_data.encode())))
+    metadata = simple_decrypt_then_json(master_password, entry.meta_data)
     for k in data['modified']:
         metadata[k] = data['modified'][k]
-    entry.meta_data = base64.encodebytes(master_password.simple_encrypt(json.dumps(metadata))).decode()
+    entry.meta_data = base64_encode(simple_encrypt_from_dict(master_password, metadata))
     KeyLookupTable.query.session.commit()
 
     # modify storage
@@ -140,7 +148,7 @@ def modify():
 
     password_data = json.loads(
         master_password.decrypt(
-            base64.decodebytes(encrypted.encode()),
+            base64_decode(encrypted),
             modify_key).decode())
     for k in data['modified']:
         password_data[k] = data['modified'][k]
@@ -148,8 +156,8 @@ def modify():
         password_data['password'] = password
 
     storage.add(modify_key,
-                base64.encodebytes(
-                    master_password.encrypt(json.dumps(password_data), modify_key)).decode())
+                base64_encode(
+                    master_password.encrypt(json.dumps(password_data), modify_key)))
     return SessionKey().encrypt_response({'key': modify_key})
 
 

@@ -25,7 +25,7 @@ def salted_hash(password: str, salt: bytes = None, num_iter: int = 10000) -> Tup
         password_hash = SHA3_512.new(data=password_hash).digest()
         if i > num_iter // 2:
             password_hash = password_hash + salt
-    return password_hash, salt
+    return SHA3_512.new(data=password_hash).digest(), salt
 
 
 def encrypt(message: bytes, key: bytes, iv: bytes) -> bytes:

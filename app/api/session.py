@@ -8,6 +8,7 @@ from app import SessionKey
 from app.utils.cipher import encrypt_and_authenticate
 from app.utils.decorators import session_verify
 from app.utils.error_respond import authentication_failure
+from app.utils.misc import base64_encode
 
 bp = Blueprint('api.session', __name__, url_prefix='/api/session')
 
@@ -45,7 +46,7 @@ def refresh_session():
             queue.get()
         queue.put(new_key)
         data, hmac = encrypt_and_authenticate(new_key.encode(), binascii.unhexlify(key))
-        return jsonify(data=base64.encodebytes(data).decode().replace('\n', ''),
-                       hmac=base64.encodebytes(hmac).decode().replace('\n', ''))
+        return jsonify(data=base64_encode(data),
+                       hmac=base64_encode(hmac))
 
     authentication_failure()

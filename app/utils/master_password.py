@@ -1,4 +1,3 @@
-import base64
 import datetime
 from typing import Optional
 
@@ -7,8 +6,8 @@ from flask import current_app
 
 from app.utils.cipher import salted_hash, encrypt_fixed_iv, decrypt_fixed_iv
 from app.utils.decorators import check_and_unset_state
-
 # TODO: unittest
+from app.utils.misc import base64_encode, base64_decode
 from app.utils.settings import Settings
 
 
@@ -59,8 +58,8 @@ class MasterPassword:
         # FIXME: this overwrites the old password (if exists)
 
         settings = Settings()
-        settings.master_password_hash = base64.encodebytes(password_hash).decode().strip()
-        settings.master_password_hash_salt = base64.encodebytes(salt).decode().strip()
+        settings.master_password_hash = base64_encode(password_hash)
+        settings.master_password_hash_salt = base64_encode(salt)
         settings.write()
 
         return cls(password_hash, salt, encryption_key, ethereum_pass)
@@ -73,8 +72,8 @@ class MasterPassword:
         :return: `MasterPassword` object if the password is correct. `None` otherwise.
         """
         settings = Settings()
-        password_hash = base64.decodebytes(settings.master_password_hash.encode())
-        salt = base64.decodebytes(settings.master_password_hash_salt.encode())
+        password_hash = base64_decode(settings.master_password_hash)
+        salt = base64_decode(settings.master_password_hash_salt)
         password_hash_new, _ = salted_hash(master_password_in_memory, salt)
         if password_hash != password_hash_new:
             return None  # not verified
@@ -100,7 +99,7 @@ class MasterPassword:
 
     @staticmethod
     def generate_ethereum_password(master_password_in_memory: str) -> str:
-        return base64.encodebytes(salted_hash(master_password_in_memory, b'salt', 5000)[0][:32]).decode()
+        return base64_encode(salted_hash(master_password_in_memory, b'salt', 5000)[0][:32])
 
     @check_and_unset_state('_checked_expire')
     def simple_encrypt(self, message: str) -> bytes:
