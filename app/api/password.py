@@ -2,7 +2,7 @@ from typing import Union
 
 from flask import Blueprint, current_app, jsonify, request, json
 
-from app import SessionKey
+from app import SessionKey, socketio
 from app.models import KeyLookupTable
 from app.utils import error_respond
 from app.utils.decorators import session_verify, master_password_verify
@@ -47,7 +47,7 @@ def get_table():
                     base64_decode(encrypted),
                     new_entry.key).decode())
             del metadata['password']
-            metadata = base64_encode(simple_encrypt_from_dict(metadata))
+            metadata = base64_encode(simple_encrypt_from_dict(master_password, metadata))
             new_entry.meta_data = metadata
 
     KeyLookupTable.query.session.commit()

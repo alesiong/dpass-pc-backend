@@ -1,6 +1,7 @@
 import mdui from 'mdui';
 
 import {copyToClickboard, decrypt, encryptAndAuthenticate} from '@/utils';
+import io from 'socket.io-client';
 
 export default {
   name: 'item',
@@ -13,10 +14,17 @@ export default {
   },
 
   mounted() {
-    this.persistenceWorker = window.setTimeout(this.persistenceWorkerFunction.bind(this), 1000);
+    this.fetchPersistence();
+    this.socket = io();
+    this.socket.on('persistence change', async (key) => {
+      if (key === this.data.key) {
+        this.fetchPersistence();
+      }
+    });
   },
   beforeDestroy() {
-    window.clearTimeout(this.persistenceWorker);
+    // window.clearTimeout(this.persistenceWorker);
+    this.socket.close();
   },
 
   updated() {
@@ -64,36 +72,25 @@ export default {
       this.$emit('click-modify', this.data);
     },
 
-    fetchPersistence(key) {
-      return new Promise(resolve => {
-        const [cipher, hmac] = encryptAndAuthenticate(
-            JSON.stringify({
-              key
-            }),
-            this.globalData.sessionKey);
-        $$.ajax({
-          url: '/api/password/persistent/',
-          method: 'POST',
-          dataType: 'json',
-          data: JSON.stringify({
-            data: cipher,
-            hmac: hmac
+    fetchPersistence() {
+      const [cipher, hmac] = encryptAndAuthenticate(
+          JSON.stringify({
+            key: this.data.key
           }),
-          contentType: 'application/json',
-          success: (res) => {
-            resolve(res.result);
-          }
-        });
+          this.globalData.sessionKey);
+      $$.ajax({
+        url: '/api/password/persistent/',
+        method: 'POST',
+        dataType: 'json',
+        data: JSON.stringify({
+          data: cipher,
+          hmac: hmac
+        }),
+        contentType: 'application/json',
+        success: (res) => {
+          this.persistence = res.result;
+        }
       });
-    },
-
-    async persistenceWorkerFunction() {
-      this.persistence = await this.fetchPersistence(this.data.key);
-      if (this.persistence) {
-        window.setTimeout(this.persistenceWorkerFunction.bind(this), 5000);
-      } else {
-        window.setTimeout(this.persistenceWorkerFunction.bind(this), 1000);
-      }
     }
   }
 };

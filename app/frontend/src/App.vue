@@ -10,9 +10,7 @@
                 <guard-view v-if="guard"
                             v-bind:state="initState"
                             v-bind:verify="passwordVerification"
-                            v-on:added-password="refreshState"
-                            v-on:verified-password="onVerifiedPassword"
-                            v-on:verified-with-account="refreshState"/>
+                            v-on:verified-password="onVerifiedPassword"/>
                 <router-view v-else
                              v-bind:search="search"/>
             </div>
