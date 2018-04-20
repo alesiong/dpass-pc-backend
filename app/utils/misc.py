@@ -1,8 +1,9 @@
+import base64
 import hashlib
 import json
 import os
 import platform
-from typing import NewType
+from typing import NewType, Union
 
 
 def sha2(s: str) -> str:
@@ -63,3 +64,15 @@ def get_ipc(path: str, name: str) -> str:
     if get_os().startswith('win'):
         return '\\\\.\\pipe\\' + name
     return '/'.join((path, name))
+
+
+def base64_encode(data: Union[bytes, str]) -> str:
+    if isinstance(data, str):
+        data = data.encode()
+    return base64.encodebytes(data).decode().replace('\n', '')
+
+
+def base64_decode(data: Union[bytes, str]) -> bytes:
+    if isinstance(data, str):
+        data = data.encode()
+    return base64.decodebytes(data)

@@ -52,7 +52,7 @@ export function decryptAndVerify(ciphertext: string, hmac: string, key: string):
   return null;
 }
 
-export function encrypt(message: string, key: string): [string, string] {
+export function encrypt(message: string, key: string): string{
   key = CryptoJS.enc.Hex.parse(key + key);
   const cipher = AES.encrypt(message, key, {
     iv: CryptoJS.enc.Base64.parse(fixedIV),

@@ -5,7 +5,6 @@ from unqlite import UnQLite
 
 from flask import current_app
 
-from app import LocalStorage
 from app.utils.misc import Singleton
 
 

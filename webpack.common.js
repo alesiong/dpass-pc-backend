@@ -7,7 +7,7 @@ const vueLoaderConfig = require('./vue-loader.conf');
 module.exports = {
   entry: {
     app: './app/frontend/src/main.js',
-    vendor: ['mdui', 'crypto-js', 'vue']
+    vendor: ['mdui', 'crypto-js', 'vue', 'socket.io-client']
   },
   output: {
     filename: '[name].bundle.js',

@@ -1,4 +1,3 @@
-import base64
 import binascii
 import time
 from functools import wraps
@@ -8,6 +7,7 @@ from flask import request, current_app
 from app.utils.cipher import decrypt_and_verify
 from app.utils.error_respond import invalid_post_data, authentication_failure, master_password_expired
 from app.utils.exceptions import StateError
+from app.utils.misc import base64_decode
 from app.utils.session_key import SessionKey
 
 
@@ -24,8 +24,8 @@ def session_verify(func):
             data: str = request.get_json()['data']
             hmac: str = request.get_json()['hmac']
             key = SessionKey().session_key
-            decrypted = decrypt_and_verify(base64.decodebytes(data.encode()),
-                                           base64.decodebytes(hmac.encode()),
+            decrypted = decrypt_and_verify(base64_decode(data),
+                                           base64_decode(hmac),
                                            binascii.unhexlify(key))
             if decrypted:
                 request.decrypted_data = decrypted

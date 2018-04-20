@@ -4,6 +4,7 @@ import Item from '@c/Item';
 import {decrypt, decryptAndVerify, encrypt, encryptAndAuthenticate, ensureSession} from '@/utils';
 
 import mdui from 'mdui';
+import io from 'socket.io-client';
 
 export default {
   name: 'main-view',
@@ -21,16 +22,19 @@ export default {
   },
   mounted() {
     this.fetchPasswords();
-    const fetchingInterval = window.setInterval(this.fetchPasswords.bind(this), 15000);
+    const fetchingInterval = window.setInterval(this.fetchPasswords.bind(this), 60000);
     this.localData = {
       fetchingInterval,
       clearClipboardTimeout: null,
-      passwords: {}
+      passwords: {},
+      socket: io()
     };
+    this.localData.socket.on('refresh password', this.fetchPasswords.bind(this));
   },
 
   beforeDestroy() {
     window.clearInterval(this.localData.fetchingInterval);
+    this.localData.socket.close();
   },
 
   computed: {
