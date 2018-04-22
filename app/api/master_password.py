@@ -1,15 +1,17 @@
 import json
+import time
 from threading import Thread
 
-import time
 from flask import Blueprint, request, current_app, jsonify, abort
 
-from app import LocalStorage, Settings
+from app import socketio
 from app.utils import error_respond
 from app.utils.decorators import session_verify
 from app.utils.ethereum_storage import EthereumStorage
 from app.utils.ethereum_utils import initialize_ethereum_account
+from app.utils.local_storage import LocalStorage
 from app.utils.master_password import MasterPassword
+from app.utils.settings import Settings
 
 bp = Blueprint('api.master_password', __name__, url_prefix='/api/master_password')
 
@@ -35,6 +37,7 @@ def new():
         with app.app_context():
             settings = Settings()
             current_app.config['INIT_STATE'] = 1
+            socketio.emit('state change', 1)
             if current_app.config['USE_ETHEREUM']:
                 ethereum_account = initialize_ethereum_account(ethereum_pass)
                 current_app.config['STORAGE'] = EthereumStorage(ethereum_account, ethereum_pass)
@@ -50,6 +53,7 @@ def new():
                     break
                 time.sleep(0.1)
             current_app.config['INIT_STATE'] = 2
+            socketio.emit('state change', 2)
 
     Thread(target=initializing_worker, daemon=True, args=(current_app._get_current_object(),)).start()
     return jsonify(message='Success')
@@ -113,6 +117,7 @@ def verify_with_account():
             settings.ethereum_address = account
             settings.write()
             current_app.config['INIT_STATE'] = 2
+            socketio.emit('state change', 2)
             return jsonify(message='Success')
         else:
             settings.master_password_hash = ''

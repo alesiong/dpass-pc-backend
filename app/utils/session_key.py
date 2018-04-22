@@ -1,13 +1,12 @@
-import base64
+import binascii
 import json
 from typing import Union
 
+from Crypto import Random
 from flask import jsonify
 
 from app.utils.cipher import encrypt_and_authenticate
-from app.utils.misc import Singleton
-from Crypto import Random
-import binascii
+from app.utils.misc import Singleton, base64_encode
 
 
 class SessionKey(metaclass=Singleton):
@@ -36,5 +35,5 @@ class SessionKey(metaclass=Singleton):
         if not isinstance(response_data, bytes):
             response_data = json.dumps(response_data).encode()
         data, hmac = encrypt_and_authenticate(response_data, binascii.unhexlify(self.session_key))
-        return jsonify(data=base64.encodebytes(data).decode().replace('\n', ''),
-                       hmac=base64.encodebytes(hmac).decode().replace('\n', ''))
+        return jsonify(data=base64_encode(data),
+                       hmac=base64_encode(hmac))

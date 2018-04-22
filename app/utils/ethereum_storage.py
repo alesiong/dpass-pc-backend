@@ -5,6 +5,7 @@ from typing import Optional, Union, Tuple, Generator, Dict, Set
 from flask import current_app
 from web3.exceptions import BadFunctionCallOutput
 
+from app import socketio
 from app.utils.settings import Settings
 from app.models import KeyLookupTable
 from app.utils.ethereum_utils import EthereumUtils
@@ -81,6 +82,7 @@ class EthereumStorage:
                 self.__delete_set.remove(k)
                 self.__change_set.add(k)
             self.__cache_dict[k] = (v, False)
+        socketio.emit('persistence change', k)
 
     def delete(self, k: str):
         """
@@ -229,8 +231,9 @@ class EthereumStorage:
                             finished.add(h)
                             if k:
                                 with self.__lock:
-                                    if self.__cache_dict.get(k) == v:
+                                    if self.__cache_dict.get(k)[0] == v:
                                         self.__cache_dict[k] = (v, True)
+                                socketio.emit('persistence change', k)
                     time.sleep(0.01)
 
                 self.__store_event.clear()
@@ -276,6 +279,7 @@ class EthereumStorage:
                             Settings().blockchain_length = new_length
                             Settings().blockchain = self.__blockchain
                             Settings().write()
+                    socketio.emit('refresh password')
 
             except BadFunctionCallOutput:
                 break

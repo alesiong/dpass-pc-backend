@@ -3,7 +3,7 @@ import AppHeader from '@c/AppHeader';
 import GuardView from '@c/GuardView';
 import {refreshSessionKey} from '../utils';
 import {getInitState, nextMinutes} from '@/utils';
-import mdui from 'mdui';
+import io from 'socket.io-client';
 
 export default {
   components: {
@@ -56,6 +56,10 @@ export default {
             break;
         }
       }
+    });
+    const socket = io();
+    socket.on('state change', (state) => {
+      this.initState = state;
     });
   },
   methods: {

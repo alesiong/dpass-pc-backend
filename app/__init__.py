@@ -2,6 +2,7 @@ import json
 import os
 
 from flask import Flask, url_for, render_template, redirect
+from flask_socketio import SocketIO
 from flask_sqlalchemy import SQLAlchemy
 from web3 import Web3, IPCProvider
 
@@ -14,6 +15,7 @@ from config import configs
 
 # Instantiate Flask extensions
 db = SQLAlchemy()
+socketio = SocketIO()
 
 
 def create_app(config_name='development', queue=None, use_storage=None):
@@ -29,6 +31,7 @@ def create_app(config_name='development', queue=None, use_storage=None):
 
     # Setup Flask-SQLAlchemy
     db.init_app(app)
+    socketio.init_app(app)
 
     # Register blueprints
 
@@ -92,4 +95,4 @@ def create_app(config_name='development', queue=None, use_storage=None):
     def favicon():
         return redirect(url_for('static', filename='images/favicon.ico'))
 
-    return app
+    return app, socketio
