@@ -12,7 +12,16 @@ export default {
       title: '',
       confirmButton: '',
       id: `password-dialog-${this._uid}`,
-      showPlain: false
+      showPlain: false,
+      customizedOption: {
+        length: 8,
+        uppercase: true,
+        lowercase: true,
+        digits: true,
+        symbols: false,
+        obscureSymbols: false,
+        extra: ''
+      }
     };
   },
   updated() {
@@ -73,7 +82,7 @@ export default {
       this.password = '';
     },
     generateRandomPassword() {
-      this.password = randPassword();
+      this.password = randPassword(this.customizedOption);
     }
   }
 };
