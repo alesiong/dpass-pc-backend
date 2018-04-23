@@ -1,5 +1,6 @@
 <template>
-    <div class="mdui-dialog" v-bind:id="id">
+    <div v-if = "type==='password'"
+         class="mdui-dialog" v-bind:id="id">
         <div class="mdui-dialog-title">{{ title }}</div>
 
         <div class="mdui-dialog-content">
@@ -77,7 +78,7 @@
                 </div>
                 <div class="mdui-col-xs-2">
                     <button class="mdui-btn mdui-ripple generate-button"
-                            mdui-tooltip="{content: 'Generate a Random Complicated Key in 8-16 Digits', position: 'top'}"
+                            mdui-tooltip="{content: 'Generate a Random Complicated Key in 4-20 Digits', position: 'top'}"
                             v-on:click="generateRandomPassword">
                         <!--<i class="mdui-icon mdui-icon-left material-icons ">autorenew</i>-->
                         generate
@@ -129,7 +130,57 @@
             </button>
         </div>
     </div>
+    <div v-else-if = "type==='secret'"
+         class="mdui-dialog" v-bind:id="id">
+        <div class="mdui-dialog-title">{{ title }}</div>
+
+        <div class="mdui-dialog-content">
+            <div class="mdui-textfield">
+                <i class="mdui-icon material-icons">note_add</i>
+                <label class="mdui-textfield-label">Name</label>
+                <input class="mdui-textfield-input"
+                       type="text"
+                       autocomplete="off"
+                       v-model="name"/>
+            </div>
+
+
+
+            <div class="mdui-textfield">
+                <i class="mdui-icon material-icons sub-icon">account_circle</i>
+                <label class="mdui-textfield-label">Secret Note</label>
+                <textarea class="mdui-textfield-input"
+                       type="text"
+                       rows="12"
+                       autocomplete="off"
+                          v-model="password"></textarea>
+            </div>
+
+
+            <!--<div class="mdui">-->
+
+
+        </div>
+        <div class="mdui-dialog-actions">
+                <span class="mdui-float-left dialog-warn mdui-text-color-red-a400"
+                      v-if="!validSecret">
+                    <i class="mdui-icon material-icons"
+                       style="margin-top: -4px;">error_outline</i>
+                    All entries should be filled.
+                </span>
+
+            <button class=" mdui-btn mdui-ripple" mdui-dialog-close>
+                cancel
+            </button>
+            <button class="mdui-btn mdui-ripple" mdui-dialog-confirm
+                    v-on:click="onClickAddSecret"
+                    v-bind:disabled="!validSecret">
+                {{confirmButton}}
+            </button>
+        </div>
+    </div>
 </template>
+
 
 <script src="../scripts/PasswordDialog.js">
 </script>
@@ -173,6 +224,9 @@
     .sub-slide{
         padding-left: 0px;
         margin-bottom: 2px;
+    }
+    .sub-icon{
+        margin-bottom:224px;
     }
 
 </style>
