@@ -102,7 +102,7 @@
             Last update at {{data.date | formatDate}}
         </div>
 
-        <button class="mdui-btn mdui-ripple mdui-btn-icon hide-button secret-hide-button"
+        <button class="mdui-btn mdui-ripple mdui-btn-icon hide-button secret-hide-button    "
                 v-bind:mdui-tooltip="`{content: '${data.hidden? 'Show in list' : 'Hide from list'}'}`"
                 @click="onHide">
             <i v-if="!data.hidden"
@@ -164,7 +164,6 @@
         user-select: none;
     }
     .secret-persistence{
-        left:1513px;
         top:60px;
     }
     .password-extend{

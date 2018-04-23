@@ -45,6 +45,7 @@ export default {
       this.siteName = initValue.siteName || '';
       this.userId = initValue.userId || '';
       this.password = initValue.password || '';
+      this.type='password';
       if (mode === 'add') {
         this.title = 'Enter New Password';
         this.confirmButton = 'Add';

@@ -44,12 +44,6 @@ export default {
     getPassword(key) {
       return decrypt(this.$parent.localData.passwords[key], key);
     },
-    getSecret(key){
-      let secretnote = decrypt(this.$parent.localData.passwords[key], key);
-      secretnote = secretnote.replace(/<\/?.+?>/g,"");
-      secretnote = secretnote.replace(/[\r\n]/g, "");
-      return secretnote;
-    },
     onCopyPassword(key) {
       const password = decrypt(this.$parent.localData.passwords[key], key);
       if (!copyToClickboard(password)) {

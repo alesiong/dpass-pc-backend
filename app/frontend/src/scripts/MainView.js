@@ -185,10 +185,16 @@ export default {
         data.password = decrypt(this.localData.passwords[data.key], data.key);
         if (data.type === 'password') {
           this.$refs.dialog.openDialog(data, 'modify');
-        }
-        else if (data.type === 'secret'){
+        } else {
           this.$refs.dialog.openSecretNotesDialog(data, 'modify');
         }
+      }
+    },
+    onModifySecretItem(data) {
+      {
+        data.password = decrypt(this.localData.passwords[data.key], data.key);
+        this.$refs.dialog.openSecretNotesDialog(data, 'modify');
+
       }
     },
     onToggleReveal: function(index) {
