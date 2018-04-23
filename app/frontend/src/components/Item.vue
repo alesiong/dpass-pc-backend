@@ -18,7 +18,7 @@
                 <br/>
                 <div v-if="!data.hidden"
                      class="mdui-row">
-                    <span class="mdui-col-xs-3 mdui-typo-subheading">
+                    <span class="mdui-col-xs-3 mdui-typo-subheading password-extend">
                         <span v-if="showPlain">
                             {{ getPassword(data.key) }}
                         </span>
@@ -79,7 +79,48 @@
                v-else>check</i>
         </div>
     </div>
-    <div v-else-if="type === 'secret'"></div>
+    <div v-else-if="type === 'secret'" class="mdui-shadow-8 item-block">
+        <div class="mdui-row">
+                <div class="mdui-typo-headline secret-headline mdui-col-xs-3">{{ data.name }}</div>
+                <div v-if="!data.hidden" class="mdui-col-xs-6 icon-adjust">
+                    <button class="mdui-col-xs-3 mdui-btn mdui-ripple mdui-btn-icon secret-modify-icon mdui-text-color-green-800"
+                            mdui-tooltip="{content: 'Check & Edit', position: 'top'}"
+                            @click="onModify">
+                        <i class="mdui-icon material-icons">edit</i>
+                    </button>
+                    <!-- TODO: It would be better to only allow deletion from editing dialog -->
+                    <button hidden
+                            class="mdui-col-xs-3 mdui-btn mdui-ripple mdui-btn-icon action-button mdui-text-color-brown-300"
+                            mdui-tooltip="{content: 'Delete', position: 'top'}"
+                            @click="onDelete">
+                        <i class="mdui-icon material-icons">delete_forever</i>
+                    </button>
+                </div>
+                <br/>
+        </div>
+        <div class="mdui-typo-caption-opacity">
+            Last update at {{data.date | formatDate}}
+        </div>
+
+        <button class="mdui-btn mdui-ripple mdui-btn-icon hide-button secret-hide-button"
+                v-bind:mdui-tooltip="`{content: '${data.hidden? 'Show in list' : 'Hide from list'}'}`"
+                @click="onHide">
+            <i v-if="!data.hidden"
+               class="mdui-icon material-icons">close</i>
+            <i v-else
+               class="mdui-icon material-icons">wb_sunny</i>
+        </button>
+
+        <div class="persistence secret-persistence"
+             v-if="typeof(persistence) === 'boolean'">
+            <div class="mdui-spinner mdui-spinner-colorful"
+                 mdui-tooltip="{content: 'Synchronizing...'}"
+                 v-if="!persistence"></div>
+            <i class="mdui-icon material-icons mdui-text-color-theme"
+               mdui-tooltip="{content: 'Already synchronized !'}"
+               v-else>check</i>
+        </div>
+    </div>
     <div v-else></div>
 </template>
 
@@ -110,7 +151,9 @@
         right: 24px;
         position: absolute;
     }
-
+    .secret-hide-button {
+        top: 12px;
+    }
     .persistence {
         bottom: 24px;
         right: 32px;
@@ -120,5 +163,24 @@
         -ms-user-select: none;
         user-select: none;
     }
-
+    .secret-persistence{
+        left:1513px;
+        top:60px;
+    }
+    .password-extend{
+        padding-right:290px;
+    }
+    .secret-extend{
+        padding-right:458px;
+    }
+    .secret-headline{
+        margin-bottom:12px;
+    }
+    .secret-modify-icon{
+        width:36px;
+        bottom:2px;
+    }
+    .icon-adjust{
+        margin-left:30px;
+    }
 </style>

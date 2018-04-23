@@ -105,7 +105,9 @@ export default {
     },
     onConfirmAddItem(data) {
       data.date = Date.now();
-      data.url = this.processUrl(data.url);
+      if (data.type === 'password') {
+        data.url = this.processUrl(data.url);
+      }
       ensureSession(this).then(() => {
         const passwordEntry = JSON.stringify(data);
         const [cipher, hmac] = encryptAndAuthenticate(passwordEntry, this.globalData.sessionKey);
@@ -176,19 +178,24 @@ export default {
       this.$refs.dialog.openDialog();
     },
     onAddSecretNote() {
-
+      this.$refs.dialog.openSecretNotesDialog();
     },
     onModifyItem(data) {
-      data.password = decrypt(this.localData.passwords[data.key], data.key);
-      this.$refs.dialog.openDialog(data, 'modify');
+      {
+        data.password = decrypt(this.localData.passwords[data.key], data.key);
+        if (data.type === 'password') {
+          this.$refs.dialog.openDialog(data, 'modify');
+        }
+        else if (data.type === 'secret'){
+          this.$refs.dialog.openSecretNotesDialog(data, 'modify');
+        }
+      }
     },
     onToggleReveal: function(index) {
       const item = this.items[index];
       item.showPlain = !item.showPlain;
     },
-    onAddPassword() {
-      this.$refs.dialog.openDialog();
-    },
+
     onCopiedPassword() {
       window.clearTimeout(this.localData.clearClipboardTimeout);
       this.localData.clearClipboardTimeout = window.setTimeout(() => {
@@ -253,8 +260,14 @@ export default {
       const type = this.type === 'all' ? true : item.type === this.type;
       // FIXME: these may not apply to secret notes
       const regexSearch = new RegExp(this.search, 'i');
-      const matchSearch = item.siteName.match(regexSearch) || item.url.match(regexSearch);
+      let matchSearch;
+      if (item.type === 'password') {
+        matchSearch = item.siteName.match(regexSearch) || item.url.match(regexSearch);
+      } else if (item.type === 'secret') {
+        matchSearch = item.name.match(regexSearch);
+      }
       return notHidden && type && matchSearch;
+
     },
 
     // workers
