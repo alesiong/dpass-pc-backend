@@ -181,8 +181,15 @@ export default {
       this.$refs.dialog.openSecretNotesDialog();
     },
     onModifyItem(data) {
-      data.password = decrypt(this.localData.passwords[data.key], data.key);
-      this.$refs.dialog.openDialog(data, 'modify');
+      {
+        data.password = decrypt(this.localData.passwords[data.key], data.key);
+        if (data.type === 'password') {
+          this.$refs.dialog.openDialog(data, 'modify');
+        }
+        else if (data.type === 'secret'){
+          this.$refs.dialog.openSecretNotesDialog(data, 'modify');
+        }
+      }
     },
     onToggleReveal: function(index) {
       const item = this.items[index];

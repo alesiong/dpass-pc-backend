@@ -81,32 +81,10 @@
     </div>
     <div v-else-if="type === 'secret'" class="mdui-shadow-8 item-block">
         <div class="mdui-row">
-            <div class="mdui-col-xs-6">
-                <div class="mdui-typo-headline secret-headline">{{ data.name }}
-                </div>
-
-                <div v-if="!data.hidden"
-                     class="mdui-row">
-                    <span class="mdui-col-xs-3 mdui-typo-subheading">
-                        <span v-if="showPlain">
-                            {{ getPassword(data.key) }}
-                        </span>
-                        <span v-else>
-                            ••••••••
-                        </span>
-                    </span>
-
-                    <button class="mdui-col-xs-3 mdui-btn mdui-ripple mdui-btn-icon action-button mdui-text-color-indigo-400"
-                            :mdui-tooltip="JSON.stringify(
-                                    {content: showPlain ? 'Hide': 'Show', position: 'top'})"
-                            @click="onToggleReveal">
-                        <i v-if="showPlain"
-                           class="mdui-icon ion-md-eye-off"></i>
-                        <i v-else
-                           class="mdui-icon ion-md-eye"></i>
-                    </button>
-                    <button class="mdui-col-xs-3 mdui-btn mdui-ripple mdui-btn-icon action-button mdui-text-color-green-800"
-                            mdui-tooltip="{content: 'Edit', position: 'top'}"
+                <div class="mdui-typo-headline secret-headline mdui-col-xs-3">{{ data.name }}</div>
+                <div v-if="!data.hidden" class="mdui-col-xs-6 icon-adjust">
+                    <button class="mdui-col-xs-3 mdui-btn mdui-ripple mdui-btn-icon secret-modify-icon mdui-text-color-green-800"
+                            mdui-tooltip="{content: 'Check & Edit', position: 'top'}"
                             @click="onModify">
                         <i class="mdui-icon material-icons">edit</i>
                     </button>
@@ -119,13 +97,12 @@
                     </button>
                 </div>
                 <br/>
-                <div class="mdui-typo-caption-opacity">
-                    Last update at {{data.date | formatDate}}
-                </div>
-            </div>
+        </div>
+        <div class="mdui-typo-caption-opacity">
+            Last update at {{data.date | formatDate}}
         </div>
 
-        <button class="mdui-btn mdui-ripple mdui-btn-icon hide-button"
+        <button class="mdui-btn mdui-ripple mdui-btn-icon hide-button secret-hide-button"
                 v-bind:mdui-tooltip="`{content: '${data.hidden? 'Show in list' : 'Hide from list'}'}`"
                 @click="onHide">
             <i v-if="!data.hidden"
@@ -134,7 +111,7 @@
                class="mdui-icon material-icons">wb_sunny</i>
         </button>
 
-        <div class="persistence"
+        <div class="persistence secret-persistence"
              v-if="typeof(persistence) === 'boolean'">
             <div class="mdui-spinner mdui-spinner-colorful"
                  mdui-tooltip="{content: 'Synchronizing...'}"
@@ -174,7 +151,9 @@
         right: 24px;
         position: absolute;
     }
-
+    .secret-hide-button {
+        top: 12px;
+    }
     .persistence {
         bottom: 24px;
         right: 32px;
@@ -184,10 +163,24 @@
         -ms-user-select: none;
         user-select: none;
     }
+    .secret-persistence{
+        left:1513px;
+        top:60px;
+    }
     .password-extend{
         padding-right:290px;
     }
+    .secret-extend{
+        padding-right:458px;
+    }
     .secret-headline{
         margin-bottom:12px;
+    }
+    .secret-modify-icon{
+        width:36px;
+        bottom:2px;
+    }
+    .icon-adjust{
+        margin-left:30px;
     }
 </style>
