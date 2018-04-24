@@ -14,7 +14,7 @@ export default {
       id: `password-dialog-${this._uid}`,
       showPlain: false,
       type: 'password',
-      name:'',
+      name: '',
       customizedOption: {
         length: 8,
         uppercase: true,
@@ -33,8 +33,8 @@ export default {
     valid() {
       return this.url !== '' && this.userId !== '' && this.password !== '' && this.siteName !== '';
     },
-    validSecret(){
-      return this.name!=='' && this.password !== '';
+    validSecret() {
+      return this.name !== '' && this.password !== '';
     }
   },
   methods: {
@@ -45,7 +45,7 @@ export default {
       this.siteName = initValue.siteName || '';
       this.userId = initValue.userId || '';
       this.password = initValue.password || '';
-      this.type='password';
+      this.type = 'password';
       if (mode === 'add') {
         this.title = 'Enter New Password';
         this.confirmButton = 'Add';
@@ -63,10 +63,10 @@ export default {
         this.dialog.handleUpdate();
       });
     },
-    openSecretNotesDialog(initValue,mode='add',options){
+    openSecretNotesDialog(initValue, mode = 'add', options) {
       options = Object.assign({modal: true}, options);
       initValue = initValue || {};
-      this.name=initValue.name||'';
+      this.name = initValue.name || '';
       this.password = initValue.password || '';
       this.type = 'secret';
       if (mode === 'add') {
@@ -109,7 +109,7 @@ export default {
       }
       this.password = '';
     },
-    onClickAddSecret(){
+    onClickAddSecret() {
       if (this.mode === 'add') {
         this.$emit('click-add', {
           name: this.name,

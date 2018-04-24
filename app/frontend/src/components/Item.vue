@@ -18,7 +18,7 @@
                 <br/>
                 <div v-if="!data.hidden"
                      class="mdui-row">
-                    <span class="mdui-col-xs-3 mdui-typo-subheading password-extend">
+                    <span class="mdui-col-xs-6 mdui-typo-subheading">
                         <span v-if="showPlain">
                             {{ getPassword(data.key) }}
                         </span>
@@ -46,12 +46,12 @@
                         <i class="mdui-icon material-icons">edit</i>
                     </button>
                     <!-- TODO: It would be better to only allow deletion from editing dialog -->
-                    <button hidden
-                            class="mdui-col-xs-3 mdui-btn mdui-ripple mdui-btn-icon action-button mdui-text-color-brown-300"
-                            mdui-tooltip="{content: 'Delete', position: 'top'}"
-                            @click="onDelete">
-                        <i class="mdui-icon material-icons">delete_forever</i>
-                    </button>
+                    <!--<button hidden-->
+                    <!--class="mdui-col-xs-3 mdui-btn mdui-ripple mdui-btn-icon action-button mdui-text-color-brown-300"-->
+                    <!--mdui-tooltip="{content: 'Delete', position: 'top'}"-->
+                    <!--@click="onDelete">-->
+                    <!--<i class="mdui-icon material-icons">delete_forever</i>-->
+                    <!--</button>-->
                 </div>
                 <br/>
                 <div class="mdui-typo-caption-opacity">
@@ -81,22 +81,22 @@
     </div>
     <div v-else-if="type === 'secret'" class="mdui-shadow-8 item-block">
         <div class="mdui-row">
-                <div class="mdui-typo-headline secret-headline mdui-col-xs-3">{{ data.name }}</div>
-                <div v-if="!data.hidden" class="mdui-col-xs-6 icon-adjust">
-                    <button class="mdui-col-xs-3 mdui-btn mdui-ripple mdui-btn-icon secret-modify-icon mdui-text-color-green-800"
-                            mdui-tooltip="{content: 'Check & Edit', position: 'top'}"
-                            @click="onModify">
-                        <i class="mdui-icon material-icons">edit</i>
-                    </button>
-                    <!-- TODO: It would be better to only allow deletion from editing dialog -->
-                    <button hidden
-                            class="mdui-col-xs-3 mdui-btn mdui-ripple mdui-btn-icon action-button mdui-text-color-brown-300"
-                            mdui-tooltip="{content: 'Delete', position: 'top'}"
-                            @click="onDelete">
-                        <i class="mdui-icon material-icons">delete_forever</i>
-                    </button>
-                </div>
-                <br/>
+            <div class="mdui-typo-headline secret-headline mdui-col-xs-3">{{
+                data.name }}
+            </div>
+            <button class="mdui-col-offset-xs-2 mdui-col-xs-3 mdui-btn mdui-ripple mdui-btn-icon action-button mdui-text-color-green-800"
+                    mdui-tooltip="{content: 'Check & Edit', position: 'top'}"
+                    @click="onModify">
+                <i class="mdui-icon material-icons">edit</i>
+            </button>
+            <!-- TODO: It would be better to only allow deletion from editing dialog -->
+            <!--<button hidden-->
+            <!--class="mdui-col-xs-3 mdui-btn mdui-ripple mdui-btn-icon action-button mdui-text-color-brown-300"-->
+            <!--mdui-tooltip="{content: 'Delete', position: 'top'}"-->
+            <!--@click="onDelete">-->
+            <!--<i class="mdui-icon material-icons">delete_forever</i>-->
+            <!--</button>-->
+            <br/>
         </div>
         <div class="mdui-typo-caption-opacity">
             Last update at {{data.date | formatDate}}
@@ -151,9 +151,11 @@
         right: 24px;
         position: absolute;
     }
+
     .secret-hide-button {
-        top: 12px;
+        top: 8px;
     }
+
     .persistence {
         bottom: 24px;
         right: 32px;
@@ -163,23 +165,13 @@
         -ms-user-select: none;
         user-select: none;
     }
-    .secret-persistence{
-        top:60px;
+
+    .secret-persistence {
+        bottom: 16px;
     }
-    .password-extend{
-        padding-right:290px;
+
+    .secret-headline {
+        margin-bottom: 16px;
     }
-    .secret-extend{
-        padding-right:458px;
-    }
-    .secret-headline{
-        margin-bottom:12px;
-    }
-    .secret-modify-icon{
-        width:36px;
-        bottom:2px;
-    }
-    .icon-adjust{
-        margin-left:30px;
-    }
+
 </style>
