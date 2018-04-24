@@ -5,6 +5,7 @@ import AES from 'crypto-js/aes';
 import hmacSHA256 from 'crypto-js/hmac-sha256';
 import mdui from 'mdui';
 import Vue from 'vue';
+import  PasswordGenerator from './vendor/PasswordGenerator';
 
 declare var $$: mdui.jQueryStatic;
 
@@ -144,18 +145,8 @@ export function nextMinutes(minutes: number): number {
 }
 
 // FIXME: need rewrite
-export function randPassword(): string {
-  const text = ['abcdefghijklmnopqrstuvwxyz', 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', '1234567890', '~!@#$%^&*()_+";",./?<>'];
-  const rand = function(min, max) {
-    return Math.floor(Math.max(min, Math.random() * (max + 1)));
-  };
-  const len = rand(10, 16);
-  let pw = '';
-  for (let i = 0; i < len; ++i) {
-    const strpos = rand(0, 3);
-    pw += text[strpos].charAt(rand(0, text[strpos].length));
-  }
-  return pw;
+export function randPassword(option:Object): string {
+  return PasswordGenerator.generatePassword(option);
 }
 
 export function copyToClickboard(value: string) {
