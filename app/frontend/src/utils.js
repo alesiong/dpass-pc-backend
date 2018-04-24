@@ -5,7 +5,7 @@ import AES from 'crypto-js/aes';
 import hmacSHA256 from 'crypto-js/hmac-sha256';
 import mdui from 'mdui';
 import Vue from 'vue';
-import  PasswordGenerator from './vendor/PasswordGenerator';
+import PasswordGenerator from './vendor/password-generator-js';
 
 declare var $$: mdui.jQueryStatic;
 
@@ -53,7 +53,7 @@ export function decryptAndVerify(ciphertext: string, hmac: string, key: string):
   return null;
 }
 
-export function encrypt(message: string, key: string): string{
+export function encrypt(message: string, key: string): string {
   key = CryptoJS.enc.Hex.parse(key + key);
   const cipher = AES.encrypt(message, key, {
     iv: CryptoJS.enc.Base64.parse(fixedIV),
@@ -144,8 +144,7 @@ export function nextMinutes(minutes: number): number {
   return Date.now() + minutes * 60 * 1000;
 }
 
-// FIXME: need rewrite
-export function randPassword(option:Object): string {
+export function randPassword(option: Object): string {
   return PasswordGenerator.generatePassword(option);
 }
 

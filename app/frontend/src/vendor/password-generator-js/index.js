@@ -1,5 +1,4 @@
-// This file and `words` directory comes from https://github.com/raksooo/password-generator
-export default class PasswordGenerator {
+export default class Index {
     constructor(options, random) {
         this._options = Object.assign({
             length: 25,
@@ -95,7 +94,7 @@ export default class PasswordGenerator {
     }
 
     static generatePassword(options, random, callback) {
-        let passwordGenerator = new PasswordGenerator()
+        let passwordGenerator = new Index()
         return passwordGenerator.generatePassword(...arguments)
     }
 
@@ -118,6 +117,6 @@ export default class PasswordGenerator {
 }
 
 if (typeof window === 'undefined') {
-    module.exports = PasswordGenerator
+    module.exports = Index
 }
 
