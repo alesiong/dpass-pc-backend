@@ -77,7 +77,8 @@
                 <div class="mdui-col-xs-3">
                     <button class="mdui-btn mdui-ripple generate-button"
                             mdui-tooltip="{content: 'Generate a Random Complicated Key in 4-20 Digits', position: 'top'}"
-                            v-on:click="generateRandomPassword">
+                            v-on:click="generateRandomPassword"
+                            v-bind:disabled="!validOption">
                         <!--<i class="mdui-icon mdui-icon-left material-icons ">autorenew</i>-->
                         generate
                     </button>
@@ -106,6 +107,14 @@
                                v-model:value="customizedOption.length"/>
                     </label>
                 </div>
+                <div class="mdui-col-xs-3">
+                <span class="mdui-float-left dialog-warn2 mdui-text-color-red-a400"
+                      v-if="!validOption">
+                    <i class="mdui-icon material-icons"
+                       style="margin-top: -4px;">error_outline</i>
+                    At least one option should be chosen.
+                </span>
+                </div>
 
                 <!--<div class="mdui-col-xs-5">-->
                 <!--<label class="mdui-checkbox">-->
@@ -122,6 +131,7 @@
 
             <!--</div>-->
         </div>
+
         <div class="mdui-dialog-actions">
                 <span class="mdui-float-left dialog-warn mdui-text-color-red-a400"
                       v-if="!valid">
@@ -202,6 +212,9 @@
         -moz-user-select: none;
         -ms-user-select: none;
         user-select: none;
+    }
+    .dialog-warn2 {
+        font-size: 4px;
     }
 
     .generate-button {
