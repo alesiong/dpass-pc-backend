@@ -1,4 +1,4 @@
-from typing import Dict, List, Set
+from typing import Dict, List, Set, Tuple
 
 from coincurve import PrivateKey, PublicKey
 
@@ -51,3 +51,15 @@ class State(metaclass=Singleton):
         if account not in self.balance:
             self.balance[account] = Storage().load_balance(account)
         return self.balance[account]
+
+    def get_transactions_and_serial(self, account: bytes) -> Tuple[List[tuple], Set[int]]:
+        from chain.storage import Storage
+        if account not in self.transactions:
+            try:
+                Storage().load_state(account, self)
+            except ValueError:
+                self.transactions[account] = []
+        if account not in self.transaction_serial:
+            self.transaction_serial[account] = set()
+
+        return self.transactions[account], self.transaction_serial[account]

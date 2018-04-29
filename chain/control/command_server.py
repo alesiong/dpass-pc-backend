@@ -58,12 +58,13 @@ def get_next_serial(account: bytes):
     from_state = -1
     from_pool = -1
     try:
-        from_state = max(state.transaction_serial[account])
-    except KeyError:
+        _, serial = state.get_transactions_and_serial(account)
+        from_state = max(serial)
+    except (KeyError, ValueError):
         pass
     try:
         from_pool = max(pool.serials(account))
-    except KeyError:
+    except (KeyError, ValueError):
         pass
     return max(from_state, from_pool) + 1
 
@@ -74,6 +75,14 @@ def get_balance(account: bytes):
     return state.get_balance(account)
 
 
+@router.route('account/transactions')
+def get_transactions(account: bytes):
+    state = State()
+    transactions, _ = state.get_transactions_and_serial(account)
+    transactions = sorted(transactions, key=lambda e: e[0])
+    return [(t[1], t[2]) for t in transactions]
+
+
 @router.route('transaction/new')
 def new_transaction(key: bytes, value: bytes, private_key: bytes, serial: bytes):
     serial = big_endian_to_int(serial)
@@ -82,6 +91,16 @@ def new_transaction(key: bytes, value: bytes, private_key: bytes, serial: bytes)
     TransactionPool().add(transaction)
     from chain.control.main import DPChainApp
     DPChainApp().services.chain.broadcast_transaction(transaction.encode())
+
+    return transaction.hash()
+
+
+@router.route('transaction/in_pool')
+def is_transaction_in_pool(transaction_hash: bytes):
+    for t in TransactionPool().pool():
+        if transaction_hash == t.hash():
+            return False
+    return True
 
 
 @router.route('debug/get_pool')

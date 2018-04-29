@@ -1,7 +1,6 @@
 import hashlib
 import time
-from functools import partial
-from typing import Callable, Optional
+from typing import Optional
 
 from web3 import Web3
 from web3.contract import Contract
@@ -9,7 +8,7 @@ from web3.eth import Eth
 from web3.miner import Miner
 from web3.personal import Personal
 
-from app.utils.decorators import set_state, check_state, check_and_unset_state
+from app.utils.decorators import set_state, check_state
 from app.utils.misc import Singleton, HashType, Address
 
 

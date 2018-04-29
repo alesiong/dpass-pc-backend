@@ -32,9 +32,8 @@ class Transaction:
         transaction.signature = owner.sign(transaction.encode_data())
 
         transaction.cost = len(transaction.encode()) * 8
-        print(transaction.encode())
 
-        log.info('New transaction', transaction=transaction)
+        log.debug('New transaction', transaction=transaction)
 
         return transaction
 
@@ -68,7 +67,7 @@ class Transaction:
             [self.owner, int_to_big_endian(self.serial), self.key, self.value]))
 
     # def verify(self, state=None) -> bool:
-    #     # TODO: the balance change should accumulate as a block
+    #     # xTODO: the balance change should accumulate as a block
     #     if not self.simple_verify(state):
     #         return False
     #

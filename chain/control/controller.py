@@ -36,7 +36,14 @@ class Controller:
         return result
 
     def new_transaction(self, key: str, value: str, account: PrivateKey, serial: int):
-        self.__multiplexer.send(rlp.encode([key, value, account.to_hex(), serial]), b'transaction/new', False)
+        return rlp.decode(
+            self.__multiplexer.send(rlp.encode([key, value, account.to_hex(), serial]), b'transaction/new').get()
+        )
+
+    def is_transaction_in_pool(self, transaction_hash: bytes):
+        return bool(rlp.decode(
+            self.__multiplexer.send(rlp.encode(transaction_hash), b'transaction/in_pool').get()
+        ))
 
     def get_transaction_pool(self):
         transactions = rlp.decode(self.__multiplexer.send(rlp_blank, b'debug/get_pool').get())
@@ -46,3 +53,6 @@ class Controller:
         result = big_endian_to_int(
             rlp.decode(self.__multiplexer.send(rlp.encode(account.format()), b'account/balance').get()))
         return result
+
+    def get_transactions(self, account: PublicKey):
+        return rlp.decode(self.__multiplexer.send(rlp.encode(account.format()), b'account/transactions').get())
