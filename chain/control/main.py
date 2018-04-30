@@ -38,17 +38,27 @@ class DPChainApp(BaseApp, metaclass=Singleton):
         Miner().kill()
 
 
-def parse_config():
-    parser = argparse.ArgumentParser(description='DPass Chain - Blockchain application for DPass')
-    parser.add_argument('--config', '-c',
-                        help='Path of config file, default=`$data/config.json`')
-    parser.add_argument('--data', '-d', default='./chain-data',
-                        help='Path of data directory, default=`./chain-data`')
-    parser.add_argument('--port', '-p', default=3500,
-                        help='Listening port of the chain')
-    parser.add_argument('--bootstrap', default='',
-                        help='Bootstrap nodes with format `dpchain://key@host:port`, split with comma')
-    args = parser.parse_args()
+def parse_config(parse_args=True):
+    if parse_args:
+        parser = argparse.ArgumentParser(description='DPass Chain - Blockchain application for DPass')
+        parser.add_argument('--config', '-c',
+                            help='Path of config file, default=`$data/config.json`')
+        parser.add_argument('--data', '-d', default='./chain-data',
+                            help='Path of data directory, default=`./chain-data`')
+        parser.add_argument('--port', '-p', default=3500,
+                            help='Listening port of the chain')
+        parser.add_argument('--bootstrap', default='',
+                            help='Bootstrap nodes with format `dpchain://key@host:port`, split with comma')
+        args = parser.parse_args()
+    else:
+        class Dummy:
+            pass
+
+        args = Dummy()
+        args.data = './chain-data'
+        args.config = None
+        args.port = 3500
+        args.bootstrap = ''
 
     directory = Path(args.data)
     directory.mkdir(parents=True, exist_ok=True)

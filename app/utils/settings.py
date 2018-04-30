@@ -63,6 +63,14 @@ class Settings(metaclass=Singleton):
     def blockchain(self, v: list):
         self.__db['blockchain'] = json.dumps(v)
 
+    @property
+    def chain_private_key(self) -> str:
+        return self.__db_get('chain_private_key')
+
+    @chain_private_key.setter
+    def chain_private_key(self, v: str):
+        self.__db['chain_private_key'] = v
+
     def __del__(self):
         self.__db.close()
 

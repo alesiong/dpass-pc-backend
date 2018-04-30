@@ -3,7 +3,8 @@ from typing import Optional
 
 from coincurve import PublicKey, PrivateKey
 
-from app.utils.misc import Singleton
+from app.utils.master_password import MasterPassword
+from app.utils.misc import Singleton, base64_encode
 from chain.control.controller import Controller
 from chain.transaction import Transaction
 
@@ -46,17 +47,25 @@ class ChainUtils(metaclass=Singleton):
         return Transaction.new_transaction(account, serial, key, value).cost
 
     def get_storage(self, account: PublicKey):
-        return self.__controller.get_transactions(account)
+        return [(t[0].decode(), t[1].decode()) for t in self.__controller.get_transactions(account)]
 
     # Account Operations
-    def new_account(self, master_password_in_memory: str) -> PublicKey:
-        # TODO
-        pass
+    @staticmethod
+    def new_account(master_password: MasterPassword) -> PrivateKey:
+        from app import Settings
+        vk = PrivateKey()
+        private_key = base64_encode(master_password.encrypt(vk.to_hex(), 'private'))
+        Settings().chain_private_key = private_key
+        Settings().write()
+        ChainUtils().start_mining(vk.public_key)
+        return vk
 
     def get_balance(self, account: PublicKey) -> int:
         return self.__controller.get_balance(account)
 
     # Utilities
+    def is_transaction_mined(self, transaction_hash: bytes):
+        return
 
     def __wait_transaction(self, transaction_hash: bytes, timeout: int):
         i = 0
