@@ -30,6 +30,10 @@ export default {
     mdui.mutation();
   },
   computed: {
+    validOption(){
+      return this.customizedOption.uppercase || this.customizedOption. lowercase ||
+          this.customizedOption.digits ||  this.customizedOption.symbols;
+    },
     valid() {
       return this.url !== '' && this.userId !== '' && this.password !== '' && this.siteName !== '';
     },
