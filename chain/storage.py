@@ -112,8 +112,8 @@ class Storage(metaclass=Singleton):
 
     def load_block(self, block_hash) -> Block:
         prefix = hex_encode(block_hash) + '_'
-        header = base64decode(self.__block[prefix + 'header'])
-        transaction = base64decode(self.__block[prefix + 'transaction'])
+        header = base64decode(dict(self.__block.items())[prefix + 'header'])
+        transaction = base64decode(dict(self.__block.items())[prefix + 'transaction'])
         return Block.decode(header, transaction)
 
     def load_raw_transaction(self, transaction_hash) -> bytes:
