@@ -65,7 +65,7 @@ class ChainUtils(metaclass=Singleton):
 
     # Utilities
     def is_transaction_mined(self, transaction_hash: bytes):
-        return
+        return not self.__controller.is_transaction_in_pool(transaction_hash)
 
     def __wait_transaction(self, transaction_hash: bytes, timeout: int):
         i = 0

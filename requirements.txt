@@ -27,6 +27,6 @@ repoze.lru == 0.7
 rlp==0.6.0
 six==1.11.0
 SQLAlchemy==1.2.1
-unqlite==0.6.2
+git+https://github.com/alesiong/unqlite-python.git
 web3==3.16.4
 Werkzeug==0.14.1

@@ -31,7 +31,7 @@ class ChainStorage:
         self.__lock = Lock()
         self.__terminating = False
 
-        self.__store_interval = 5
+        self.__store_interval = 15
         self.__load_interval = 5
         self.__store_event = Event()
         self.__blockchain_length = Settings().blockchain_length
@@ -139,7 +139,6 @@ class ChainStorage:
         # FIXME: use async add
         # TODO: how to determine if a key is really stored? only update persistence if transaction mined?
         add_list = []
-        print('storing')
         with self.__lock:
             for k, v in self.__get_all_add():
                 print('adding:', k, v)
@@ -225,6 +224,7 @@ class ChainStorage:
                                     if self.__cache_dict.get(k)[0] == v:
                                         self.__cache_dict[k] = (v, True)
                                 socketio.emit('persistence change', k)
+                                print('refreshed', k)
                     time.sleep(0.01)
 
                 self.__store_event.clear()
