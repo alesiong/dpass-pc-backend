@@ -1,6 +1,7 @@
 import time
 from typing import Optional
 
+import gevent
 from coincurve import PublicKey, PrivateKey
 
 from app.utils.master_password import MasterPassword
@@ -73,7 +74,7 @@ class ChainUtils(metaclass=Singleton):
         while True:
             if not self.__controller.is_transaction_in_pool(transaction_hash):
                 return
-            time.sleep(sleep_time)
+            gevent.sleep(sleep_time)
             i += 1
             if i > timeout * (1 / sleep_time):
                 return transaction_hash

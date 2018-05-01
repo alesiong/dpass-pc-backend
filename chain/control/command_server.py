@@ -24,7 +24,7 @@ def get_peers():
             ips.append(p.connection.getpeername()[0])
         except gevent.socket.error:
             pass
-    return peers
+    return ips
 
 
 @router.route('miner/start')
@@ -107,6 +107,19 @@ def new_transaction(key: bytes, value: bytes, private_key: bytes, serial: bytes)
     DPChainApp().services.chain.broadcast_transaction(transaction.encode())
 
     return transaction.hash()
+
+
+@router.route('transaction/data')
+def new_transaction_from_data(data: bytes):
+    try:
+        transaction = Transaction.decode(data)
+        TransactionPool().add(transaction)
+        from chain.control.main import DPChainApp
+        DPChainApp().services.chain.broadcast_transaction(transaction.encode())
+        return True
+    except Exception as e:
+        log.exception('Error when receiving transaction from light client', e)
+        return False
 
 
 @router.route('transaction/in_pool')

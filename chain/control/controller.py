@@ -40,6 +40,11 @@ class Controller:
             self.__multiplexer.send(rlp.encode([key, value, account.to_hex(), serial]), b'transaction/new').get()
         )
 
+    def new_transaction_by_data(self, data: bytes):
+        return bool(rlp.decode(
+            self.__multiplexer.send(rlp.encode(data), b'transaction/data').get()
+        ))
+
     def is_transaction_in_pool(self, transaction_hash: bytes):
         return bool(rlp.decode(
             self.__multiplexer.send(rlp.encode(transaction_hash), b'transaction/in_pool').get()
