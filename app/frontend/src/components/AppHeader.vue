@@ -9,15 +9,22 @@
             <!--TODO: icon-->
             <a class="mdui-typo-title mdui-text-color-theme-grey-50">DPass</a>
 
-            <div class="mdui-toolbar-spacer"></div>
-
+        <div class="mdui-toolbar-spacer"></div>
             <div class="mdui-textfield search-bar"
-                 v-if="!guard">
+                v-if="!guard">
                 <i class="mdui-icon material-icons">search</i>
                 <input class="mdui-textfield-input search-text" type="text"
-                       placeholder="Search"
-                       v-on:input="onSearchChanged"/>
+                    placeholder="Search"
+                    v-model="message"
+                    v-on:input="onSearchChanged"/>
             </div>
+
+            <span class="mdui-btn mdui-btn-icon mdui-ripple"
+                  mdui-tooltip="{content: 'erase'}"
+                  v-if="!guard"
+                  v-on:click="offSearchChanged">
+                <i class="mdui-icon material-icons">close</i>
+            </span>
 
             <span class="mdui-btn mdui-btn-icon mdui-ripple"
                   mdui-tooltip="{content: 'Lock DPass'}"
@@ -25,7 +32,6 @@
                   @click="lockDPass">
                 <i class="mdui-icon material-icons">lock</i>
             </span>
-
         </div>
     </header>
 </template>
@@ -37,9 +43,18 @@
   export default {
     name: 'app-header',
     props: ['guard'],
+    data() {
+      return {
+        message:''
+      };
+    },
     methods: {
       onSearchChanged(event) {
         this.$emit('search', event.target.value);
+      },
+      offSearchChanged:function() {
+        this.$emit('search', '');
+        this.message='';
       },
       lockDPass() {
         $$('.mdui-tooltip-open').remove();
