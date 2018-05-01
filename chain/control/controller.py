@@ -56,3 +56,6 @@ class Controller:
 
     def get_transactions(self, account: PublicKey):
         return rlp.decode(self.__multiplexer.send(rlp.encode(account.format()), b'account/transactions').get())
+
+    def get_peers(self):
+        return rlp.decode(self.__multiplexer.send(rlp_blank, b'bootstrap/peers').get())

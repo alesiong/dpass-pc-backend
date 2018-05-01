@@ -1,3 +1,4 @@
+import gevent
 from coincurve import PrivateKey, PublicKey
 from rlp.utils import big_endian_to_int
 
@@ -11,6 +12,19 @@ from chain.utils import router
 from p2p.log import get_logger
 
 log = get_logger('chain.control.command_server')
+
+
+@router.route('bootstrap/peers')
+def get_peers():
+    from chain.control.main import DPChainApp
+    peers = DPChainApp().services.peermanager.peers
+    ips = []
+    for p in peers:
+        try:
+            ips.append(p.connection.getpeername()[0])
+        except gevent.socket.error:
+            pass
+    return peers
 
 
 @router.route('miner/start')

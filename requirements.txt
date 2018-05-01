@@ -21,6 +21,8 @@ MarkupSafe==1.0
 merkletools == 1.0.3
 pyperclip==1.6.0
 pycryptodome==3.6.1
+pypng==0.0.18
+pyqrcode==1.2.1
 python-dateutil==2.6.1
 python-editor==1.0.3
 repoze.lru == 0.7

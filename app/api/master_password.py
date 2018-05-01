@@ -9,6 +9,7 @@ from app import socketio
 from app.utils import error_respond
 from app.utils.chain_storage import ChainStorage
 from app.utils.chain_utils import ChainUtils
+from app.utils.cipher import salted_hash
 from app.utils.decorators import session_verify
 from app.utils.ethereum_storage import EthereumStorage
 from app.utils.ethereum_utils import initialize_ethereum_account
@@ -111,7 +112,9 @@ def verify_with_account():
 
     else:
         storage = None
-        master_pass = MasterPassword.verify(master_password_in_memory)
+        password_hash, salt = salted_hash(master_password_in_memory)
+        key = MasterPassword.generate_encryption_key(master_password_in_memory)
+        master_pass = MasterPassword(password_hash, salt, key, None)
         master_pass.check_expire()
         try:
             vk_hex = master_pass.decrypt(base64_decode(account), 'private').decode()
