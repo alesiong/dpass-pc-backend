@@ -130,13 +130,14 @@ class Storage(metaclass=Singleton):
         except KeyError:
             return 0
 
-    def load_state(self, account, state=None):
+    def load_state(self, account, state=None, update_balance=True):
         prefix = base64encode(account) + '_'
         if state is None:
             state = State()
 
-        balance = self.load_balance(account)
-        state.balance[account] = balance
+        if update_balance:
+            balance = self.load_balance(account)
+            state.balance[account] = balance
         try:
             transaction = rlp.decode(base64decode(self.__state[prefix + 'transaction']))
             state.transactions[account] = [(big_endian_to_int(s), k, v) for s, k, v in transaction]

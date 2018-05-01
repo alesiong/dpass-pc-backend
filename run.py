@@ -1,14 +1,9 @@
 #!/usr/bin/env python
-import gevent
-from gevent.monkey import patch_all
-patch_all()
-
 import argparse
+import subprocess
 import webbrowser
 from multiprocessing import Process, Queue
 from threading import Thread
-
-import subprocess
 
 from app import create_app
 from app.utils.misc import get_os, get_executable
@@ -82,6 +77,7 @@ def terminate():
 
 
 if __name__ == '__main__':
+
     try:
         main()
         while True:

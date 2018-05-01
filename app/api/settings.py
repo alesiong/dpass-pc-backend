@@ -1,6 +1,9 @@
-from flask import Blueprint, current_app, jsonify, request, json
+from io import BytesIO
 
-from app import ChainUtils
+import pyqrcode
+from flask import Blueprint, current_app, jsonify, request, json, send_file
+
+from app import ChainUtils, Settings
 from app.utils.ethereum_utils import EthereumUtils
 from app.utils import error_respond
 from app.utils.decorators import session_verify
@@ -45,3 +48,13 @@ def change_settings():
     elif setting_type == 'lock':
         current_app.config['MASTER_PASSWORD'].lock()
     return jsonify(message='Success')
+
+
+@bp.route('/private_key.png')
+def private_key_png():
+    io = BytesIO()
+    key_base64 = Settings().chain_private_key
+    pyqrcode.create(key_base64).png(io, scale=4)
+    return send_file(BytesIO(io.getvalue()),
+                     attachment_filename='private_key.png',
+                     mimetype='image/png')

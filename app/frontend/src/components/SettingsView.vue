@@ -5,6 +5,8 @@
                 @click="toggleMining">
             {{isMining ? 'Stop Mining' : 'Start Mining'}}
         </button>
+        <img v-bind:src="'/api/settings/private_key.png?q=' + Date.now()"
+        />
     </div>
 </template>
 

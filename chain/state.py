@@ -32,9 +32,7 @@ class State(metaclass=Singleton):
         owner = transaction.owner
         if owner not in self.transactions:
             try:
-                if not isinstance(self, State):
-                    raise ValueError
-                Storage().load_state(owner, self)
+                Storage().load_state(owner, self, isinstance(self, State))
             except ValueError:
                 self.transactions[owner] = []
 

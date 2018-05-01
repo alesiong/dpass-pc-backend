@@ -1,15 +1,15 @@
-import time
-from threading import Thread, Lock, Event
+# from threading import Thread, Lock, Event
 from typing import Optional, Union, Tuple, Generator, Dict, Set
 
+import gevent
 from coincurve import PrivateKey, PublicKey
 from flask import current_app
-from web3.exceptions import BadFunctionCallOutput
+from gevent.event import Event
+from gevent.lock import BoundedSemaphore
 
 from app import socketio
 from app.models import KeyLookupTable
 from app.utils.chain_utils import ChainUtils
-from app.utils.misc import Address
 from app.utils.settings import Settings
 
 
@@ -28,7 +28,7 @@ class ChainStorage:
         self.__chain_utils = ChainUtils()
         self.__account = account
 
-        self.__lock = Lock()
+        self.__lock = BoundedSemaphore()
         self.__terminating = False
 
         self.__store_interval = 15
@@ -52,8 +52,10 @@ class ChainStorage:
 
         KeyLookupTable.query.session.commit()
 
-        self.__load_thread = Thread(target=self.load_worker, daemon=True)
-        self.__store_thread = Thread(target=self.store_worker, daemon=True)
+        self.__load_thread = gevent.spawn(self.load_worker)
+        self.__store_thread = gevent.spawn(self.store_worker)
+        # self.__load_thread = Thread(target=self.load_worker, daemon=True)
+        # self.__store_thread = Thread(target=self.store_worker, daemon=True)
         self.__load_thread.start()
         self.__store_thread.start()
 
@@ -225,13 +227,13 @@ class ChainStorage:
                                         self.__cache_dict[k] = (v, True)
                                 socketio.emit('persistence change', k)
                                 print('refreshed', k)
-                    time.sleep(0.01)
+                    gevent.sleep(0.01)
 
                 self.__store_event.clear()
-                time.sleep(self.__store_interval)
+                gevent.sleep(self.__store_interval)
             except Exception as e:
                 print(e)
-                time.sleep(self.__store_interval)
+                gevent.sleep(self.__store_interval)
 
     def load_key_value(self, k: str, v: str):
         self.__blockchain.append((k, v))
@@ -271,15 +273,12 @@ class ChainStorage:
                             Settings().blockchain = self.__blockchain
                             Settings().write()
                     socketio.emit('refresh password')
-                    print('refreshed password')
 
-            except BadFunctionCallOutput:
-                break
             except Exception as e:
                 print(e)
             finally:
                 self.__loaded = True
-                time.sleep(self.__load_interval)
+                gevent.sleep(self.__load_interval)
 
     def terminate(self):
         self.__terminating = True

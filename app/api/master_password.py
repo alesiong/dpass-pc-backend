@@ -2,6 +2,7 @@ import json
 import time
 from threading import Thread
 
+import gevent
 from coincurve import PrivateKey
 from flask import Blueprint, request, current_app, jsonify, abort
 
@@ -59,7 +60,10 @@ def new():
             while True:
                 if storage.get(MASTER_KEY, True)[1] and storage.get(MASTER_SALT_KEY, True)[1]:
                     break
-                time.sleep(0.1)
+                if current_app.config['USE_ETHEREUM']:
+                    time.sleep(0.1)
+                else:
+                    gevent.sleep(0.1)
             current_app.config['INIT_STATE'] = 2
             socketio.emit('state change', 2)
 
@@ -117,14 +121,17 @@ def verify_with_account():
         master_pass = MasterPassword(password_hash, salt, key, None)
         master_pass.check_expire()
         try:
-            vk_hex = master_pass.decrypt(base64_decode(account), 'private').decode()
+            vk_hex = master_pass.decrypt(base64_decode(account[2:]), 'private').decode()
             vk = PrivateKey.from_hex(vk_hex)
             storage = ChainStorage(vk)
         except ValueError:
             error_respond.blockchain_account_wrong()
 
     while not storage.loaded:
-        time.sleep(0.1)
+        if current_app.config['USE_ETHEREUM']:
+            time.sleep(0.1)
+        else:
+            gevent.sleep(0.1)
     master_pass_hash = storage.get(MASTER_KEY)
     master_salt = storage.get(MASTER_SALT_KEY)
     if master_pass_hash and master_salt:
@@ -139,7 +146,7 @@ def verify_with_account():
             if current_app.config['USE_ETHEREUM']:
                 settings.ethereum_address = account
             else:
-                settings.chain_private_key = account
+                settings.chain_private_key = account[2:]
             settings.write()
             current_app.config['INIT_STATE'] = 2
             socketio.emit('state change', 2)
