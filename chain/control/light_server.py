@@ -23,7 +23,7 @@ def get_peers():
     return jsonify(peers=[p.decode() for p in controller.get_peers()])
 
 
-@bp.route('new_transaction', methods=['POST'])
+@bp.route('new_transaction/', methods=['POST'])
 def new_transaction():
     data = request.get_json()
     key = data['key'].encode()
