@@ -41,5 +41,4 @@ def change_settings():
 
 
 @bp.route('/')
-def get_balance():
-    return jsonify(balance=current_app.config['STORAGE'].balance())
+
