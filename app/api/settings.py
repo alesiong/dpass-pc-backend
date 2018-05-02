@@ -38,3 +38,8 @@ def change_settings():
     elif setting_type == 'lock':
         current_app.config['MASTER_PASSWORD'].lock()
     return jsonify(message='Success')
+
+
+@bp.route('/')
+def get_balance():
+    return jsonify(balance=current_app.config['STORAGE'].balance())
