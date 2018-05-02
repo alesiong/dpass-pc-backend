@@ -15,6 +15,8 @@ def get_settings():
     elif type_ == 'mining':
         ethereum_utils = EthereumUtils()
         return jsonify(mining=ethereum_utils.is_mining)
+    elif type_ == 'balance':
+        return jsonify(balance=current_app.config['STORAGE'].balance())
     else:
         error_respond.invalid_arguments()
 
@@ -38,7 +40,3 @@ def change_settings():
     elif setting_type == 'lock':
         current_app.config['MASTER_PASSWORD'].lock()
     return jsonify(message='Success')
-
-
-@bp.route('/')
-
