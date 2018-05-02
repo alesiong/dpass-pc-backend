@@ -54,6 +54,7 @@ def new():
                 master_password.check_expire()
                 account = ChainUtils.new_account(master_password)
                 current_app.config['STORAGE'] = ChainStorage(account)
+                ChainUtils().start_mining(account.public_key)
             storage = current_app.config['STORAGE']
             storage.add(MASTER_KEY, settings.master_password_hash)
             storage.add(MASTER_SALT_KEY, settings.master_password_hash_salt)

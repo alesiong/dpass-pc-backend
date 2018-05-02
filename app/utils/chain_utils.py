@@ -58,7 +58,6 @@ class ChainUtils(metaclass=Singleton):
         private_key = base64_encode(master_password.encrypt(vk.to_hex(), 'private'))
         Settings().chain_private_key = private_key
         Settings().write()
-        ChainUtils().start_mining(vk.public_key)
         return vk
 
     def get_balance(self, account: PublicKey) -> int:

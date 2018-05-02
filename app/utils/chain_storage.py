@@ -223,7 +223,6 @@ class ChainStorage:
                                     if self.__cache_dict.get(k)[0] == v:
                                         self.__cache_dict[k] = (v, True)
                                 socketio.emit('persistence change', k)
-                                print('refreshed', k)
                     gevent.sleep(0.01)
 
                 self.__store_event.clear()
