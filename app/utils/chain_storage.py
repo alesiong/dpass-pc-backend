@@ -168,7 +168,6 @@ class ChainStorage:
         """
         Calculates the cost of currently cached storage operations.
         """
-        # FIXME: it returns gas count (gas count * gas price = cost in wei)
         s = 0
         for k, v in self.__get_all_add():
             s += self.__chain_utils.estimate_add_cost(self.__account, k, v)
@@ -180,14 +179,12 @@ class ChainStorage:
         """
         Returns the balance (remaining storage space) of current user.
         """
-        # FIXME: it returns wei
         return self.__chain_utils.get_balance(self.__account.public_key)
 
     def get_constructor_arguments(self) -> PublicKey:
         """
         Returns the arguments list to pass to the constructor.
         """
-        # TODO: is it necessary to return password?
         return self.__account.public_key
 
     def size(self) -> int:
