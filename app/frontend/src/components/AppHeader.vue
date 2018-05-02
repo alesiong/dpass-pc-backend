@@ -12,8 +12,10 @@
             <div class="mdui-toolbar-spacer"></div>
             <div class="mdui-textfield search-bar"
                  v-if="!guard">
-                <i class="mdui-icon material-icons search-icon">search</i>
+                <i class="mdui-icon material-icons search-icon"
+                   v-on:click="onClickSearchButton">search</i>
                 <input class="mdui-textfield-input search-text" type="text"
+                       id="search-bar"
                        placeholder="Search"
                        v-model="search"
                        v-on:input="onSearchChanged"/>
@@ -21,8 +23,9 @@
             </div>
 
             <button class="mdui-btn search-clear-btn"
-                  v-if="!guard"
-                  v-on:click="onSearchCleared">
+                    v-if="!guard"
+                    v-bind:style="search.length > 0 ? '' : 'visibility: hidden'"
+                    v-on:click="onSearchCleared">
                 <i class="mdui-icon material-icons">close</i>
             </button>
 
@@ -49,6 +52,9 @@
       };
     },
     methods: {
+      onClickSearchButton() {
+        document.getElementById('search-bar').focus();
+      },
       onSearchChanged(event) {
         this.$emit('search', event.target.value);
       },
@@ -90,18 +96,20 @@
         background: rgba(255, 255, 255, 0.2);
 
     }
-    .search-icon{
+
+    .search-icon {
         padding-left: 66px;
     }
-    .search-clear-btn{
+
+    .search-clear-btn {
         min-width: 36px;
-        width:36px;
-        color:white;
+        width: 36px;
+        color: white;
         border: none;
-        padding:0px;
-        top:4px;
-        right:50px;
-        background:none;
+        padding: 0;
+        top: 4px;
+        right: 50px;
+        background: none;
 
     }
 
