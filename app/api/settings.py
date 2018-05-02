@@ -22,6 +22,8 @@ def get_settings():
         else:
             ethereum_utils = ChainUtils()
         return jsonify(mining=ethereum_utils.is_mining)
+    elif type_ == 'balance':
+        return jsonify(balance=current_app.config['STORAGE'].balance())
     else:
         error_respond.invalid_arguments()
 
