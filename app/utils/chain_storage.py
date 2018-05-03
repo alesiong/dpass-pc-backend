@@ -176,8 +176,8 @@ class ChainStorage:
                     return
                 storage = self.__chain_utils.get_storage(self.__account.public_key)
                 new_length = len(storage)
-                print('load', self.__blockchain_length, new_length)
                 if new_length > self.__blockchain_length:
+                    print('load', self.__blockchain_length, new_length)
                     with self.__lock:
                         with self.__app.app_context():
                             for k, v in storage[self.__blockchain_length:]:
