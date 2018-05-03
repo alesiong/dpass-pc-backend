@@ -1,10 +1,9 @@
 # from threading import Thread, Lock, Event
-from typing import Optional, Union, Tuple, Generator, Dict, Set
+from typing import Optional, Union, Tuple, Dict
 
 import gevent
 from coincurve import PrivateKey, PublicKey
 from flask import current_app
-from gevent.event import Event
 from gevent.lock import BoundedSemaphore
 
 from app import socketio
@@ -48,9 +47,7 @@ class ChainStorage:
         KeyLookupTable.query.session.commit()
 
         self.__load_thread = gevent.spawn(self.load_worker)
-        # self.__store_thread = gevent.spawn(self.store_worker)
         self.__load_thread.start()
-        # self.__store_thread.start()
 
         self.__loaded = False
 
@@ -163,10 +160,6 @@ class ChainStorage:
                 KeyLookupTable.query.filter_by(key=k).delete()
         else:
             self.__cache_dict[k] = (v, True)
-            try:
-                self.__adding.remove(k)
-            except KeyError:
-                pass
             if not k.startswith('__'):
                 socketio.emit('persistence change', k)
                 old_entry = KeyLookupTable.query.get(k)
@@ -207,7 +200,6 @@ class ChainStorage:
     def terminate(self):
         self.__terminating = True
         self.__load_thread.join()
-        # self.__store_thread.join()
 
     def __del__(self):
         self.terminate()

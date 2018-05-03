@@ -54,10 +54,23 @@ def new():
                 master_password.check_expire()
                 account = ChainUtils.new_account(master_password)
                 current_app.config['STORAGE'] = ChainStorage(account)
-                ChainUtils().start_mining(account.public_key)
+
+                dummy_stop = False
+
+                def dummy():
+                    while not dummy_stop:
+                        time.sleep(0.01)
+                        gevent.sleep()
+
+                # dummy = gevent.spawn(dummy)
+                # dummy.start()
+
             storage = current_app.config['STORAGE']
             storage.add(MASTER_KEY, settings.master_password_hash)
             storage.add(MASTER_SALT_KEY, settings.master_password_hash_salt)
+
+            if not current_app.config['USE_ETHEREUM']:
+                ChainUtils().start_mining(account.public_key)
             while True:
                 if storage.get(MASTER_KEY, True)[1] and storage.get(MASTER_SALT_KEY, True)[1]:
                     break
@@ -67,8 +80,14 @@ def new():
                     gevent.sleep(0.1)
             current_app.config['INIT_STATE'] = 2
             socketio.emit('state change', 2)
+            # if not current_app.config['USE_ETHEREUM']:
+            #     dummy_stop = True
+            #     dummy.join()
 
-    Thread(target=initializing_worker, daemon=True, args=(current_app._get_current_object(),)).start()
+    if current_app.config['USE_ETHEREUM']:
+        Thread(target=initializing_worker, daemon=True, args=(current_app._get_current_object(),)).start()
+    else:
+        gevent.spawn(initializing_worker, current_app._get_current_object()).start()
     return jsonify(message='Success')
 
 
