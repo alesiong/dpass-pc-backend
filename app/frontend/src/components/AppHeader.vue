@@ -18,13 +18,15 @@
                        id="search-bar"
                        placeholder="Search"
                        v-model="search"
-                       v-on:input="onSearchChanged"/>
+                       v-on:input="onSearchChanged"
+                       v-on:focus="onSearchFocus"
+                       v-on:focusout="onSearchFocusout"/>
 
             </div>
 
             <button class="mdui-btn search-clear-btn"
                     v-if="!guard"
-                    v-bind:style="search.length > 0 ? '' : 'visibility: hidden'"
+                    v-bind:style="search.length || searchFocused > 0 ? '' : 'visibility: hidden'"
                     v-on:click="onSearchCleared">
                 <i class="mdui-icon material-icons">close</i>
             </button>
@@ -48,12 +50,19 @@
     props: ['guard'],
     data() {
       return {
-        search: ''
+        search: '',
+        searchFocused: false
       };
     },
     methods: {
       onClickSearchButton() {
         document.getElementById('search-bar').focus();
+      },
+      onSearchFocus() {
+        this.searchFocused = true;
+      },
+      onSearchFocusout() {
+        this.searchFocused = false;
       },
       onSearchChanged(event) {
         this.$emit('search', event.target.value);
