@@ -1,15 +1,21 @@
 <template>
     <div>
-        <button class="mdui-btn mdui-btn-raised mdui-ripple mdui-color-theme-accent"
-                v-if="typeof(isMining) === 'boolean'"
-                @click="toggleMining">
-            {{isMining ? 'Stop Mining' : 'Start Mining'}}
-        </button>
-        <div>
-            {{balance !== null ? balanceHuman : ''}}
+        <div class="mdui-row">
+            <div class="mdui-col-xs-3">
+                <span class="mdui-typo-title"> Balance </span>
+                <span class="mdui-typo-subheading">{{balance !== null ? balanceHuman : ''}}</span>
+            </div>
+            <button class="mdui-col-xs-2 mdui-btn mdui-btn-raised mdui-ripple mdui-color-theme-accent"
+                    v-if="typeof(isMining) === 'boolean'"
+                    @click="toggleMining">
+                {{isMining ? 'Stop Mining' : 'Start Mining'}}
+            </button>
         </div>
-        <img v-bind:src="'/api/settings/private_key.png?q=' + Date.now()"
-        />
+        <div class="mdui-row">
+            <span class="mdui-typo-title"> Scan the QR code on your phone </span>
+        </div>
+        <img class="mdui-row"
+             v-bind:src="'/api/settings/private_key.png?q=' + Date.now()"/>
     </div>
 </template>
 

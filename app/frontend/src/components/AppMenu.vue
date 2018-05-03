@@ -20,12 +20,12 @@
 
             <li class="mdui-divider"></li>
 
-            <li class="mdui-list-item mdui-ripple">
-                <i class="mdui-icon material-icons mdui-m-r-2">
-                    settings_backup_restore
-                </i>
-                Sync & Backup
-            </li>
+            <!--<li class="mdui-list-item mdui-ripple">-->
+                <!--<i class="mdui-icon material-icons mdui-m-r-2">-->
+                    <!--settings_backup_restore-->
+                <!--</i>-->
+                <!--Sync & Backup-->
+            <!--</li>-->
             <router-link class="mdui-list-item mdui-ripple"
                          to="/settings/"
                          exact-active-class="mdui-list-item-active">

@@ -89,10 +89,12 @@ class Transaction:
             state = State()
 
         pk = PublicKey(self.owner)
-        signature = normalize_signature(pk, self.signature)
-        if signature is None or not pk.verify(signature, self.encode_data()):
-            log.warning('Transaction signature wrong', t=self)
-            return False
+        if not pk.verify(self.signature, self.encode_data()):
+            signature = normalize_signature(pk, self.signature)
+            if signature is None or not pk.verify(signature, self.encode_data()):
+                log.warning('Transaction signature wrong', t=self)
+                return False
+
         try:
             if self.serial in state.transaction_serial[self.owner]:
                 return False
