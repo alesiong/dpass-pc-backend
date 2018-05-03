@@ -17,6 +17,14 @@ def get_transactions():
     return jsonify(transactions=[(k.decode(), v.decode()) for k, v in controller.get_transactions(account)])
 
 
+@bp.route('serial/', methods=['POST'])
+def get_transactions():
+    public_key = request.get_json()['account']
+    account = PublicKey(base64_decode(public_key))
+    controller: Controller = current_app.config['CONTROLLER']
+    return jsonify(serial=[(k.decode(), v.decode()) for k, v in controller.get_next_serial(account)])
+
+
 @bp.route('peers/')
 def get_peers():
     controller: Controller = current_app.config['CONTROLLER']
