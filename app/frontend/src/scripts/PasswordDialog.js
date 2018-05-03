@@ -1,5 +1,5 @@
 import mdui from 'mdui';
-import {randPassword} from '../utils';
+import {passwordStrength, randPassword} from '../utils';
 
 export default {
   name: 'password-dialog',
@@ -30,15 +30,21 @@ export default {
     mdui.mutation();
   },
   computed: {
-    validOption(){
-      return this.customizedOption.uppercase || this.customizedOption. lowercase ||
-          this.customizedOption.digits ||  this.customizedOption.symbols;
+    validOption() {
+      return this.customizedOption.uppercase || this.customizedOption.lowercase ||
+          this.customizedOption.digits || this.customizedOption.symbols;
     },
     valid() {
       return this.url !== '' && this.userId !== '' && this.password !== '' && this.siteName !== '';
     },
     validSecret() {
       return this.name !== '' && this.password !== '';
+    },
+    strength() {
+      if (this.password.length === 0) {
+        return null;
+      }
+      return passwordStrength(this.password);
     }
   },
   methods: {

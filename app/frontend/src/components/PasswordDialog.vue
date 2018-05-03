@@ -51,6 +51,15 @@
                 </div>
 
             </div>
+            <div class="mdui-row">
+                <div v-if="strength !== null"
+                     class="mdui-progress">
+                    <div class="mdui-progress-determinate"
+                         v-bind:class="strength <= 1 ? 'mdui-color-red':
+                                        (strength <= 2 ? 'mdui-color-yellow-700' : 'mdui-color-green')"
+                         v-bind:style="'width:' + strength * 33.4 + '%' +';'"></div>
+                </div>
+            </div>
             <!--<div class="mdui">-->
             <div class="mdui-row option">
                 <div class="mdui-col-xs-3 sub-checkbox">
@@ -213,6 +222,7 @@
         -ms-user-select: none;
         user-select: none;
     }
+
     .dialog-warn2 {
         font-size: 4px;
     }

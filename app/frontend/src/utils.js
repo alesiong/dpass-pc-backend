@@ -6,6 +6,7 @@ import hmacSHA256 from 'crypto-js/hmac-sha256';
 import mdui from 'mdui';
 import Vue from 'vue';
 import PasswordGenerator from './vendor/password-generator-js';
+import * as owasp from 'owasp-password-strength-test';
 
 declare var $$: mdui.jQueryStatic;
 
@@ -165,4 +166,19 @@ export function copyToClickboard(value: string) {
     clickboard.value = '';
     return success;
   }
+}
+
+export function passwordStrength(password: string): number {
+  const result = owasp.test(password);
+  const length = result.passedTests.length;
+  if (length <= 2) {
+    return 0;
+  }
+  if (length <= 3) {
+    return 1;
+  }
+  if (length <= 4) {
+    return 2;
+  }
+  return 3;
 }
