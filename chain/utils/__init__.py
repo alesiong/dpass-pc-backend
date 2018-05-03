@@ -4,6 +4,7 @@ from typing import Callable, Generator
 
 import gevent
 from Crypto.Hash import SHA3_512
+from coincurve import PublicKey
 from rlp.utils import big_endian_to_int
 
 DifficultyUnit = 1 << 512
@@ -47,3 +48,11 @@ class Singleton(type):
         if cls not in cls._instances:
             cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
         return cls._instances[cls]
+
+
+def normalize_signature(public_key: PublicKey, signature: bytes):
+    from coincurve.keys import lib, ffi, cdata_to_der, der_to_cdata
+    signature_new = ffi.new('secp256k1_ecdsa_signature *')
+    if not lib.secp256k1_ecdsa_signature_normalize(public_key.context.ctx, signature_new, der_to_cdata(signature)):
+        return
+    return cdata_to_der(signature_new)

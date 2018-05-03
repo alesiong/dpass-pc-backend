@@ -4,7 +4,7 @@ import rlp
 from coincurve import PrivateKey, PublicKey
 from rlp.utils import int_to_big_endian, big_endian_to_int
 
-from chain.utils import chain_hash
+from chain.utils import chain_hash, normalize_signature
 from p2p.log import get_logger
 
 log = get_logger('chain.transaction')
@@ -89,7 +89,8 @@ class Transaction:
             state = State()
 
         pk = PublicKey(self.owner)
-        if not pk.verify(self.signature, self.encode_data()):
+        signature = normalize_signature(pk, self.signature)
+        if signature is None or not pk.verify(signature, self.encode_data()):
             log.warning('Transaction signature wrong', t=self)
             return False
         try:
