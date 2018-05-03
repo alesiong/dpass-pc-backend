@@ -32,7 +32,7 @@
         </div>
         <div id="sign-in">
             <div class="mdui-textfield mdui-m-t-2">
-                <label class="mdui-textfield-label">Ethereum Account</label>
+                <label class="mdui-textfield-label">Account</label>
                 <input class="mdui-textfield-input"
                        v-model="account"/>
             </div>

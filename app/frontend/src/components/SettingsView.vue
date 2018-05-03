@@ -5,6 +5,9 @@
                 @click="toggleMining">
             {{isMining ? 'Stop Mining' : 'Start Mining'}}
         </button>
+        <div>
+            {{balance !== null ? balanceHuman : ''}}
+        </div>
         <img v-bind:src="'/api/settings/private_key.png?q=' + Date.now()"
         />
     </div>
@@ -12,16 +15,24 @@
 
 <script>
   import {encryptAndAuthenticate, ensureSession} from '@/utils';
+  import * as filesize from 'filesize';
 
   export default {
     name: 'settings-view',
     data() {
       return {
-        isMining: null
+        isMining: null,
+        balance: null
       };
     },
     mounted() {
       this.fetchMining();
+      this.fetchBalance();
+    },
+    computed: {
+      balanceHuman() {
+        return filesize(this.balance / 8);
+      }
     },
     methods: {
       toggleMining() {
@@ -53,6 +64,15 @@
           dataType: 'json',
           success: (res) => {
             this.isMining = res.mining;
+          }
+        });
+      },
+      fetchBalance() {
+        $$.ajax({
+          url: '/api/settings/?type=balance',
+          dataType: 'json',
+          success: (res) => {
+            this.balance = res.balance;
           }
         });
       }

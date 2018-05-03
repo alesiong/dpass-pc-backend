@@ -22,18 +22,13 @@ class ChainStorage:
         """
         self.__cache_dict: Dict[str, Tuple[str, bool]] = {}
 
-        self.__change_set: Set[str] = set()
-        self.__delete_set: Set[str] = set()
-
         self.__chain_utils = ChainUtils()
         self.__account = account
 
         self.__lock = BoundedSemaphore()
         self.__terminating = False
 
-        self.__store_interval = 15
         self.__load_interval = 5
-        self.__store_event = Event()
         self.__blockchain_length = Settings().blockchain_length
         self.__blockchain = Settings().blockchain
 
@@ -53,11 +48,9 @@ class ChainStorage:
         KeyLookupTable.query.session.commit()
 
         self.__load_thread = gevent.spawn(self.load_worker)
-        self.__store_thread = gevent.spawn(self.store_worker)
-        # self.__load_thread = Thread(target=self.load_worker, daemon=True)
-        # self.__store_thread = Thread(target=self.store_worker, daemon=True)
+        # self.__store_thread = gevent.spawn(self.store_worker)
         self.__load_thread.start()
-        self.__store_thread.start()
+        # self.__store_thread.start()
 
         self.__loaded = False
 
@@ -70,12 +63,8 @@ class ChainStorage:
         """
 
         with self.__lock:
-            if k in self.__cache_dict and self.__cache_dict[k][1]:
-                self.__change_set.add(k)
-            elif k in self.__delete_set:
-                self.__delete_set.remove(k)
-                self.__change_set.add(k)
             self.__cache_dict[k] = (v, False)
+            self.__chain_utils.add_async(self.__account, k, v)
         socketio.emit('persistence change', k)
 
     def delete(self, k: str):
@@ -85,20 +74,10 @@ class ChainStorage:
         """
         with self.__lock:
             if k in self.__cache_dict:
-                if not self.__cache_dict[k][1]:
-                    if k in self.__change_set:
-                        # changed in cache
-                        self.__delete_set.add(k)
-                        del self.__cache_dict[k]
-                        self.__change_set.remove(k)
-                    else:
-                        # new in cache, not changed in cache
-                        del self.__cache_dict[k]
-                else:
-                    self.__delete_set.add(k)
-                    del self.__cache_dict[k]
+                del self.__cache_dict[k]
             else:
                 raise KeyError(k)
+            self.__chain_utils.add_async(self.__account, k)
 
     def get(self, k: str, check_persistence: bool = False) -> Union[Optional[str], Tuple[Optional[str], bool]]:
         """
@@ -127,39 +106,17 @@ class ChainStorage:
         """
         return self.__cache_dict
 
-    def __get_all_add(self) -> Generator[Tuple[str, str], None, None]:
-        return ((k, v[0]) for k, v in self.__cache_dict.items() if not v[1])
-
-    def __get_all_del(self) -> Generator[str, None, None]:
-        return (k for k in self.__delete_set)
-
     def store(self):
         """
         Synchronize the changes with underlying database.
         """
 
-        # FIXME: use async add
-        # TODO: how to determine if a key is really stored? only update persistence if transaction mined?
-        add_list = []
-        with self.__lock:
-            for k, v in self.__get_all_add():
-                print('adding:', k, v)
-                add_list.append((k, v, self.__chain_utils.add_async(self.__account, k, v)))
-
-            for k in self.__get_all_del():
-                print('deleting:', k)
-                add_list.append((None, None, self.__chain_utils.add_async(self.__account, k)))
-
-            self.__change_set = set()
-            self.__delete_set = set()
-
-        return add_list
+        pass
 
     def estimate_cost(self, args: dict) -> int:
         """
         Estimates the cost of the storage operation with arguments `args`.
         """
-        # FIXME: it returns gas count (gas count * gas price = cost in wei)
         key = args['key']
         value = args['value']
         return self.__chain_utils.estimate_add_cost(self.__account, key, value)
@@ -168,12 +125,8 @@ class ChainStorage:
         """
         Calculates the cost of currently cached storage operations.
         """
-        s = 0
-        for k, v in self.__get_all_add():
-            s += self.__chain_utils.estimate_add_cost(self.__account, k, v)
-        for k in self.__get_all_del():
-            s += self.__chain_utils.estimate_add_cost(self.__account, k)
-        return s
+        # TODO: not available
+        return 0
 
     def balance(self) -> int:
         """
@@ -202,35 +155,6 @@ class ChainStorage:
     def __len__(self):
         return self.size()
 
-    def store_worker(self):
-        while True:
-            try:
-                self.__store_event.set()
-
-                add_list = self.store()
-
-                if self.__terminating:
-                    # Terminating, hopefully someone will mine our transaction :)
-                    return
-
-                finished = set()
-                while len(finished) < len(add_list):
-                    for k, v, h in add_list:
-                        if h not in finished and self.__chain_utils.is_transaction_mined(h):
-                            finished.add(h)
-                            if k:
-                                with self.__lock:
-                                    if self.__cache_dict.get(k)[0] == v:
-                                        self.__cache_dict[k] = (v, True)
-                                socketio.emit('persistence change', k)
-                    gevent.sleep(0.01)
-
-                self.__store_event.clear()
-                gevent.sleep(self.__store_interval)
-            except Exception as e:
-                print(e)
-                gevent.sleep(self.__store_interval)
-
     def load_key_value(self, k: str, v: str):
         self.__blockchain.append((k, v))
         if v == '':
@@ -239,7 +163,12 @@ class ChainStorage:
                 KeyLookupTable.query.filter_by(key=k).delete()
         else:
             self.__cache_dict[k] = (v, True)
+            try:
+                self.__adding.remove(k)
+            except KeyError:
+                pass
             if not k.startswith('__'):
+                socketio.emit('persistence change', k)
                 old_entry = KeyLookupTable.query.get(k)
                 if old_entry:
                     old_entry.meta_data = ''
@@ -256,7 +185,6 @@ class ChainStorage:
                 new_length = len(storage)
                 print('load', self.__blockchain_length, new_length)
                 if new_length > self.__blockchain_length:
-                    self.__store_event.wait()
                     with self.__lock:
                         with self.__app.app_context():
                             for k, v in storage[self.__blockchain_length:]:
@@ -279,7 +207,7 @@ class ChainStorage:
     def terminate(self):
         self.__terminating = True
         self.__load_thread.join()
-        self.__store_thread.join()
+        # self.__store_thread.join()
 
     def __del__(self):
         self.terminate()
