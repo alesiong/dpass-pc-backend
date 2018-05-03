@@ -90,6 +90,7 @@ class Transaction:
 
         pk = PublicKey(self.owner)
         if not pk.verify(self.signature, self.encode_data()):
+            log.warning('Transaction signature wrong', t=self)
             return False
         try:
             if self.serial in state.transaction_serial[self.owner]:

@@ -25,6 +25,14 @@ def get_serial():
     return jsonify(serial=controller.get_next_serial(account))
 
 
+@bp.route('balance/', methods=['POST'])
+def get_balance():
+    public_key = request.get_json()['account']
+    account = PublicKey(base64_decode(public_key))
+    controller: Controller = current_app.config['CONTROLLER']
+    return jsonify(balance=controller.get_balance(account))
+
+
 @bp.route('peers/')
 def get_peers():
     controller: Controller = current_app.config['CONTROLLER']
