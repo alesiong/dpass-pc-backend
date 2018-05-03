@@ -24,6 +24,8 @@ def get_settings():
         return jsonify(mining=ethereum_utils.is_mining)
     elif type_ == 'balance':
         return jsonify(balance=current_app.config['STORAGE'].balance())
+    elif type_ == 'account':
+        return jsonify(account=Settings().chain_private_key)
     else:
         error_respond.invalid_arguments()
 
