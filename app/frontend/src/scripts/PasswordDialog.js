@@ -15,15 +15,15 @@ export default {
       showPlain: false,
       type: 'password',
       name: '',
-      customizedOption: {
-        length: 8,
-        uppercase: true,
-        lowercase: true,
-        digits: true,
-        symbols: false,
-        obscureSymbols: false,
-        extra: ''
-      }
+          customizedOption: {
+            length: 8,
+            uppercase: true,
+            lowercase: true,
+            digits: true,
+            symbols: false,
+            obscureSymbols: false,
+            extra: ''
+          }
     };
   },
   updated() {
