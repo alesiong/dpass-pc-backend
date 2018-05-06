@@ -49,7 +49,7 @@ export default {
 
       let keys = [a => a.hidden];
       if (this.sortBy === '1') {
-        keys.push(a => a.siteName);
+        keys.push(a => a.type === 'password' ? a.siteName : a.name);
       } else {
         keys.push(a => -a.date);
       }

@@ -1,8 +1,12 @@
 alembic==0.9.7
+bitcoin == 1.1.42
+coincurve == 7.1.0
 click==6.7
 colour-runner==0.0.5
-eth-utils==0.7.4
 eth-abi==0.5.0
+eth-keyfile==0.4.0
+eth-tester==0.1.0b15
+eth-utils==0.7.4
 Flask==0.12.2
 Flask-Migrate==2.1.1
 Flask-Script==2.0.6
@@ -14,12 +18,17 @@ itsdangerous==0.24
 Jinja2==2.10
 Mako==1.0.7
 MarkupSafe==1.0
+merkletools == 1.0.3
 pyperclip==1.6.0
-pycryptodome==3.4.8
+pycryptodome==3.6.1
+pypng==0.0.18
+pyqrcode==1.2.1
 python-dateutil==2.6.1
 python-editor==1.0.3
+repoze.lru == 0.7
+rlp==0.6.0
 six==1.11.0
 SQLAlchemy==1.2.1
-unqlite==0.6.2
+git+https://github.com/alesiong/unqlite-python.git
 web3==3.16.4
 Werkzeug==0.14.1

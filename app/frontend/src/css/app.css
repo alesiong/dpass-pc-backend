@@ -1,4 +1,8 @@
-.app-container{
-    padding:40px;
+.app-container {
+    padding: 40px;
     position: relative;
+}
+
+.mdui-textfield-input:hover {
+    cursor: auto !important;
 }

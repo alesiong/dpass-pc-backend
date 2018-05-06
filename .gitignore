@@ -110,3 +110,4 @@ ethereum_private/data/
 /node_modules/
 
 *.sqlite
+/chain-data/

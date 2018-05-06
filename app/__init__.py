@@ -6,11 +6,14 @@ from flask_socketio import SocketIO
 from flask_sqlalchemy import SQLAlchemy
 from web3 import Web3, IPCProvider
 
+from app.utils.chain_utils import ChainUtils
 from app.utils.ethereum_utils import EthereumUtils
 from app.utils.local_storage import LocalStorage
 from app.utils.misc import get_env, get_ipc
 from app.utils.session_key import SessionKey
 from app.utils.settings import Settings
+from chain.control.controller import Controller
+from chain.utils.multiplexer import Multiplexer
 from config import configs
 
 # Instantiate Flask extensions
@@ -18,7 +21,7 @@ db = SQLAlchemy()
 socketio = SocketIO()
 
 
-def create_app(config_name='development', queue=None, use_storage=None):
+def create_app(config_name='development', queue=None, use_storage=None, rq=None, wq=None):
     """
     Create a Flask applicaction.
     """
@@ -70,6 +73,8 @@ def create_app(config_name='development', queue=None, use_storage=None):
             return url_for(endpoint, **values)
 
     app.config['QUEUE'] = queue
+    app.config['READ_QUEUE'] = rq
+    app.config['WRITE_QUEUE'] = wq
     if use_storage == 'ethereum':
         app.config['USE_ETHEREUM'] = True
 
@@ -83,6 +88,11 @@ def create_app(config_name='development', queue=None, use_storage=None):
             storage_factory_abi = json.load(open('./ethereum_private/contracts/storage_factory.abi.json'))
             storage_abi = json.load(open('./ethereum_private/contracts/storage.abi.json'))
             ethereum_utils.init_contracts(get_env()['ETH_STORAGE'], storage_factory_abi, storage_abi)
+        else:
+            mx = Multiplexer(app.config['READ_QUEUE'], app.config['WRITE_QUEUE'])
+            mx.start()
+            controller = Controller(mx)
+            ChainUtils(controller)
 
         Settings(app.config['SETTINGS_FILE'])
 

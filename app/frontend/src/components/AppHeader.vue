@@ -10,14 +10,26 @@
             <a class="mdui-typo-title mdui-text-color-theme-grey-50">DPass</a>
 
             <div class="mdui-toolbar-spacer"></div>
-
             <div class="mdui-textfield search-bar"
                  v-if="!guard">
-                <i class="mdui-icon material-icons">search</i>
+                <i class="mdui-icon material-icons search-icon"
+                   v-on:click="onClickSearchButton">search</i>
                 <input class="mdui-textfield-input search-text" type="text"
+                       id="search-bar"
                        placeholder="Search"
-                       v-on:input="onSearchChanged"/>
+                       v-model="search"
+                       v-on:input="onSearchChanged"
+                       v-on:focus="onSearchFocus"
+                       v-on:focusout="onSearchFocusout"/>
+
             </div>
+
+            <button class="mdui-btn search-clear-btn"
+                    v-if="!guard"
+                    v-bind:style="search.length || searchFocused > 0 ? '' : 'visibility: hidden'"
+                    v-on:click="onSearchCleared">
+                <i class="mdui-icon material-icons">close</i>
+            </button>
 
             <span class="mdui-btn mdui-btn-icon mdui-ripple"
                   mdui-tooltip="{content: 'Lock DPass'}"
@@ -25,7 +37,6 @@
                   @click="lockDPass">
                 <i class="mdui-icon material-icons">lock</i>
             </span>
-
         </div>
     </header>
 </template>
@@ -37,9 +48,28 @@
   export default {
     name: 'app-header',
     props: ['guard'],
+    data() {
+      return {
+        search: '',
+        searchFocused: false
+      };
+    },
     methods: {
+      onClickSearchButton() {
+        document.getElementById('search-bar').focus();
+      },
+      onSearchFocus() {
+        this.searchFocused = true;
+      },
+      onSearchFocusout() {
+        this.searchFocused = false;
+      },
       onSearchChanged(event) {
         this.$emit('search', event.target.value);
+      },
+      onSearchCleared: function() {
+        this.$emit('search', '');
+        this.search = '';
       },
       lockDPass() {
         $$('.mdui-tooltip-open').remove();
@@ -71,11 +101,29 @@
 <style scoped>
     .search-text {
         color: white;
+        padding-left: 42px;
         background: rgba(255, 255, 255, 0.2);
+
+    }
+
+    .search-icon {
+        padding-left: 66px;
+    }
+
+    .search-clear-btn {
+        min-width: 36px;
+        width: 36px;
+        color: white;
+        border: none;
+        padding: 0;
+        top: 4px;
+        right: 50px;
+        background: none;
+
     }
 
     .search-bar {
-        margin-right: 24px;
-        width: calc(100% - 400px);
+        margin-right: 6px;
+        width: calc(100% - 350px);
     }
 </style>

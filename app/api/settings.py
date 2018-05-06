@@ -1,5 +1,9 @@
-from flask import Blueprint, current_app, jsonify, request, json
+from io import BytesIO
 
+import pyqrcode
+from flask import Blueprint, current_app, jsonify, request, json, send_file
+
+from app import ChainUtils, Settings
 from app.utils.ethereum_utils import EthereumUtils
 from app.utils import error_respond
 from app.utils.decorators import session_verify
@@ -13,10 +17,15 @@ def get_settings():
     if type_ == 'init_state':
         return jsonify(state=current_app.config['INIT_STATE'])
     elif type_ == 'mining':
-        ethereum_utils = EthereumUtils()
+        if current_app.config['USE_ETHEREUM']:
+            ethereum_utils = EthereumUtils()
+        else:
+            ethereum_utils = ChainUtils()
         return jsonify(mining=ethereum_utils.is_mining)
     elif type_ == 'balance':
         return jsonify(balance=current_app.config['STORAGE'].balance())
+    elif type_ == 'account':
+        return jsonify(account=Settings().chain_private_key)
     else:
         error_respond.invalid_arguments()
 
@@ -24,7 +33,10 @@ def get_settings():
 @bp.route('/', methods=['POST'])
 @session_verify
 def change_settings():
-    ethereum_utils = EthereumUtils()
+    if current_app.config['USE_ETHEREUM']:
+        ethereum_utils = EthereumUtils()
+    else:
+        ethereum_utils = ChainUtils()
     data = json.loads(request.decrypted_data.decode())
     setting_type = data.get('type')
     setting_args = data.get('args')
@@ -40,3 +52,13 @@ def change_settings():
     elif setting_type == 'lock':
         current_app.config['MASTER_PASSWORD'].lock()
     return jsonify(message='Success')
+
+
+@bp.route('/private_key.png')
+def private_key_png():
+    io = BytesIO()
+    key_base64 = Settings().chain_private_key
+    pyqrcode.create(key_base64).png(io, scale=4)
+    return send_file(BytesIO(io.getvalue()),
+                     attachment_filename='private_key.png',
+                     mimetype='image/png')
